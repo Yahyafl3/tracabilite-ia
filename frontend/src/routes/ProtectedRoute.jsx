@@ -1,0 +1,1 @@
+// Route protégée nécessitant authentification
