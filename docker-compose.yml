@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: tracabilite-postgres
+    environment:
+      POSTGRES_DB: tracabilite_ia
+      POSTGRES_USER: tracabilite
+      POSTGRES_PASSWORD: tracabilite123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tracabilite-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracabilite"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tracabilite-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tracabilite_ia
+      SPRING_DATASOURCE_USERNAME: tracabilite
+      SPRING_DATASOURCE_PASSWORD: tracabilite123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tracabilite-network
+    volumes:
+      - ./backend/src:/app/src
+    restart: unless-stopped
+
+  # Frontend React + Vite
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tracabilite-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - tracabilite-network
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    restart: unless-stopped
+
+networks:
+  tracabilite-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
