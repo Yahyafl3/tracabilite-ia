@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Base de données PostgreSQL
   postgres:
@@ -61,9 +59,24 @@ services:
       - tracabilite-network
     restart: unless-stopped
 
+  # Service ML Python
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: tracabilite-ml-service
+    ports:
+      - "5000:5000"
+    networks:
+      - tracabilite-network
+    restart: unless-stopped
+    volumes:
+      - ml_models:/app
+
 networks:
   tracabilite-network:
     driver: bridge
 
 volumes:
   postgres_data:
+  ml_models:
