@@ -1,1 +1,0 @@
-// Formateurs (dates, nombres, etc.)

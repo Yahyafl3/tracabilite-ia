@@ -45,23 +45,20 @@ services:
       - ./backend/src:/app/src
     restart: unless-stopped
 
-  # Frontend React + Vite
+  # Frontend Angular
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: tracabilite-frontend
     ports:
-      - "5173:5173"
+      - "80:80"
     environment:
-      VITE_API_URL: http://localhost:8080
+      API_URL: http://backend:8080
     depends_on:
       - backend
     networks:
       - tracabilite-network
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
     restart: unless-stopped
 
 networks:

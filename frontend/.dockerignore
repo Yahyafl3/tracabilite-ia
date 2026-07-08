@@ -1,7 +1,37 @@
+# Dependencies
 node_modules
+npm-debug.log
+yarn-error.log
+
+# Build artifacts
 dist
+.angular
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
 .git
 .gitignore
+
+# Tests
+coverage
+*.spec.ts
+karma.conf.js
+
+# Documentation
+README.md
 *.md
-.DS_Store
-npm-debug.log

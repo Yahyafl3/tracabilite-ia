@@ -1,20 +1,31 @@
-# Image Node.js pour le développement
-FROM node:20-alpine
+# Stage 1: Build Angular Application
+FROM node:24-alpine AS build
 
-# Définir le répertoire de travail
 WORKDIR /app
 
 # Copier les fichiers de dépendances
 COPY package*.json ./
 
 # Installer les dépendances
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
-# Copier tout le code source
+# Copier le code source
 COPY . .
 
-# Exposer le port Vite
-EXPOSE 5173
+# Build l'application Angular pour production
+RUN npm run build
 
-# Lancer le serveur de développement avec hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Stage 2: Servir avec Nginx
+FROM nginx:alpine
+
+# Copier les fichiers buildés depuis le stage précédent
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+
+# Copier la configuration Nginx personnalisée
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Exposer le port 80
+EXPOSE 80
+
+# Démarrer Nginx
+CMD ["nginx", "-g", "daemon off;"]

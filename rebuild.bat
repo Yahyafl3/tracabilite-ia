@@ -18,7 +18,8 @@ echo ========================================
 echo   TERMINE !
 echo ========================================
 echo.
-echo Frontend: http://localhost:5173
+echo Frontend: http://localhost
 echo Backend:  http://localhost:8080
+echo Swagger:  http://localhost:8080/swagger-ui.html
 echo.
 pause
