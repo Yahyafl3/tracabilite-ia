@@ -1,0 +1,29 @@
+<section id="fonctionnalites" class="section section--soft">
+  <div class="container">
+    <div class="section-head" appReveal>
+      <span class="eyebrow">Fonctionnalités</span>
+      <h2 class="section-title">Une plateforme complète de gouvernance de l'IA</h2>
+      <p class="section-subtitle">
+        Tout ce dont vos équipes conformité, data et juridique ont besoin pour
+        maîtriser le cycle de vie des décisions IA.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      @for (feature of features; track feature.title; let i = $index) {
+        <article
+          class="feature-card"
+          [attr.data-accent]="feature.accent"
+          appReveal
+          [revealDelay]="(i % 3) * 100"
+        >
+          <span class="feature-card__icon">
+            <app-icon [name]="feature.icon" [size]="28" />
+          </span>
+          <h3 class="feature-card__title">{{ feature.title }}</h3>
+          <p class="feature-card__text">{{ feature.description }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>

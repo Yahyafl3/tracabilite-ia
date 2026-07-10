@@ -39,8 +39,6 @@ services:
         condition: service_healthy
     networks:
       - tracabilite-network
-    volumes:
-      - ./backend/src:/app/src
     restart: unless-stopped
 
   # Frontend Angular
@@ -51,8 +49,6 @@ services:
     container_name: tracabilite-frontend
     ports:
       - "80:80"
-    environment:
-      API_URL: http://backend:8080
     depends_on:
       - backend
     networks:
@@ -71,7 +67,7 @@ services:
       - tracabilite-network
     restart: unless-stopped
     volumes:
-      - ml_models:/app
+      - ml_models:/app/models
 
 networks:
   tracabilite-network:

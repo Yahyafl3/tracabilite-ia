@@ -1,0 +1,64 @@
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+
+/**
+ * Logo réutilisable "Traçabilité IA" — emblème bouclier avec dégradé bleu→violet.
+ * Cohérent avec le favicon (public/favicon.svg).
+ * Utilisation : <app-logo [size]="40" />
+ */
+let uid = 0;
+
+@Component({
+  selector: 'app-logo',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <svg
+      [attr.width]="size"
+      [attr.height]="size"
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient [attr.id]="gradId" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#4F46E5" />
+          <stop offset="1" stop-color="#9333EA" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" rx="12" [attr.fill]="'url(#' + gradId + ')'" />
+      <path
+        d="M24 9 13 13v9.2c0 7 4.7 11 11 13.8 6.3-2.8 11-6.8 11-13.8V13L24 9z"
+        fill="#fff"
+        fill-opacity="0.14"
+      />
+      <path
+        d="M24 10.2 14 13.8v8.4c0 6.3 4.2 10 10 12.6 5.8-2.6 10-6.3 10-12.6v-8.4L24 10.2z"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2.2"
+        stroke-linejoin="round"
+      />
+      <path
+        d="m19 23.5 3.6 3.6 6.4-6.8"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  `,
+  styles: [
+    `
+      :host {
+        display: inline-flex;
+        line-height: 0;
+      }
+    `,
+  ],
+})
+export class LogoComponent {
+  @Input() size = 40;
+  readonly gradId = `logo-grad-${uid++}`;
+}

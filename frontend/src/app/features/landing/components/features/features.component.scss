@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  position: relative;
+  padding: 32px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--brand-200);
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    color: #fff;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+  }
+
+  &__title {
+    font-size: 1.28rem;
+    margin-bottom: 12px;
+  }
+
+  &__text {
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 0.98rem;
+  }
+}
+
+.feature-card[data-accent='indigo'] .feature-card__icon {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+.feature-card[data-accent='violet'] .feature-card__icon {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+}
+.feature-card[data-accent='blue'] .feature-card__icon {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+.feature-card[data-accent='teal'] .feature-card__icon {
+  background: linear-gradient(135deg, #0d9488, #14b8a6);
+}
+.feature-card[data-accent='amber'] .feature-card__icon {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+.feature-card[data-accent='rose'] .feature-card__icon {
+  background: linear-gradient(135deg, #e11d48, #f43f5e);
+}
+
+@media (max-width: 960px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}

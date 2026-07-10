@@ -1,0 +1,56 @@
+<header class="navbar" [class.navbar--scrolled]="scrolled()">
+  <div class="container navbar__inner">
+    <a class="brand" href="#accueil" (click)="scrollTo('accueil'); $event.preventDefault()">
+      <app-logo class="brand__mark" [size]="38" />
+      <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
+    </a>
+
+    <nav class="nav-links" [class.nav-links--open]="menuOpen()" aria-label="Navigation principale">
+      @for (link of links; track link.target) {
+        <a
+          class="nav-links__item"
+          [href]="'#' + link.target"
+          (click)="scrollTo(link.target); $event.preventDefault()"
+          >{{ link.label }}</a
+        >
+      }
+      <a
+        class="nav-links__login"
+        routerLink="/auth/login"
+        (click)="menuOpen.set(false)"
+      >
+        Se connecter
+      </a>
+      <button
+        type="button"
+        class="btn btn-primary nav-links__cta"
+        (click)="scrollTo('contact')"
+      >
+        Demander une démo
+        <app-icon name="arrow-right" [size]="18" />
+      </button>
+    </nav>
+
+    <div class="nav-actions">
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="theme() === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'"
+        title="Changer de thème"
+      >
+        <app-icon [name]="theme() === 'dark' ? 'sun' : 'moon'" [size]="20" />
+      </button>
+
+      <button
+        type="button"
+        class="nav-toggle"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuOpen()"
+        aria-label="Ouvrir le menu"
+      >
+        <app-icon [name]="menuOpen() ? 'close' : 'menu'" [size]="26" />
+      </button>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,24 @@
+<section id="probleme" class="section">
+  <div class="container">
+    <div class="section-head" appReveal>
+      <span class="eyebrow">Le problème</span>
+      <h2 class="section-title">L'IA décide déjà. Mais pouvez-vous le prouver&nbsp;?</h2>
+      <p class="section-subtitle">
+        Sans traçabilité, les décisions assistées par IA deviennent une boîte noire
+        risquée pour votre conformité et votre réputation.
+      </p>
+    </div>
+
+    <div class="problem-grid">
+      @for (item of problems; track item.title; let i = $index) {
+        <article class="problem-card" appReveal [revealDelay]="i * 120">
+          <span class="problem-card__icon">
+            <app-icon [name]="item.icon" [size]="26" />
+          </span>
+          <h3 class="problem-card__title">{{ item.title }}</h3>
+          <p class="problem-card__text">{{ item.description }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>

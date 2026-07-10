@@ -1,0 +1,121 @@
+:host {
+  display: block;
+}
+
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  margin-bottom: 64px;
+}
+
+.usecase-card {
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: var(--brand-50);
+    color: var(--brand-600);
+    margin-bottom: 18px;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+  }
+
+  &__text {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+}
+
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.testimonial {
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+
+  &__quote-icon {
+    color: var(--brand-400);
+    margin-bottom: 14px;
+  }
+
+  &__text {
+    flex: 1;
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+
+  &__author {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--grad-brand);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    display: block;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  &__role {
+    display: block;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+}
+
+@media (max-width: 1024px) {
+  .usecase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .testimonials {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .usecase-grid {
+    grid-template-columns: 1fr;
+  }
+}

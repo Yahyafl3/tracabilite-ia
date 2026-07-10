@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.problem-card {
+  padding: 32px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--danger);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    margin-bottom: 20px;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  &__text {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+}
+
+@media (max-width: 900px) {
+  .problem-grid {
+    grid-template-columns: 1fr;
+  }
+}

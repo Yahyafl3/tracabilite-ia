@@ -1,0 +1,63 @@
+<section id="accueil" class="hero">
+  <div class="container hero__grid">
+    <div class="hero__content">
+      <span class="eyebrow" appReveal>
+        <app-icon name="sparkle" [size]="15" />
+        Conformité IA Act &amp; RGPD
+      </span>
+
+      <h1 class="hero__title" appReveal [revealDelay]="80">
+        Rendez chaque décision de votre IA
+        <span class="text-gradient"> traçable, explicable et conforme</span>
+      </h1>
+
+      <p class="hero__subtitle" appReveal [revealDelay]="160">
+        Traçabilité IA enregistre, audite et explique chaque décision prise ou
+        influencée par vos modèles. Un audit trail complet et immuable, prêt pour
+        les exigences de l'AI Act européen et du RGPD.
+      </p>
+
+      <div class="hero__actions" appReveal [revealDelay]="240">
+        <button type="button" class="btn btn-primary btn-lg" (click)="goTo('contact')">
+          Demander une démo
+          <app-icon name="arrow-right" [size]="18" />
+        </button>
+        <button type="button" class="btn btn-secondary btn-lg" (click)="goTo('fonctionnement')">
+          <app-icon name="book" [size]="18" />
+          Voir la documentation
+        </button>
+      </div>
+
+      <ul class="hero__badges" appReveal [revealDelay]="320">
+        @for (badge of badges; track badge.label) {
+          <li>
+            <app-icon [name]="badge.icon" [size]="18" />
+            {{ badge.label }}
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="hero__visual" appReveal [revealDelay]="200">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__card">
+        <img
+          src="images/dashboard-preview.png"
+          alt="Tableau de bord Traçabilité IA affichant le flux d'audit des décisions"
+          width="1200"
+          height="800"
+          fetchpriority="high"
+        />
+      </div>
+
+      <div class="float-chip float-chip--tl" aria-hidden="true">
+        <span class="float-chip__dot"></span>
+        Décision tracée
+      </div>
+      <div class="float-chip float-chip--br" aria-hidden="true">
+        <app-icon name="shield-check" [size]="18" />
+        Hash vérifié
+      </div>
+    </div>
+  </div>
+</section>

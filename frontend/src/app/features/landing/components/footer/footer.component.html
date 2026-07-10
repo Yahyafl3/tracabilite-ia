@@ -1,0 +1,62 @@
+<footer class="footer">
+  <div class="container footer__top">
+    <div class="footer__brand">
+      <a class="brand" href="#accueil" (click)="navigate({ target: 'accueil' }); $event.preventDefault()">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="m8.5 12 2.2 2.2L15.5 9.5" />
+          </svg>
+        </span>
+        <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
+      </a>
+      <p class="footer__desc">
+        La plateforme de traçabilité, d'explicabilité et de conformité des
+        décisions assistées par intelligence artificielle.
+      </p>
+      <ul class="footer__contact">
+        <li><app-icon name="mail" [size]="18" /> contact&#64;tracabilite-ia.com</li>
+        <li><app-icon name="phone" [size]="18" /> +33 1 84 80 00 00</li>
+        <li><app-icon name="map-pin" [size]="18" /> Paris, France</li>
+      </ul>
+      <div class="footer__socials">
+        @for (social of socials; track social.label) {
+          <a class="footer__social" href="#" [attr.aria-label]="social.label"
+            (click)="$event.preventDefault()">
+            <app-icon [name]="social.icon" [size]="20" />
+          </a>
+        }
+      </div>
+    </div>
+
+    <div class="footer__cols">
+      @for (col of columns; track col.title) {
+        <nav class="footer__col" [attr.aria-label]="col.title">
+          <h3 class="footer__col-title">{{ col.title }}</h3>
+          <ul>
+            @for (link of col.links; track link.label) {
+              <li>
+                <a [href]="link.target ? '#' + link.target : link.href"
+                  (click)="navigate(link); link.target && $event.preventDefault()"
+                  >{{ link.label }}</a
+                >
+              </li>
+            }
+          </ul>
+        </nav>
+      }
+    </div>
+  </div>
+
+  <div class="footer__bottom">
+    <div class="container footer__bottom-inner">
+      <span class="footer__copy">© {{ year }} Traçabilité IA. Tous droits réservés.</span>
+      <ul class="footer__legal">
+        @for (legal of legalLinks; track legal) {
+          <li><a href="#" (click)="$event.preventDefault()">{{ legal }}</a></li>
+        }
+      </ul>
+    </div>
+  </div>
+</footer>

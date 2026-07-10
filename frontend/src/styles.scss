@@ -1,1 +1,357 @@
-/* You can add global styles to this file, and also import other style files */
+/**
+ * Global Styles - Traçabilité IA
+ * Design system B2B : bleu / violet / blanc (tech + confiance)
+ */
+
+// Angular Material (utilisé par les modules auth / dashboard existants)
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* ============================================================
+   Design tokens
+   ============================================================ */
+:root {
+  // Palette
+  --brand-50: #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-200: #c7d2fe;
+  --brand-400: #818cf8;
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+
+  --ink: #0f172a;
+  --ink-soft: #1e293b;
+  --muted: #64748b;
+  --muted-soft: #94a3b8;
+
+  --bg: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-mute: #f1f5f9;
+  --border: #e2e8f0;
+
+  // Surfaces sémantiques (cartes, panneaux) — pilotées par le thème
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --navbar-bg: rgba(255, 255, 255, 0.7);
+  --navbar-bg-scrolled: rgba(255, 255, 255, 0.9);
+
+  // Teintes de marque pour badges/eyebrow (redéfinies en sombre)
+  --brand-tint: var(--brand-50);
+  --brand-tint-ink: var(--brand-700);
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  // Brand gradients
+  --grad-brand: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --grad-brand-soft: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --grad-hero: radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 0% 10%, rgba(37, 99, 235, 0.16), transparent 55%);
+
+  // Typographie
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+
+  // Élévations
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
+  --shadow-brand: 0 18px 40px rgba(79, 70, 229, 0.28);
+
+  // Rayons
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  // Layout
+  --container: 1200px;
+  --nav-h: 76px;
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   Thème sombre
+   ============================================================ */
+[data-theme='dark'] {
+  --brand-50: #1e1b4b;
+  --brand-100: #312e81;
+
+  --ink: #f1f5f9;
+  --ink-soft: #e2e8f0;
+  --muted: #94a3b8;
+  --muted-soft: #64748b;
+
+  --bg: #0b1120;
+  --bg-soft: #0f172a;
+  --bg-mute: #111c33;
+  --border: #24314d;
+
+  --surface: #131c31;
+  --surface-2: #182238;
+  --navbar-bg: rgba(11, 17, 32, 0.72);
+  --navbar-bg-scrolled: rgba(11, 17, 32, 0.92);
+
+  --brand-tint: rgba(99, 102, 241, 0.18);
+  --brand-tint-ink: #a5b4fc;
+
+  --grad-hero: radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.28), transparent 60%),
+    radial-gradient(900px 500px at 0% 10%, rgba(37, 99, 235, 0.24), transparent 55%);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Reset & base
+   ============================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ============================================================
+   Layout helpers
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: 96px 0;
+}
+
+.section--soft {
+  background: var(--bg-soft);
+}
+
+.section-head {
+  max-width: 720px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--brand-tint);
+  color: var(--brand-tint-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  color: var(--ink);
+}
+
+.section-subtitle {
+  margin-top: 16px;
+  font-size: 1.075rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.text-gradient {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 26px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--grad-brand);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 48px rgba(79, 70, 229, 0.36);
+  }
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+
+  &:hover {
+    border-color: var(--brand-400);
+    color: var(--brand-tint-ink);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+
+  &:hover {
+    color: var(--brand-700);
+  }
+}
+
+.btn-lg {
+  padding: 17px 32px;
+  font-size: 1.02rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ============================================================
+   Scroll reveal (voir shared/reveal.directive.ts)
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-mute);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-soft);
+  border-radius: 999px;
+
+  &:hover {
+    background: var(--muted);
+  }
+}

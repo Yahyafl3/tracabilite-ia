@@ -1,0 +1,24 @@
+<app-navbar />
+
+<main>
+  <app-hero />
+  <app-problem />
+  <app-features />
+  <app-how-it-works />
+  <app-security />
+  <app-testimonials />
+  <app-pricing />
+  <app-cta />
+</main>
+
+<app-footer />
+
+<button
+  type="button"
+  class="back-to-top"
+  [class.back-to-top--visible]="showBackToTop()"
+  (click)="backToTop()"
+  aria-label="Revenir en haut"
+>
+  <app-icon name="arrow-up" [size]="22" />
+</button>
