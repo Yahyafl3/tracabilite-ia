@@ -17,3 +17,13 @@ Thumbs.db
 # Autres
 *.bak
 *.tmp
+
+# Dépendances / artefacts de build (ne jamais committer)
+node_modules/
+frontend/dist/
+backend/target/
+ml-service/.venv/
+ml-service/models/
+.venv/
+__pycache__/
+*.pyc
