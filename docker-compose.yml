@@ -14,7 +14,7 @@ services:
     networks:
       - tracabilite-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracabilite"]
+      test: ["CMD-SHELL", "pg_isready -U tracabilite -d tracabilite_ia"]
       interval: 10s
       timeout: 5s
       retries: 5
