@@ -24,6 +24,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      # Utilise le resolveur DNS de l'hote pendant le build (le reseau bridge
+      # du builder a un DNS instable sur ce reseau).
+      network: host
     container_name: tracabilite-backend
     ports:
       - "8080:8080"

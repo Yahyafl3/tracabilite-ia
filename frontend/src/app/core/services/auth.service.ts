@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginCredentials,
   AuthResponse,
+  JwtResponse,
   User,
   AuthState,
   PasswordResetRequest,
@@ -75,9 +76,15 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     this.setLoading(true);
 
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
-      tap(response => this.handleAuthSuccess(response, credentials.rememberMe)),
-      catchError(error => this.handleAuthError(error)),
+    const body = {
+      email: credentials.email,
+      motDePasse: credentials.password,
+    };
+
+    return this.http.post<JwtResponse>(`${this.API_URL}/login`, body).pipe(
+      map((response) => this.mapJwtResponse(response)),
+      tap((response) => this.handleAuthSuccess(response, credentials.rememberMe)),
+      catchError((error) => this.handleAuthError(error)),
       finalize(() => this.setLoading(false))
     );
   }
@@ -197,6 +204,23 @@ export class AuthService {
   }
 
   // ==================== Helpers ====================
+
+  private mapJwtResponse(jwt: JwtResponse): AuthResponse {
+    const user: User = {
+      id: jwt.id,
+      email: jwt.email,
+      nom: jwt.nom,
+      role: jwt.role,
+      actif: true,
+    };
+
+    return {
+      token: jwt.token,
+      tokenType: jwt.type,
+      expiresIn: 0,
+      user,
+    };
+  }
 
   private handleAuthSuccess(response: AuthResponse, rememberMe: boolean = false): void {
     const storage = rememberMe ? localStorage : sessionStorage;

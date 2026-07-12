@@ -19,6 +19,15 @@ export interface RegisterData {
   acceptTerms: boolean;
 }
 
+export interface JwtResponse {
+  token: string;
+  type: string;
+  id: string;
+  nom: string;
+  email: string;
+  role: string;
+}
+
 export interface AuthResponse {
   token: string;
   refreshToken?: string;
@@ -28,21 +37,22 @@ export interface AuthResponse {
 }
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   nom: string;
-  prenom: string;
-  role: UserRole;
-  actif: boolean;
+  prenom?: string;
+  role: UserRole | string;
+  actif?: boolean;
   avatar?: string;
-  dateCreation: Date;
+  dateCreation?: Date;
   derniereConnexion?: Date;
 }
 
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
   VALIDATEUR = 'VALIDATEUR',
-  UTILISATEUR = 'UTILISATEUR'
+  AUDITEUR = 'AUDITEUR',
+  UTILISATEUR = 'UTILISATEUR',
 }
 
 export interface TokenPayload {
