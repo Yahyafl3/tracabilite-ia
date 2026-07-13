@@ -41,6 +41,10 @@ public class Decision {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reponse;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "systeme_ia_id")
+    private SystemeIA systemeIa;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutDecisionEnum statutValidation = StatutDecisionEnum.EN_ATTENTE;
@@ -64,6 +68,9 @@ public class Decision {
                 contexte != null ? contexte : "",
                 modelName != null ? modelName : "",
                 modelVersion != null ? modelVersion : "",
+                systemeIa != null ? systemeIa.getNom() : "",
+                systemeIa != null ? systemeIa.getFournisseur() : "",
+                systemeIa != null ? systemeIa.getModele() : "",
                 reponse != null ? reponse : "",
                 statutValidation != null ? statutValidation.name() : "",
                 previousHash != null ? previousHash : "");

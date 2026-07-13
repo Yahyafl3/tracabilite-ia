@@ -2,9 +2,11 @@ package com.pfa.tracabilite_ia.service.impl;
 
 import com.pfa.tracabilite_ia.dto.request.DecisionRequest;
 import com.pfa.tracabilite_ia.entities.Decision;
+import com.pfa.tracabilite_ia.entities.SystemeIA;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
+import com.pfa.tracabilite_ia.repository.SystemeIARepository;
 import com.pfa.tracabilite_ia.service.DecisionService;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +17,12 @@ import java.util.UUID;
 public class DecisionServiceImpl implements DecisionService {
 
     private final DecisionRepository decisionRepository;
+    private final SystemeIARepository systemeIARepository;
 
-    public DecisionServiceImpl(DecisionRepository decisionRepository) {
+    public DecisionServiceImpl(DecisionRepository decisionRepository,
+                              SystemeIARepository systemeIARepository) {
         this.decisionRepository = decisionRepository;
+        this.systemeIARepository = systemeIARepository;
     }
 
     @Override
@@ -57,6 +62,13 @@ public class DecisionServiceImpl implements DecisionService {
         decision.setModelName(request.getModelName());
         decision.setModelVersion(request.getModelVersion());
         decision.setReponse(request.getReponse());
+
+        if (request.getSystemeIaId() != null) {
+            SystemeIA systemeIA = systemeIARepository.findById(request.getSystemeIaId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Systeme IA introuvable : " + request.getSystemeIaId()));
+            decision.setSystemeIa(systemeIA);
+        }
 
         if (request.getStatutValidation() != null) {
             decision.setStatutValidation(request.getStatutValidation());

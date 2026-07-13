@@ -4,6 +4,8 @@ import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class DecisionRequest {
 
@@ -19,6 +21,8 @@ public class DecisionRequest {
 
     @NotBlank(message = "La reponse est requise")
     private String reponse;
+
+    private UUID systemeIaId;
 
     private StatutDecisionEnum statutValidation;
 }
