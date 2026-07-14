@@ -22,9 +22,20 @@ export const routes: Routes = [
     ]
   },
   {
-    path: 'dashboard',
+    // All authenticated pages share the shell (sidebar + topbar)
+    path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+    loadComponent: () => import('./features/shell/shell.component').then(m => m.ShellComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'comparaison',
+        loadComponent: () => import('./features/comparaison/comparaison.component').then(m => m.ComparaisonComponent)
+      }
+    ]
   },
   {
     path: 'unauthorized',
