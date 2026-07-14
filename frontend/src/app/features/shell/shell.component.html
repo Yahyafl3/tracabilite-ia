@@ -1,0 +1,101 @@
+<div class="shell" [class.shell--collapsed]="!sidebarOpen()">
+
+  <!-- ══════════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <!-- Brand -->
+    <div class="sidebar__brand">
+      <div class="brand-logo">
+        <app-icon name="shield-check" [size]="20" />
+      </div>
+      @if (sidebarOpen()) {
+        <span class="brand-name">Traçabilité<span class="brand-accent">IA</span></span>
+      }
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar__nav" aria-label="Navigation principale">
+      @for (item of navItems; track item.route) {
+        <a class="nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="nav-item--active"
+           [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+           [attr.title]="!sidebarOpen() ? item.label : null">
+          <span class="nav-item__icon">
+            <app-icon [name]="item.icon" [size]="18" />
+          </span>
+          @if (sidebarOpen()) {
+            <span class="nav-item__label">{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="nav-badge">{{ item.badge }}</span>
+            }
+          } @else {
+            @if (item.badge) {
+              <span class="nav-badge nav-badge--dot"></span>
+            }
+          }
+        </a>
+      }
+    </nav>
+
+    <!-- Sidebar footer -->
+    <div class="sidebar__footer">
+      @if (sidebarOpen()) {
+        <div class="sidebar-user">
+          <div class="sidebar-user__avatar">{{ userInitials }}</div>
+          <div class="sidebar-user__info">
+            <span class="sidebar-user__name">{{ userName }}</span>
+            <span class="sidebar-user__role">{{ userRole }}</span>
+          </div>
+        </div>
+      }
+      <button class="sidebar-toggle" (click)="toggleSidebar()"
+              [attr.aria-label]="sidebarOpen() ? 'Réduire le menu' : 'Agrandir le menu'">
+        <app-icon [name]="sidebarOpen() ? 'arrow-left' : 'arrow-right'" [size]="16" />
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════════════════
+       MAIN AREA
+  ══════════════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <!-- RouterOutlet children inject their own title via a service if needed;
+             for now the page title comes from each child page's own header -->
+        <span class="brand-name-mobile">Traçabilité<span class="brand-accent">IA</span></span>
+      </div>
+
+      <div class="topbar__right">
+        <span class="integrity-chip">
+          <app-icon name="shield-check" [size]="13" />
+          Chaîne SHA-256 intègre
+        </span>
+
+        <div class="topbar-user">
+          <div class="topbar-user__avatar">{{ userInitials }}</div>
+          <div class="topbar-user__info">
+            <span class="topbar-user__name">{{ userName }}</span>
+            <span class="topbar-user__role">{{ userRole }}</span>
+          </div>
+          <button class="logout-btn" (click)="logout()" title="Déconnexion">
+            <app-icon name="arrow-right" [size]="16" />
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content injected here -->
+    <div class="page-outlet">
+      <router-outlet />
+    </div>
+
+  </div><!-- /main -->
+
+</div><!-- /shell -->
