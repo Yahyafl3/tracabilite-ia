@@ -1,0 +1,231 @@
+<div class="dashboard">
+
+  <!-- ════════════════════════════════════════════
+       PAGE HEADER
+  ════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <span class="eyebrow">
+        <app-icon name="activity" [size]="13" />
+        Vue d'ensemble
+      </span>
+      <h1 class="page-title">Tableau de bord</h1>
+    </div>
+    <span class="date-chip">
+      <app-icon name="history" [size]="13" />
+      14 juil. 2025
+    </span>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       KPI CARDS ROW
+  ════════════════════════════════════════════ -->
+  <section class="kpi-row" aria-label="Indicateurs clés">
+    @for (kpi of kpiCards; track kpi.label) {
+      <div class="kpi-card kpi-card--{{ kpi.accent }}">
+        <div class="kpi-card__icon-wrap">
+          <app-icon [name]="kpi.icon" [size]="20" />
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">{{ kpi.label }}</p>
+          <p class="kpi-card__value">{{ kpi.value }}{{ kpi.unit }}</p>
+          <p class="kpi-card__trend" [class.kpi-card__trend--up]="kpi.trendUp">
+            @if (kpi.trendUp) {
+              <app-icon name="check" [size]="11" />
+            }
+            {{ kpi.trend }}
+          </p>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       CHARTS ROW  (donut + performance bars)
+  ════════════════════════════════════════════ -->
+  <div class="charts-row">
+
+    <!-- ── Donut chart ─────────────────────────── -->
+    <section class="card donut-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="file-check" [size]="17" />
+          Répartition des décisions
+        </h2>
+        <span class="card__hint">9 décisions au total</span>
+      </div>
+
+      <div class="donut-body">
+        <svg width="180" height="180" viewBox="0 0 180 180"
+             role="img" aria-label="Graphique en anneau — répartition des décisions">
+          @for (seg of donutSegments(); track seg.label) {
+            <path [attr.d]="seg.path"
+                  [attr.fill]="seg.color"
+                  class="donut-seg">
+              <title>{{ seg.label }} : {{ seg.value }} ({{ seg.pct }}%)</title>
+            </path>
+          }
+          <text x="90" y="85" class="donut-center-value" text-anchor="middle">
+            {{ totalDecisions }}
+          </text>
+          <text x="90" y="103" class="donut-center-label" text-anchor="middle">
+            décisions
+          </text>
+        </svg>
+
+        <div class="donut-legend">
+          @for (seg of donutSegments(); track seg.label) {
+            <div class="donut-legend__item">
+              <span class="donut-legend__dot" [style.background]="seg.color"></span>
+              <span class="donut-legend__label">{{ seg.label }}</span>
+              <span class="donut-legend__count">{{ seg.value }}</span>
+              <span class="donut-legend__pct">{{ seg.pct }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Agent performance bars ─────────────────── -->
+    <section class="card perf-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="bar-chart" [size]="17" />
+          Performance par agent
+        </h2>
+        <a routerLink="/comparaison" class="card__link">
+          Voir détails <app-icon name="arrow-right" [size]="13" />
+        </a>
+      </div>
+
+      <div class="perf-list">
+
+        <div class="perf-item">
+          <div class="perf-item__head">
+            <div class="perf-avatar perf-avatar--1">C</div>
+            <div class="perf-item__info">
+              <span class="perf-item__name">ChatGPT</span>
+              <span class="perf-item__vendor">OpenAI · gpt-4.1</span>
+            </div>
+            <span class="score-chip score-chip--high">83 %</span>
+          </div>
+          <div class="perf-bar">
+            <div class="perf-bar__fill perf-bar__fill--high" style="width:83%"></div>
+          </div>
+          <div class="perf-pills">
+            <span class="mini-chip mini-chip--approved">2 approuvées</span>
+            <span class="mini-chip mini-chip--modified">1 modifiée</span>
+            <span class="mini-chip mini-chip--rejected">0 rejetée</span>
+          </div>
+        </div>
+
+        <div class="perf-item">
+          <div class="perf-item__head">
+            <div class="perf-avatar perf-avatar--2">G</div>
+            <div class="perf-item__info">
+              <span class="perf-item__name">Gemini</span>
+              <span class="perf-item__vendor">Google · gemini-2.5</span>
+            </div>
+            <span class="score-chip score-chip--mid">50 %</span>
+          </div>
+          <div class="perf-bar">
+            <div class="perf-bar__fill perf-bar__fill--mid" style="width:50%"></div>
+          </div>
+          <div class="perf-pills">
+            <span class="mini-chip mini-chip--approved">1 approuvée</span>
+            <span class="mini-chip mini-chip--modified">1 modifiée</span>
+            <span class="mini-chip mini-chip--rejected">1 rejetée</span>
+          </div>
+        </div>
+
+        <div class="perf-item">
+          <div class="perf-item__head">
+            <div class="perf-avatar perf-avatar--3">A</div>
+            <div class="perf-item__info">
+              <span class="perf-item__name">Claude</span>
+              <span class="perf-item__vendor">Anthropic · claude-sonnet-4</span>
+            </div>
+            <span class="score-chip score-chip--low">33 %</span>
+          </div>
+          <div class="perf-bar">
+            <div class="perf-bar__fill perf-bar__fill--low" style="width:33%"></div>
+          </div>
+          <div class="perf-pills">
+            <span class="mini-chip mini-chip--approved">1 approuvée</span>
+            <span class="mini-chip mini-chip--modified">0 modifiée</span>
+            <span class="mini-chip mini-chip--rejected">2 rejetées</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div><!-- /charts-row -->
+
+  <!-- ════════════════════════════════════════════
+       RECENT DECISIONS TABLE
+  ════════════════════════════════════════════ -->
+  <section class="card table-card">
+    <div class="card__header">
+      <h2 class="card__title">
+        <app-icon name="history" [size]="17" />
+        Décisions récentes
+      </h2>
+      <a routerLink="/decisions" class="card__link">
+        Voir tout <app-icon name="arrow-right" [size]="13" />
+      </a>
+    </div>
+
+    <div class="table-scroll">
+      <table class="decisions-table" aria-label="Décisions récentes">
+        <thead>
+          <tr>
+            <th scope="col">Agent</th>
+            <th scope="col">Prompt</th>
+            <th scope="col">Modèle</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Heure</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of recentDecisions; track d.id) {
+            <tr>
+              <td>
+                <div class="agent-cell">
+                  <div class="agent-avatar" [class]="agentAvatarClass($index)">
+                    {{ d.agent.charAt(0) }}
+                  </div>
+                  <div class="agent-info">
+                    <span class="agent-name">{{ d.agent }}</span>
+                    <span class="agent-meta">{{ d.fournisseur }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="td-prompt">
+                <span class="prompt-text">{{ d.prompt }}</span>
+              </td>
+              <td>
+                <code class="model-tag">{{ d.modele }}</code>
+              </td>
+              <td>
+                <span class="status-chip" [class]="statutClass(d.statut)">
+                  {{ statutLabel(d.statut) }}
+                </span>
+              </td>
+              <td class="td-time">
+                <span class="time-date">{{ formatDate(d.timestamp) }}</span>
+                <span class="time-hour">{{ formatTime(d.timestamp) }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="table-footer">
+      <app-icon name="shield-check" [size]="13" />
+      Intégrité cryptographique vérifiée — chaîne SHA-256 intacte
+    </footer>
+  </section>
+
+</div><!-- /dashboard -->
