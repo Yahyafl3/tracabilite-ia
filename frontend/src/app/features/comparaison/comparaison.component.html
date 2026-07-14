@@ -1,0 +1,381 @@
+<div class="page">
+
+  <!-- ══════════════════════════════════════════════
+       PAGE HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <span class="eyebrow">
+        <app-icon name="bar-chart" [size]="14" />
+        Analyse comparative
+      </span>
+      <h1 class="page-title">Comparaison des agents IA</h1>
+      <p class="page-subtitle">
+        Classement des systèmes IA par taux de validation humaine.
+        Score&nbsp;= (approuvées × 1 + modifiées × 0,5) / total × 100.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <span class="badge badge--neutral">
+        {{ agents().length }} agents actifs
+      </span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════
+       KPI SUMMARY CARDS
+  ══════════════════════════════════════════════ -->
+  <section class="kpi-row">
+
+    @for (agent of agents(); track agent.systemeIaId; let i = $index) {
+      <div class="kpi-card" [class]="'kpi-card--' + (i + 1)">
+        <div class="kpi-card__rank">{{ rankIcon(agent.rang) }}</div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__name">{{ agent.nom }}</p>
+          <p class="kpi-card__vendor">{{ agent.fournisseur }} · {{ agent.modele }}</p>
+          <div class="kpi-card__score-row">
+            <span class="kpi-card__score" [class]="scoreClass(agent.scorePourcentage)">
+              {{ agent.scorePourcentage | number:'1.1-1' }}&thinsp;%
+            </span>
+            <span class="kpi-card__score-label">score</span>
+          </div>
+          <!-- Progress bar -->
+          <div class="kpi-progress" role="progressbar"
+               [attr.aria-valuenow]="agent.scorePourcentage"
+               aria-valuemin="0" aria-valuemax="100">
+            <div class="kpi-progress__fill"
+                 [style.width.%]="agent.scorePourcentage"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       CHART + TABLE GRID
+  ══════════════════════════════════════════════ -->
+  <div class="content-grid">
+
+    <!-- ── SVG Bar Chart ─────────────────────────── -->
+    <section class="card chart-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="activity" [size]="18" />
+          Score de validation (%)
+        </h2>
+        <span class="card__hint">Approuvées + 0,5 × Modifiées</span>
+      </div>
+
+      <div class="chart-scroll">
+        <svg
+          [attr.width]="svgWidth()"
+          [attr.height]="BAR_H + 72"
+          [attr.viewBox]="'0 0 ' + svgWidth() + ' ' + (BAR_H + 72)"
+          xmlns="http://www.w3.org/2000/svg"
+          class="chart-svg"
+          role="img"
+          aria-label="Graphique de comparaison des scores de validation"
+        >
+          <defs>
+            <!-- Gradient 0 — indigo -->
+            <linearGradient id="grad0" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#6366f1" />
+              <stop offset="100%" stop-color="#4338ca" />
+            </linearGradient>
+            <!-- Gradient 1 — violet -->
+            <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#8b5cf6" />
+              <stop offset="100%" stop-color="#6d28d9" />
+            </linearGradient>
+            <!-- Gradient 2 — blue -->
+            <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#1d4ed8" />
+            </linearGradient>
+            <!-- Gradient 3 — teal -->
+            <linearGradient id="grad3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#14b8a6" />
+              <stop offset="100%" stop-color="#0f766e" />
+            </linearGradient>
+          </defs>
+
+          <!-- Horizontal guide lines -->
+          @for (pct of [100, 75, 50, 25, 0]; track pct) {
+            <line
+              x1="0"
+              [attr.y1]="BAR_H - (pct / 100) * BAR_H"
+              [attr.x2]="svgWidth()"
+              [attr.y2]="BAR_H - (pct / 100) * BAR_H"
+              stroke="var(--border)"
+              stroke-width="1"
+              stroke-dasharray="4 4"
+            />
+            <text
+              x="-6"
+              [attr.y]="BAR_H - (pct / 100) * BAR_H + 4"
+              class="chart-axis-label"
+              text-anchor="end"
+            >{{ pct }}%</text>
+          }
+
+          <!-- Bars -->
+          @for (bar of chartBars(); track bar.systemeIaId) {
+            <g [attr.transform]="'translate(' + (bar.x + 30) + ', 0)'">
+              <!-- Bar body -->
+              <rect
+                [attr.x]="0"
+                [attr.y]="BAR_H - bar.height"
+                [attr.width]="BAR_W"
+                [attr.height]="bar.height"
+                [attr.fill]="bar.color"
+                rx="6" ry="6"
+              />
+              <!-- Score label above bar -->
+              <text
+                [attr.x]="BAR_W / 2"
+                [attr.y]="BAR_H - bar.height - 8"
+                class="chart-bar-label"
+                text-anchor="middle"
+              >{{ bar.scorePourcentage | number:'1.0-1' }}%</text>
+              <!-- Agent name below bar -->
+              <text
+                [attr.x]="BAR_W / 2"
+                [attr.y]="BAR_H + 20"
+                class="chart-bar-name"
+                text-anchor="middle"
+              >{{ bar.nom }}</text>
+              <!-- Vendor name below -->
+              <text
+                [attr.x]="BAR_W / 2"
+                [attr.y]="BAR_H + 38"
+                class="chart-bar-vendor"
+                text-anchor="middle"
+              >{{ bar.fournisseur }}</text>
+            </g>
+          }
+        </svg>
+      </div>
+
+      <!-- Legend -->
+      <div class="chart-legend">
+        @for (bar of chartBars(); track bar.systemeIaId; let i = $index) {
+          <span class="legend-item">
+            <span class="legend-dot" [class]="'legend-dot--' + (i + 1)"></span>
+            {{ bar.nom }}
+          </span>
+        }
+      </div>
+    </section>
+
+    <!-- ── Stats breakdown ───────────────────────── -->
+    <section class="card breakdown-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="file-check" [size]="18" />
+          Répartition des décisions
+        </h2>
+      </div>
+
+      <div class="breakdown-list">
+        @for (agent of agents(); track agent.systemeIaId) {
+          <div class="breakdown-agent">
+            <div class="breakdown-agent__header">
+              <span class="breakdown-agent__name">{{ agent.nom }}</span>
+              <span class="breakdown-agent__total">{{ agent.totalDecisions }} décisions</span>
+            </div>
+
+            <!-- Stacked bar -->
+            <div class="stacked-bar" [attr.title]="agent.nom + ' répartition'">
+              @if (agent.approuvees > 0) {
+                <div class="stacked-bar__seg stacked-bar__seg--approved"
+                     [style.flex]="agent.approuvees"
+                     [attr.title]="'Approuvées : ' + agent.approuvees">
+                </div>
+              }
+              @if (agent.modifiees > 0) {
+                <div class="stacked-bar__seg stacked-bar__seg--modified"
+                     [style.flex]="agent.modifiees"
+                     [attr.title]="'Modifiées : ' + agent.modifiees">
+                </div>
+              }
+              @if (agent.rejetees > 0) {
+                <div class="stacked-bar__seg stacked-bar__seg--rejected"
+                     [style.flex]="agent.rejetees"
+                     [attr.title]="'Rejetées : ' + agent.rejetees">
+                </div>
+              }
+              @if (agent.enAttente > 0) {
+                <div class="stacked-bar__seg stacked-bar__seg--pending"
+                     [style.flex]="agent.enAttente"
+                     [attr.title]="'En attente : ' + agent.enAttente">
+                </div>
+              }
+            </div>
+
+            <!-- Pill counts -->
+            <div class="breakdown-pills">
+              <span class="pill pill--approved">
+                <span class="pill__dot"></span>
+                Approuvées <strong>{{ agent.approuvees }}</strong>
+              </span>
+              <span class="pill pill--modified">
+                <span class="pill__dot"></span>
+                Modifiées <strong>{{ agent.modifiees }}</strong>
+              </span>
+              <span class="pill pill--rejected">
+                <span class="pill__dot"></span>
+                Rejetées <strong>{{ agent.rejetees }}</strong>
+              </span>
+              @if (agent.enAttente > 0) {
+                <span class="pill pill--pending">
+                  <span class="pill__dot"></span>
+                  En attente <strong>{{ agent.enAttente }}</strong>
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Legend row -->
+      <div class="stacked-legend">
+        <span class="stacked-legend__item stacked-legend__item--approved">Approuvées</span>
+        <span class="stacked-legend__item stacked-legend__item--modified">Modifiées</span>
+        <span class="stacked-legend__item stacked-legend__item--rejected">Rejetées</span>
+        <span class="stacked-legend__item stacked-legend__item--pending">En attente</span>
+      </div>
+    </section>
+
+  </div><!-- /content-grid -->
+
+  <!-- ══════════════════════════════════════════════
+       RANKING TABLE
+  ══════════════════════════════════════════════ -->
+  <section class="card table-card">
+    <div class="card__header">
+      <h2 class="card__title">
+        <app-icon name="users" [size]="18" />
+        Classement détaillé
+      </h2>
+      <p class="card__hint">Cliquez sur un en-tête pour trier</p>
+    </div>
+
+    <div class="table-scroll">
+      <table class="ranking-table" aria-label="Classement des agents IA">
+        <thead>
+          <tr>
+            <th class="col-rank th-sortable"
+                [class.th--active]="isSorted('rang')"
+                (click)="sort('rang')" scope="col">
+              Rang
+              <app-icon [name]="isSorted('rang') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
+                        [size]="12" class="sort-icon" />
+            </th>
+            <th class="col-agent th-sortable"
+                [class.th--active]="isSorted('nom')"
+                (click)="sort('nom')" scope="col">
+              Agent
+              <app-icon [name]="isSorted('nom') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
+                        [size]="12" class="sort-icon" />
+            </th>
+            <th class="col-num th-sortable"
+                [class.th--active]="isSorted('totalDecisions')"
+                (click)="sort('totalDecisions')" scope="col">
+              Total
+              <app-icon [name]="isSorted('totalDecisions') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
+                        [size]="12" class="sort-icon" />
+            </th>
+            <th class="col-num" scope="col">Approuvées</th>
+            <th class="col-num" scope="col">Modifiées</th>
+            <th class="col-num th-sortable"
+                [class.th--active]="isSorted('rejetees')"
+                (click)="sort('rejetees')" scope="col">
+              Rejetées
+              <app-icon [name]="isSorted('rejetees') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
+                        [size]="12" class="sort-icon" />
+            </th>
+            <th class="col-num" scope="col">En attente</th>
+            <th class="col-score th-sortable"
+                [class.th--active]="isSorted('scorePourcentage')"
+                (click)="sort('scorePourcentage')" scope="col">
+              Score
+              <app-icon [name]="isSorted('scorePourcentage') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
+                        [size]="12" class="sort-icon" />
+            </th>
+            <th class="col-bar" scope="col">Barre</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (agent of agents(); track agent.systemeIaId) {
+            <tr class="tr-agent" [class]="rankClass(agent.rang)">
+
+              <!-- Rang -->
+              <td class="col-rank td-rank">
+                <span class="rank-badge" [class]="rankClass(agent.rang)">
+                  {{ rankIcon(agent.rang) }}
+                </span>
+              </td>
+
+              <!-- Agent info -->
+              <td class="col-agent">
+                <div class="agent-cell">
+                  <div class="agent-avatar" [class]="'agent-avatar--' + agent.rang">
+                    {{ agent.nom.charAt(0) }}
+                  </div>
+                  <div class="agent-info">
+                    <span class="agent-name">{{ agent.nom }}</span>
+                    <span class="agent-meta">{{ agent.fournisseur }} · {{ agent.modele }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Numbers -->
+              <td class="col-num td-num">{{ agent.totalDecisions }}</td>
+              <td class="col-num td-num">
+                <span class="num-chip num-chip--approved">{{ agent.approuvees }}</span>
+              </td>
+              <td class="col-num td-num">
+                <span class="num-chip num-chip--modified">{{ agent.modifiees }}</span>
+              </td>
+              <td class="col-num td-num">
+                <span class="num-chip num-chip--rejected">{{ agent.rejetees }}</span>
+              </td>
+              <td class="col-num td-num">
+                <span class="num-chip num-chip--pending">{{ agent.enAttente }}</span>
+              </td>
+
+              <!-- Score -->
+              <td class="col-score td-score">
+                <span class="score-badge" [class]="scoreClass(agent.scorePourcentage)">
+                  {{ agent.scorePourcentage | number:'1.1-1' }}&thinsp;%
+                </span>
+              </td>
+
+              <!-- Inline bar -->
+              <td class="col-bar">
+                <div class="inline-bar">
+                  <div class="inline-bar__fill"
+                       [class]="scoreClass(agent.scorePourcentage)"
+                       [style.width.%]="agent.scorePourcentage">
+                  </div>
+                  <span class="inline-bar__pct">
+                    {{ agent.scorePourcentage | number:'1.0-0' }}%
+                  </span>
+                </div>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table footer note -->
+    <footer class="table-footer">
+      <app-icon name="shield-check" [size]="14" />
+      Données issues des décisions validées — chaîne SHA-256 intègre
+    </footer>
+  </section>
+
+</div><!-- /page -->
