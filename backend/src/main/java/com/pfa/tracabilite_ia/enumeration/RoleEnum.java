@@ -4,4 +4,5 @@ public enum RoleEnum {
     ADMINISTRATEUR,
     VALIDATEUR,
     AUDITEUR,
+    UTILISATEUR,
 }

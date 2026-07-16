@@ -1,0 +1,10 @@
+﻿{
+    "suggestedDecision":  "APPROUVER",
+    "totalElements":  1,
+    "decisionId":  "109e684c-1c08-480d-8108-c636aa041169",
+    "resumeOllamaPresent":  true,
+    "prompt":  "Test propre apres nettoyage - demande credit services",
+    "currentHash":  "7a6c2dc672ce957589573fcef789759c348a56079b5b33926f74275f0e03f86f",
+    "statut":  "EN_ATTENTE",
+    "factorsCount":  6
+}

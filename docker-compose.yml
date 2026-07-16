@@ -1,5 +1,4 @@
 services:
-  # Base de données PostgreSQL
   postgres:
     image: postgres:16-alpine
     container_name: tracabilite-postgres
@@ -19,17 +18,16 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend Spring Boot
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      # Utilise le resolveur DNS de l'hote pendant le build (le reseau bridge
-      # du builder a un DNS instable sur ce reseau).
       network: host
     container_name: tracabilite-backend
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tracabilite_ia
       SPRING_DATASOURCE_USERNAME: tracabilite
@@ -37,14 +35,24 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      ML_SERVICE_URL: ${ML_SERVICE_URL:-http://ml-service:5000}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL_1: ${OPENROUTER_MODEL_1:-meta-llama/llama-3.3-70b-instruct:free}
+      OPENROUTER_MODEL_2: ${OPENROUTER_MODEL_2:-google/gemma-4-31b-it:free}
+      OPENROUTER_MODEL_3: ${OPENROUTER_MODEL_3:-openai/gpt-oss-20b:free}
+      OPENROUTER_HTTP_REFERER: ${OPENROUTER_HTTP_REFERER:-http://localhost}
+      OPENROUTER_APP_TITLE: ${OPENROUTER_APP_TITLE:-Tracabilite-IA}
+      OPENROUTER_AGENT_DELAY_MS: ${OPENROUTER_AGENT_DELAY_MS:-2000}
     depends_on:
       postgres:
         condition: service_healthy
+      ml-service:
+        condition: service_started
     networks:
       - tracabilite-network
     restart: unless-stopped
 
-  # Frontend Angular
   frontend:
     build:
       context: ./frontend
@@ -58,11 +66,11 @@ services:
       - tracabilite-network
     restart: unless-stopped
 
-  # Service ML Python
   ml-service:
     build:
       context: ./ml-service
       dockerfile: Dockerfile
+      network: host
     container_name: tracabilite-ml-service
     ports:
       - "5000:5000"
@@ -70,7 +78,8 @@ services:
       - tracabilite-network
     restart: unless-stopped
     volumes:
-      - ml_models:/app/models
+      - ./ml-service/artifacts:/app/artifacts
+      - ./ml-service/data:/app/data
 
 networks:
   tracabilite-network:
@@ -78,4 +87,3 @@ networks:
 
 volumes:
   postgres_data:
-  ml_models:

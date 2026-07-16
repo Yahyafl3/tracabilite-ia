@@ -1,0 +1,72 @@
+{
+  "modelType": "LogisticRegression",
+  "version": "2.0.0",
+  "domain": "credit",
+  "explainability": "SHAP LinearExplainer",
+  "explanationSource": "SHAP",
+  "dataset": {
+    "source": "synthetic",
+    "warning": "Dataset synthétique généré pour prototype académique. Ne pas utiliser en production.",
+    "rows": 5000,
+    "columns": [
+      "amount",
+      "monthlyIncome",
+      "companyAgeYears",
+      "paymentIncidents",
+      "debtRatio",
+      "sector",
+      "approved",
+      "dataset_source"
+    ],
+    "target": "approved",
+    "classBalance": {
+      "approved": 1595,
+      "rejected": 3405
+    },
+    "missingValuesAfterCleaning": 0,
+    "duplicateRowsRemoved": true,
+    "trainRows": 4000,
+    "testRows": 1000
+  },
+  "features": {
+    "numeric": [
+      "amount",
+      "monthlyIncome",
+      "companyAgeYears",
+      "paymentIncidents",
+      "debtRatio"
+    ],
+    "categorical": [
+      "sector"
+    ]
+  },
+  "metrics": {
+    "accuracy": 0.883,
+    "precision": 0.7672,
+    "recall": 0.9091,
+    "f1": 0.8321,
+    "roc_auc": 0.9598
+  },
+  "benchmarkAlternatives": {
+    "RandomForestClassifier": {
+      "accuracy": 0.867,
+      "f1": 0.8113,
+      "roc_auc": 0.9584
+    }
+  },
+  "featureNames": [
+    "num__amount",
+    "num__monthlyIncome",
+    "num__companyAgeYears",
+    "num__paymentIncidents",
+    "num__debtRatio",
+    "cat__sector_AGRICULTURE",
+    "cat__sector_COMMERCE",
+    "cat__sector_INDUSTRIE",
+    "cat__sector_SERVICES",
+    "cat__sector_TECH"
+  ],
+  "trainedAt": "2026-07-15T22:23:51.155416+00:00",
+  "randomState": 42,
+  "note": "Métriques mesurées sur jeu de test hold-out. Dataset synthétique — prototype académique uniquement."
+}

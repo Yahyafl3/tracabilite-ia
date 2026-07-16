@@ -1,8 +1,14 @@
 package com.pfa.tracabilite_ia.config;
 
+import com.pfa.tracabilite_ia.filter.CorrelationIdFilter;
 import com.pfa.tracabilite_ia.filter.JwtAuthenticationFilter;
+import com.pfa.tracabilite_ia.jwt.JwtProvider;
+import com.pfa.tracabilite_ia.security.CustomAccessDeniedHandler;
+import com.pfa.tracabilite_ia.security.CustomAuthenticationEntryPoint;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,25 +29,103 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtProvider jwtProvider;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    public SecurityConfig(
+            JwtProvider jwtProvider,
+            CustomAuthenticationEntryPoint authenticationEntryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler
+    ) {
+        this.jwtProvider = jwtProvider;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public CorrelationIdFilter correlationIdFilter() {
+        return new CorrelationIdFilter();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtProvider);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CorrelationIdFilter correlationIdFilter,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
+
             .authorizeHttpRequests(auth -> auth
+
+                // Autoriser les dispatch internes d'erreur
+                .dispatcherTypeMatchers(
+                    DispatcherType.ERROR,
+                    DispatcherType.FORWARD
+                ).permitAll()
+
+                // Autoriser l'endpoint d'erreur Spring
+                .requestMatchers("/error").permitAll()
+
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**"
+                ).permitAll()
+
                 .requestMatchers("/actuator/health").permitAll()
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/ai/ping"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/ai/test-post"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/ai/analyze-decision"
+                ).authenticated()
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/ai/security-me"
+                ).authenticated()
+
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            )
+
+            .addFilterBefore(
+                correlationIdFilter,
+                JwtAuthenticationFilter.class
+            );
 
         return http.build();
     }
@@ -49,13 +133,29 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost", "http://localhost:4200"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost",
+            "http://localhost:4200"
+        ));
+
+        configuration.setAllowedMethods(List.of(
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+        ));
+
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 

@@ -55,23 +55,74 @@ public class Decision {
     @Column(length = 64)
     private String currentHash;
 
+    @Column(columnDefinition = "TEXT")
+    private String featuresJson;
+
+    private String suggestedDecision;
+
+    private Double confidenceScore;
+
+    private String riskLevel;
+
+    @Column(columnDefinition = "TEXT")
+    private String probabilitiesJson;
+
+    @Column(name = "resume_ollama", columnDefinition = "TEXT")
+    private String resumeConsensus;
+
+    @Column(columnDefinition = "TEXT")
+    private String consensusJson;
+
+    private String explanationSource;
+
+    @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ExplanationFactor> explanationFactors = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<ReponseAgentIA> reponsesAgents = new java.util.ArrayList<>();
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "decision_precedente_id")
     private Decision decisionPrecedente;
 
+    @Column(length = 64)
+    private String businessDataHash;
+
+    @Column(length = 64)
+    private String sourcesHash;
+
+    @Column(length = 64)
+    private String agentResponsesHash;
+
+    @Column(length = 32)
+    private String humanDecision;
+
+    @Column(length = 255)
+    private String validatorEmail;
+
+    @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<DecisionSource> sources = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<DecisionHistory> historyEntries = new java.util.ArrayList<>();
+
     public String calculerHash() {
         String payload = String.join("|",
                 decisionId != null ? decisionId.toString() : "",
-                timestamp != null ? timestamp.toString() : "",
+                decisionId != null ? decisionId.toString() : "",
                 prompt != null ? prompt : "",
                 contexte != null ? contexte : "",
+                businessDataHash != null ? businessDataHash : "",
+                sourcesHash != null ? sourcesHash : "",
+                suggestedDecision != null ? suggestedDecision : "",
+                confidenceScore != null ? confidenceScore.toString() : "",
                 modelName != null ? modelName : "",
                 modelVersion != null ? modelVersion : "",
-                systemeIa != null ? systemeIa.getNom() : "",
-                systemeIa != null ? systemeIa.getFournisseur() : "",
-                systemeIa != null ? systemeIa.getModele() : "",
-                reponse != null ? reponse : "",
+                agentResponsesHash != null ? agentResponsesHash : "",
+                consensusJson != null ? consensusJson : "",
+                humanDecision != null ? humanDecision : "",
+                validatorEmail != null ? validatorEmail : "",
                 statutValidation != null ? statutValidation.name() : "",
                 previousHash != null ? previousHash : "");
         return HashUtils.sha256(payload);

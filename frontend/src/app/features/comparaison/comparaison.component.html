@@ -11,8 +11,7 @@
       </span>
       <h1 class="page-title">Comparaison des agents IA</h1>
       <p class="page-subtitle">
-        Classement des systèmes IA par taux de validation humaine.
-        Score&nbsp;= (approuvées × 1 + modifiées × 0,5) / total × 100.
+        Classement des 3 agents OpenRouter par taux de reponses reussies.
       </p>
     </div>
     <div class="page-header__actions">
@@ -22,12 +21,18 @@
     </div>
   </header>
 
+  @if (loading()) {
+    <p class="muted">Chargement de la comparaison OpenRouter…</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else {
+
   <!-- ══════════════════════════════════════════════
        KPI SUMMARY CARDS
   ══════════════════════════════════════════════ -->
   <section class="kpi-row">
 
-    @for (agent of agents(); track agent.systemeIaId; let i = $index) {
+    @for (agent of agents(); track agent.nom; let i = $index) {
       <div class="kpi-card" [class]="'kpi-card--' + (i + 1)">
         <div class="kpi-card__rank">{{ rankIcon(agent.rang) }}</div>
         <div class="kpi-card__body">
@@ -377,5 +382,7 @@
       Données issues des décisions validées — chaîne SHA-256 intègre
     </footer>
   </section>
+
+  }
 
 </div><!-- /page -->

@@ -1,18 +1,23 @@
 package com.pfa.tracabilite_ia.service;
 
+import com.pfa.tracabilite_ia.dto.request.CreditFeaturesRequest;
 import com.pfa.tracabilite_ia.dto.request.DecisionRequest;
+import com.pfa.tracabilite_ia.dto.response.DecisionPageResponse;
+import com.pfa.tracabilite_ia.dto.response.DecisionResponse;
+import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.entities.Decision;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface DecisionService {
 
     Decision creer(DecisionRequest request);
 
-    List<Decision> lister();
+    DecisionResponse obtenir(UUID id);
 
-    Decision obtenir(UUID id);
+    DecisionResponse mettreAJour(UUID id, DecisionRequest request);
 
-    Decision mettreAJour(UUID id, DecisionRequest request);
+    DecisionPageResponse rechercher(String search, StatutDecisionEnum statut, int page, int size);
+
+    DecisionResponse analyserCredit(CreditFeaturesRequest request);
 }

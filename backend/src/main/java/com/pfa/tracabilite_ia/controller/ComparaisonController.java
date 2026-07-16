@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comparaison")
-@PreAuthorize("hasAnyRole('ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR')")
+@PreAuthorize("hasAnyRole('ADMIN', 'VALIDATOR', 'AUDITOR')")
 public class ComparaisonController {
 
     private final ComparaisonService comparaisonService;
@@ -22,6 +22,6 @@ public class ComparaisonController {
 
     @GetMapping
     public List<ComparaisonAgentResponse> classerAgents() {
-        return comparaisonService.classerAgents();
+        return comparaisonService.classerAgentsOpenRouter();
     }
 }

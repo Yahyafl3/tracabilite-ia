@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { UserRole } from '../../core/models/auth.models';
 import { IconComponent } from '../../shared/icon.component';
-
 export interface NavItem {
   label: string;
   icon: string;
@@ -24,15 +24,19 @@ export class ShellComponent {
   // ── Sidebar ──────────────────────────────────────────────────
   readonly sidebarOpen = signal(true);
 
-  readonly navItems: NavItem[] = [
-    { label: 'Tableau de bord', icon: 'activity',     route: '/dashboard'   },
-    { label: 'Décisions',       icon: 'file-text',    route: '/decisions'   },
-    { label: 'Validation',      icon: 'check-circle', route: '/validation', badge: 3 },
-    { label: 'Comparaison IA',  icon: 'bar-chart',    route: '/comparaison' },
-    { label: 'Audit',           icon: 'shield-check', route: '/audit'       },
-    { label: 'Utilisateurs',    icon: 'users',        route: '/users'       },
-  ];
-
+  readonly navItems = computed<NavItem[]>(() => {
+    const role = this.authService.currentUser?.role;
+    const canValidate = role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
+    const items: NavItem[] = [
+      { label: 'Tableau de bord', icon: 'activity', route: '/dashboard' },
+      { label: 'Décisions', icon: 'file-text', route: '/decisions' },
+    ];
+    if (canValidate) {
+      items.push({ label: 'Validation', icon: 'file-check', route: '/validation' });
+    }
+    items.push({ label: 'Comparaison IA', icon: 'bar-chart', route: '/comparaison' });
+    return items;
+  });
   toggleSidebar(): void {
     this.sidebarOpen.update(v => !v);
   }

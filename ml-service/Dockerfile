@@ -2,23 +2,16 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Installer les dépendances système nécessaires
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copier les requirements
 COPY requirements.txt .
-
-# Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le code
-COPY app.py .
+COPY config.py feature_validator.py schemas.py sector_schema.py shap_config.py dataset_service.py train_model.py \
+     model_loader.py prediction_service.py explainability_service.py test_shap_coherence.py \
+     risk_service.py generate_csv.py app.py ./
 
-# Exposer le port
+# Le modèle est monté via volume (artifacts/) ou entraîné au 1er démarrage
+COPY docker-entrypoint.sh .
+RUN chmod +x docker-entrypoint.sh
+
 EXPOSE 5000
-
-# Démarrer l'application
-CMD ["python", "app.py"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

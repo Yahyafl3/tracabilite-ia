@@ -32,8 +32,24 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'decisions',
+        loadComponent: () => import('./features/decisions/decision-list/decision-list.component').then(m => m.DecisionListComponent)
+      },
+      {
+        path: 'decisions/new',
+        loadComponent: () => import('./features/decisions/decision-new/decision-new.component').then(m => m.DecisionNewComponent)
+      },
+      {
+        path: 'decisions/:id',
+        loadComponent: () => import('./features/decisions/decision-detail/decision-detail.component').then(m => m.DecisionDetailComponent)
+      },
+      {
         path: 'comparaison',
         loadComponent: () => import('./features/comparaison/comparaison.component').then(m => m.ComparaisonComponent)
+      },
+      {
+        path: 'validation',
+        loadComponent: () => import('./features/validation/validation-queue.component').then(m => m.ValidationQueueComponent)
       }
     ]
   },

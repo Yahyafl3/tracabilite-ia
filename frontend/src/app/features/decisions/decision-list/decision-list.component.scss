@@ -1,0 +1,34 @@
+@import '../decisions-shared';
+
+.table-card {
+  width: 100%;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.empty-row {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 16px !important;
+}
+
+.pager__label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pager__select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.table-footer {
+  justify-content: space-between;
+}

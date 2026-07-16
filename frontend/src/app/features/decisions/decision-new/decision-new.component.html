@@ -1,0 +1,205 @@
+<div class="shell-page">
+  <header class="page-header">
+    <div class="page-header__left">
+      <a routerLink="/decisions" class="back-link">
+        <app-icon name="arrow-left" [size]="15" />
+        Retour aux décisions
+      </a>
+      <span class="eyebrow">
+        <app-icon name="bar-chart" [size]="13" />
+        Analyse ML
+      </span>
+      <h1 class="page-title">Nouvelle décision</h1>
+      <p class="page-subtitle">Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents OpenRouter.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="card form-card">
+      <div class="card__header">
+        <div>
+          <h2 class="card__title">
+            <app-icon name="file-text" [size]="17" />
+            Données métier
+          </h2>
+          <p class="card__subtitle">Features envoyées au ml-service (schéma {{ schemaInfo.schemaType }})</p>
+        </div>
+      </div>
+
+      <div class="card__body">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+          <div class="field field--full">
+            <label for="sector">Secteur</label>
+            <select id="sector" formControlName="sector">
+              @for (sector of sectors; track sector) {
+                <option [value]="sector">{{ sector }}</option>
+              }
+            </select>
+            <p class="field-hint">{{ schemaInfo.sectorHint }}</p>
+            <p class="field-note">{{ schemaInfo.description }}</p>
+          </div>
+
+          @for (field of activeFields(); track field.key) {
+            <div class="field">
+              <label [for]="field.key">{{ field.label }}</label>
+              <input
+                [id]="field.key"
+                type="number"
+                [step]="field.step"
+                [formControlName]="field.key" />
+              <p class="field-hint">{{ field.help }}</p>
+            </div>
+          }
+
+          <div class="field field--full">
+            <label for="description">Description</label>
+            <textarea id="description" rows="2" formControlName="description"></textarea>
+          </div>
+
+          <label class="checkbox field--full">
+            <input type="checkbox" formControlName="includeOpenRouter" />
+            <span>Consulter les 3 agents OpenRouter (consensus informatif, n'affecte pas le ML/SHAP)</span>
+          </label>
+
+          <div class="form-actions field--full">
+            <button class="btn-primary" type="submit" [disabled]="loading()">
+              @if (loading()) {
+                <span class="spinner spinner--sm" aria-hidden="true"></span>
+                Analyse en cours…
+              } @else {
+                <app-icon name="scan" [size]="16" />
+                Analyser la décision
+              }
+            </button>
+          </div>
+        </form>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+      </div>
+    </section>
+
+    @if (result(); as analysis) {
+      <section class="card result-card">
+        <div class="card__header">
+          <div>
+            <h2 class="card__title">
+              <app-icon name="check-circle" [size]="17" />
+              Résultat de l'analyse
+            </h2>
+            <p class="card__subtitle">Source explicabilité : {{ analysis.explanationSource }}</p>
+          </div>
+        </div>
+
+        <div class="card__body">
+          <div class="result-summary">
+            <div class="summary-item">
+              <span class="label">Décision ML</span>
+              <span class="status-chip" [class]="decisionChipClass(analysis.suggestedDecision)">
+                {{ analysis.suggestedDecision }}
+              </span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Confiance</span>
+              <span class="value">{{ analysis.confidenceScore | number:'1.0-2' }}%</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Risque</span>
+              <span class="status-chip" [class]="riskChipClass(analysis.riskLevel)">
+                {{ analysis.riskLevel }}
+              </span>
+            </div>
+          </div>
+
+          @if (analysis.consensus) {
+            <section class="consensus-block">
+              <h3 class="section-title">Consensus OpenRouter (informatif)</h3>
+              @let consensusView = consensusDisplay(analysis.consensus);
+              <p class="value">
+                @if (consensusView.showDecisionBadge) {
+                  {{ consensusView.decisionLabel }}
+                } @else {
+                  {{ consensusView.message }}
+                }
+                · {{ consensusView.agentsLabel }}
+              </p>
+              @if (analysis.consensus.note) {
+                <p class="field-hint">{{ analysis.consensus.note }}</p>
+              }
+            </section>
+          }
+
+          @if ((analysis.agentResponses?.length ?? 0) > 0) {
+            <section>
+              <h3 class="section-title">Réponses des agents OpenRouter</h3>
+              <div class="agent-grid">
+                @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
+                  <article class="agent-card">
+                    <header>
+                      <strong>{{ agent.modelName }}</strong>
+                      <span class="status-chip">{{ agent.statut }}</span>
+                    </header>
+                    <p class="muted">{{ agent.provider }} · {{ agent.modelId }}</p>
+                    @if (agent.decisionProposee) {
+                      <p>Décision : <strong>{{ agent.decisionProposee }}</strong></p>
+                    }
+                    @if (agent.codeErreur) {
+                      <p class="error-inline">{{ agent.codeErreur }}</p>
+                    }
+                    @if (agent.resume) {
+                      <p class="value value--text">{{ agent.resume }}</p>
+                    }
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
+          @if (analysis.resumeConsensus) {
+            <section class="consensus-block">
+              <h3 class="section-title">Synthèse agents OpenRouter</h3>
+              <p class="value value--text">{{ analysis.resumeConsensus }}</p>
+            </section>
+          }
+
+          <section>
+            <h3 class="section-title">Facteurs explicatifs ({{ analysis.explanationSource }} — classe APPROUVER)</h3>
+            <p class="field-hint field--full">
+              contribution % = |valeur SHAP| / Σ|valeurs SHAP| × 100.
+              Un SHAP positif favorise l'approbation par rapport à la moyenne du dataset d'entraînement.
+            </p>
+            <div class="factors">
+              @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
+                <div class="factor-row">
+                  <div class="factor-meta">
+                    <span class="rank">#{{ factor.rank }}</span>
+                    <span class="name">{{ factor.name }}</span>
+                    <span class="impact"
+                          [class.positive]="factor.impact === 'POSITIVE'"
+                          [class.negative]="factor.impact === 'NEGATIVE'">
+                      {{ factor.impactLabel || factor.impact }}
+                    </span>
+                  </div>
+                  <div class="factor-bar">
+                    <div class="fill" [style.width.%]="factor.contributionPercent"></div>
+                  </div>
+                  <div class="factor-values">
+                    <span>valeur: {{ factor.value }}</span>
+                    <span>contribution: {{ factor.contributionPercent | number:'1.0-2' }}%</span>
+                    <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <button class="btn-secondary result-action" type="button" (click)="openDetail()">
+            <app-icon name="eye" [size]="15" />
+            Voir le détail enregistré
+          </button>
+        </div>
+      </section>
+    }
+  </div>
+</div>

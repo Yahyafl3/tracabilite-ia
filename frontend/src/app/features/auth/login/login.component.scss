@@ -44,8 +44,8 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 440px;
-  padding: 40px;
+  max-width: 480px;
+  padding: 44px;
   border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -88,7 +88,7 @@
 }
 
 .auth__title {
-  font-size: 1.9rem;
+  font-size: 2rem;
   color: var(--ink);
 }
 

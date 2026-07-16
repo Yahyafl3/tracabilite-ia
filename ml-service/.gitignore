@@ -26,9 +26,13 @@ wheels/
 # ML Models
 *.pkl
 *.h5
-*.joblib
+artifacts/*.joblib
 models/
 checkpoints/
+
+# Keep metadata and synthetic dataset
+!artifacts/metadata.json
+!data/synthetic_credit_dataset.csv
 
 # Jupyter Notebook
 .ipynb_checkpoints

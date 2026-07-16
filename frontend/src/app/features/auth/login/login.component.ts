@@ -28,7 +28,7 @@ export class LoginComponent {
   isLoading = signal(false);
   hidePassword = signal(true);
   errorMessage = signal<string | null>(null);
-  returnUrl = '/dashboard';
+  returnUrl = '/decisions';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -37,7 +37,7 @@ export class LoginComponent {
       rememberMe: [false],
     });
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
   }
 
   onSubmit(): void {

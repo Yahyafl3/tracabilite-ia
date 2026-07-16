@@ -1,0 +1,164 @@
+﻿{
+    "decisionId":  "595b3466-6ab6-4303-85d8-b14f70b0cdd1",
+    "prompt":  "Test OpenRouter 3 agents",
+    "contexte":  "Credit | montant=25000.0 | revenu=15000.0 | secteur=SERVICES | debtRatio=0.22",
+    "modelName":  "LogisticRegression",
+    "modelVersion":  "2.0.0",
+    "reponse":  "Decision ML: APPROUVER | Confiance: 93.38% | Risque: LOW | Source explicabilite: SHAP\n\n[Consensus OpenRouter] REVIEW | agents reussis=0/3",
+    "statutValidation":  "EN_ATTENTE",
+    "suggestedDecision":  "APPROUVER",
+    "confidenceScore":  93.38,
+    "riskLevel":  "LOW",
+    "explanationSource":  "SHAP",
+    "resumeOllama":  null,
+    "consensus":  {
+                      "decisionConsensus":  "REVIEW",
+                      "confianceMoyenne":  null,
+                      "agentsConsultes":  3,
+                      "agentsReussis":  0,
+                      "votes":  {
+
+                                },
+                      "resume":  null,
+                      "note":  "Consensus informatif uniquement. La decision ML LogisticRegression et les SHAP ne sont pas modifies."
+                  },
+    "agentResponses":  [
+                           {
+                               "reponseAgentId":  "a32eb0f0-787a-4c86-a28a-d9f775dd73b8",
+                               "agentKey":  "AGENT_1",
+                               "modelId":  "meta-llama/llama-3.3-70b-instruct:free",
+                               "modelName":  "Llama 3.3 70B",
+                               "provider":  "META_OPENROUTER",
+                               "decisionProposee":  null,
+                               "confianceDeclaree":  null,
+                               "niveauRisque":  null,
+                               "resume":  null,
+                               "explication":  "Erreur OpenRouter HTTP 429",
+                               "recommandations":  [
+
+                                                   ],
+                               "dureeMs":  null,
+                               "nombreTokens":  null,
+                               "statut":  "FAILURE",
+                               "codeErreur":  "OPENROUTER_RATE_LIMITED",
+                               "timestamp":  null
+                           },
+                           {
+                               "reponseAgentId":  "76ee7e73-9d18-47fa-93b3-893a799a89de",
+                               "agentKey":  "AGENT_2",
+                               "modelId":  "google/gemma-4-31b-it:free",
+                               "modelName":  "Gemma 4 31B",
+                               "provider":  "GOOGLE_OPENROUTER",
+                               "decisionProposee":  null,
+                               "confianceDeclaree":  null,
+                               "niveauRisque":  null,
+                               "resume":  null,
+                               "explication":  "Erreur OpenRouter HTTP 429",
+                               "recommandations":  [
+
+                                                   ],
+                               "dureeMs":  null,
+                               "nombreTokens":  null,
+                               "statut":  "FAILURE",
+                               "codeErreur":  "OPENROUTER_RATE_LIMITED",
+                               "timestamp":  null
+                           },
+                           {
+                               "reponseAgentId":  "9a2c9691-2d26-466d-b6e1-a2039e8f83e0",
+                               "agentKey":  "AGENT_3",
+                               "modelId":  "openai/gpt-oss-120b:free",
+                               "modelName":  "GPT-OSS 120B",
+                               "provider":  "OPENAI_OPENROUTER",
+                               "decisionProposee":  null,
+                               "confianceDeclaree":  null,
+                               "niveauRisque":  null,
+                               "resume":  null,
+                               "explication":  null,
+                               "recommandations":  [
+
+                                                   ],
+                               "dureeMs":  null,
+                               "nombreTokens":  null,
+                               "statut":  "MODEL_UNAVAILABLE",
+                               "codeErreur":  "MODEL_UNAVAILABLE",
+                               "timestamp":  null
+                           }
+                       ],
+    "features":  {
+                     "amount":  25000.0,
+                     "companyAgeYears":  5.0,
+                     "debtRatio":  0.22,
+                     "monthlyIncome":  15000.0,
+                     "paymentIncidents":  0.0,
+                     "sector":  "SERVICES"
+                 },
+    "probabilities":  {
+                          "approuver":  93.38,
+                          "refuser":  6.62
+                      },
+    "factors":  [
+                    {
+                        "factorId":  "85b26ea0-e575-4bd6-8e35-612aa0d3ab36",
+                        "name":  "paymentIncidents",
+                        "value":  "0.0",
+                        "shapValue":  3.858058,
+                        "impact":  "POSITIVE",
+                        "rank":  1,
+                        "contributionPercent":  44.45,
+                        "source":  "SHAP"
+                    },
+                    {
+                        "factorId":  "af89b486-3ea7-4579-9f17-7ad993ba7384",
+                        "name":  "amount",
+                        "value":  "25000.0",
+                        "shapValue":  1.966296,
+                        "impact":  "POSITIVE",
+                        "rank":  2,
+                        "contributionPercent":  22.65,
+                        "source":  "SHAP"
+                    },
+                    {
+                        "factorId":  "4baa7167-0f7d-4637-a3a9-5eaf7d295cdf",
+                        "name":  "companyAgeYears",
+                        "value":  "5.0",
+                        "shapValue":  -1.265742,
+                        "impact":  "NEGATIVE",
+                        "rank":  3,
+                        "contributionPercent":  14.58,
+                        "source":  "SHAP"
+                    },
+                    {
+                        "factorId":  "d886a5ce-3d09-45b8-b99f-9286b1b38e56",
+                        "name":  "monthlyIncome",
+                        "value":  "15000.0",
+                        "shapValue":  -1.142459,
+                        "impact":  "NEGATIVE",
+                        "rank":  4,
+                        "contributionPercent":  13.16,
+                        "source":  "SHAP"
+                    },
+                    {
+                        "factorId":  "4471042c-c316-40e9-8372-e94919e03f4d",
+                        "name":  "debtRatio",
+                        "value":  "0.22",
+                        "shapValue":  0.389125,
+                        "impact":  "POSITIVE",
+                        "rank":  5,
+                        "contributionPercent":  4.48,
+                        "source":  "SHAP"
+                    },
+                    {
+                        "factorId":  "ebf87ff5-07a4-4b6d-8630-f314db545d0a",
+                        "name":  "sector",
+                        "value":  "SERVICES",
+                        "shapValue":  -0.058109,
+                        "impact":  "NEGATIVE",
+                        "rank":  6,
+                        "contributionPercent":  0.67,
+                        "source":  "SHAP"
+                    }
+                ],
+    "validations":  null,
+    "timestamp":  null,
+    "currentHash":  "53bf70f96b33ea0c89f0b4d94a0552a030bfeedf84e03154219627edd73edfda"
+}

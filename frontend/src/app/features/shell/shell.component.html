@@ -17,7 +17,7 @@
 
     <!-- Nav -->
     <nav class="sidebar__nav" aria-label="Navigation principale">
-      @for (item of navItems; track item.route) {
+      @for (item of navItems(); track item.route) {
         <a class="nav-item"
            [routerLink]="item.route"
            routerLinkActive="nav-item--active"

@@ -72,7 +72,7 @@
   --radius-full: 999px;
 
   // Layout
-  --container: 1200px;
+  --container: 1400px;
   --nav-h: 76px;
 
   color-scheme: light;
@@ -124,6 +124,13 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 17px;
+}
+
+@media (min-width: 1440px) {
+  html {
+    font-size: 18px;
+  }
 }
 
 html,
@@ -133,7 +140,7 @@ body {
 
 body {
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.6;
   color: var(--ink);
   background-color: var(--bg);
@@ -190,7 +197,7 @@ button {
 }
 
 .section {
-  padding: 96px 0;
+  padding: 72px 0;
 }
 
 .section--soft {
@@ -219,13 +226,13 @@ button {
 }
 
 .section-title {
-  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-size: clamp(2rem, 3.8vw, 3rem);
   color: var(--ink);
 }
 
 .section-subtitle {
   margin-top: 16px;
-  font-size: 1.075rem;
+  font-size: 1.125rem;
   color: var(--muted);
   line-height: 1.7;
 }
@@ -306,6 +313,75 @@ button {
 
 .btn-block {
   width: 100%;
+}
+
+/* ============================================================
+   Shell pages (dashboard, décisions, comparaison…)
+   ============================================================ */
+.shell-page {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-height: 100%;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .page-header__left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-600);
+  }
+
+  .page-title {
+    font-size: clamp(1.5rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--ink);
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .mat-mdc-form-field {
+    font-size: 1rem;
+  }
+
+  .mat-mdc-header-cell,
+  .mat-mdc-cell {
+    font-size: 0.95rem;
+  }
+
+  .mat-mdc-card-title {
+    font-size: 1.2rem;
+  }
 }
 
 /* ============================================================

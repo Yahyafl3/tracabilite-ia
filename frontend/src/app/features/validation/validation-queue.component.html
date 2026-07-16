@@ -1,0 +1,71 @@
+<div class="shell-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">
+        <app-icon name="file-check" [size]="13" />
+        Validation humaine
+      </span>
+      <h1 class="page-title">Décisions en attente</h1>
+      <p class="page-subtitle">
+        File de validation pour les décisions ML nécessitant un contrôle humain.
+      </p>
+    </div>
+    <span class="count-badge">{{ totalElements() }} en attente</span>
+  </header>
+
+  @if (loading()) {
+    <div class="loading">
+      <span class="spinner" aria-hidden="true"></span>
+      Chargement…
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else if (decisions().length === 0) {
+    <section class="card">
+      <div class="card__body empty-state">
+        <app-icon name="check-circle" [size]="28" />
+        <p>Aucune décision en attente de validation.</p>
+      </div>
+    </section>
+  } @else {
+    <section class="card">
+      <div class="card__body table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Décision ML</th>
+              <th>Confiance</th>
+              <th>Risque</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of decisions(); track row.decisionId) {
+              <tr>
+                <td>
+                  <strong>{{ row.prompt }}</strong>
+                  <span class="muted">{{ row.contexte }}</span>
+                </td>
+                <td>
+                  <span class="status-chip" [class]="decisionChipClass(row.suggestedDecision)">
+                    {{ row.suggestedDecision || 'N/A' }}
+                  </span>
+                </td>
+                <td>{{ row.confidenceScore ?? '-' }}%</td>
+                <td>{{ row.riskLevel || '-' }}</td>
+                <td>{{ row.timestamp | date:'short' }}</td>
+                <td>
+                  <a class="btn-primary btn-primary--sm" [routerLink]="['/decisions', row.decisionId]">
+                    Valider
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

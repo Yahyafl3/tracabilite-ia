@@ -27,9 +27,9 @@ import { MatIconModule } from '@angular/material/icon';
           <h1>Accès Refusé</h1>
           <p>Vous n'avez pas les permissions nécessaires pour accéder à cette ressource.</p>
           <div class="actions">
-            <a mat-raised-button color="primary" routerLink="/dashboard">
-              <mat-icon>home</mat-icon>
-              Retour au Dashboard
+            <a mat-raised-button color="primary" routerLink="/decisions">
+              <mat-icon>list</mat-icon>
+              Retour aux décisions
             </a>
           </div>
         </mat-card-content>
@@ -42,33 +42,35 @@ import { MatIconModule } from '@angular/material/icon';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+      background: var(--grad-hero), var(--bg-soft);
+      padding: 24px;
     }
 
     .unauthorized-card {
-      max-width: 500px;
+      max-width: 520px;
       text-align: center;
-      padding: 40px;
+      padding: 48px;
 
       .error-icon {
-        font-size: 80px;
-        width: 80px;
-        height: 80px;
-        color: #f44336;
-        margin-bottom: 20px;
+        font-size: 88px;
+        width: 88px;
+        height: 88px;
+        color: var(--danger);
+        margin-bottom: 24px;
       }
 
       h1 {
         margin: 0 0 16px;
-        color: #333;
-        font-size: 32px;
+        color: var(--ink);
+        font-size: 2rem;
+        font-family: var(--font-display);
       }
 
       p {
         margin: 0 0 32px;
-        color: #666;
-        font-size: 16px;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
       }
 
       .actions {

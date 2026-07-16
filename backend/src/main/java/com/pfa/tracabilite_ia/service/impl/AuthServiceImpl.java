@@ -3,10 +3,13 @@ package com.pfa.tracabilite_ia.service.impl;
 import com.pfa.tracabilite_ia.entities.Utilisateur;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 @Service
@@ -36,6 +39,11 @@ public class AuthServiceImpl implements AuthService {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return utilisateurRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+
+    @Override
+    public Collection<GrantedAuthority> getCurrentAuthorities() {
+        return new ArrayList<>(SecurityContextHolder.getContext().getAuthentication().getAuthorities());
     }
 
     @Override

@@ -1,86 +1,72 @@
-package com.pfa.tracabilite_ia.service.impl;
-
-import com.pfa.tracabilite_ia.dto.response.ComparaisonAgentResponse;
-import com.pfa.tracabilite_ia.entities.SystemeIA;
-import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
-import com.pfa.tracabilite_ia.repository.DecisionRepository;
-import com.pfa.tracabilite_ia.repository.SystemeIARepository;
-import com.pfa.tracabilite_ia.service.ComparaisonService;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-@Service
-public class ComparaisonServiceImpl implements ComparaisonService {
-
-    private final SystemeIARepository systemeIARepository;
-    private final DecisionRepository decisionRepository;
-
-    public ComparaisonServiceImpl(SystemeIARepository systemeIARepository,
-                                  DecisionRepository decisionRepository) {
-        this.systemeIARepository = systemeIARepository;
-        this.decisionRepository = decisionRepository;
-    }
-
-    @Override
-    public List<ComparaisonAgentResponse> classerAgents() {
-        List<SystemeIA> systemes = systemeIARepository.findAllByActifTrueOrderByNomAsc();
-        List<ComparaisonAgentResponse> resultats = new ArrayList<>();
-
-        for (SystemeIA systemeIA : systemes) {
-            long total = decisionRepository.countBySystemeIaOuNom(systemeIA.getSystemeIaId(), systemeIA.getNom());
-            long approuvees = decisionRepository.countBySystemeIaOuNomAndStatut(
-                    systemeIA.getSystemeIaId(), systemeIA.getNom(), StatutDecisionEnum.APPROUVEE);
-            long modifiees = decisionRepository.countBySystemeIaOuNomAndStatut(
-                    systemeIA.getSystemeIaId(), systemeIA.getNom(), StatutDecisionEnum.MODIFIEE);
-            long rejetees = decisionRepository.countBySystemeIaOuNomAndStatut(
-                    systemeIA.getSystemeIaId(), systemeIA.getNom(), StatutDecisionEnum.REJETEE);
-            long enAttente = decisionRepository.countBySystemeIaOuNomAndStatut(
-                    systemeIA.getSystemeIaId(), systemeIA.getNom(), StatutDecisionEnum.EN_ATTENTE);
-
-            double score = calculerScore(total, approuvees, modifiees);
-
-            resultats.add(new ComparaisonAgentResponse(
-                    null,
-                    systemeIA.getSystemeIaId(),
-                    systemeIA.getNom(),
-                    systemeIA.getFournisseur(),
-                    systemeIA.getModele(),
-                    systemeIA.getVersionModele(),
-                    total,
-                    approuvees,
-                    modifiees,
-                    rejetees,
-                    enAttente,
-                    score));
-        }
-
-        Comparator<ComparaisonAgentResponse> comparator = Comparator
-                .comparingDouble(ComparaisonAgentResponse::getScorePourcentage).reversed()
-                .thenComparing(Comparator.comparingLong(ComparaisonAgentResponse::getApprouvees).reversed())
-                .thenComparing(ComparaisonAgentResponse::getNom, String.CASE_INSENSITIVE_ORDER);
-
-        resultats.sort(comparator);
-
-        for (int index = 0; index < resultats.size(); index++) {
-            resultats.get(index).setRang(index + 1);
-        }
-
-        return resultats;
-    }
-
-    private double calculerScore(long total, long approuvees, long modifiees) {
-        if (total == 0) {
-            return 0.0d;
-        }
-
-        double scoreBrut = (approuvees * 1.0d) + (modifiees * 0.5d);
-        return BigDecimal.valueOf((scoreBrut / total) * 100.0d)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
-    }
-}
+package com.pfa.tracabilite_ia.service.impl;
+
+import com.pfa.tracabilite_ia.dto.response.ComparaisonAgentResponse;
+import com.pfa.tracabilite_ia.enumeration.StatutReponseAgentEnum;
+import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentDefinition;
+import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRegistryService;
+import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
+import com.pfa.tracabilite_ia.service.ComparaisonService;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+@Service
+public class ComparaisonServiceImpl implements ComparaisonService {
+
+    private final ReponseAgentIARepository reponseAgentIARepository;
+    private final OpenRouterAgentRegistryService openRouterAgentRegistryService;
+
+    public ComparaisonServiceImpl(ReponseAgentIARepository reponseAgentIARepository,
+                                  OpenRouterAgentRegistryService openRouterAgentRegistryService) {
+        this.reponseAgentIARepository = reponseAgentIARepository;
+        this.openRouterAgentRegistryService = openRouterAgentRegistryService;
+    }
+
+    @Override
+    public List<ComparaisonAgentResponse> classerAgentsOpenRouter() {
+        List<ComparaisonAgentResponse> resultats = new ArrayList<>();
+
+        for (OpenRouterAgentDefinition agent : openRouterAgentRegistryService.configuredAgents()) {
+            long total = reponseAgentIARepository.countByAgentKey(agent.agentKey());
+            long reussies = reponseAgentIARepository.countByAgentKeyAndStatut(
+                    agent.agentKey(), StatutReponseAgentEnum.SUCCESS);
+            long approuver = reponseAgentIARepository.countSuccessfulByAgentKeyAndDecision(
+                    agent.agentKey(), "APPROUVER");
+            long rejeter = reponseAgentIARepository.countSuccessfulByAgentKeyAndDecision(
+                    agent.agentKey(), "REJETER");
+            long review = reponseAgentIARepository.countSuccessfulByAgentKeyAndDecision(
+                    agent.agentKey(), "REVIEW");
+
+            double score = total == 0 ? 0.0d : BigDecimal.valueOf((reussies * 100.0d) / total)
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .doubleValue();
+
+            resultats.add(new ComparaisonAgentResponse(
+                    null,
+                    null,
+                    agent.displayName(),
+                    agent.provider(),
+                    agent.modelId(),
+                    "openrouter",
+                    total,
+                    approuver,
+                    review,
+                    rejeter,
+                    total - reussies,
+                    score));
+        }
+
+        resultats.sort(Comparator
+                .comparingDouble(ComparaisonAgentResponse::getScorePourcentage).reversed()
+                .thenComparing(ComparaisonAgentResponse::getNom, String.CASE_INSENSITIVE_ORDER));
+
+        for (int index = 0; index < resultats.size(); index++) {
+            resultats.get(index).setRang(index + 1);
+        }
+        return resultats;
+    }
+}

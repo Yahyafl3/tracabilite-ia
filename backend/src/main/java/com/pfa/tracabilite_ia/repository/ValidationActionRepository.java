@@ -1,4 +1,14 @@
 package com.pfa.tracabilite_ia.repository;
 
-public interface ValidationActionRepository {
+import com.pfa.tracabilite_ia.entities.ValidationAction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface ValidationActionRepository extends JpaRepository<ValidationAction, UUID> {
+
+    List<ValidationAction> findByDecisionDecisionIdOrderByTimestampDesc(UUID decisionId);
 }

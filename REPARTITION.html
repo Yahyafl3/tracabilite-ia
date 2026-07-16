@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Répartition des tâches — Traçabilité IA</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #1e293b;
+    font-size: 12px;
+    line-height: 1.55;
+    margin: 0;
+  }
+  h1 {
+    font-size: 22px;
+    color: #4f46e5;
+    margin: 0 0 4px;
+  }
+  h2 {
+    font-size: 15px;
+    color: #4338ca;
+    border-bottom: 2px solid #e0e7ff;
+    padding-bottom: 4px;
+    margin: 22px 0 10px;
+  }
+  h3 { font-size: 13px; color: #7c3aed; margin: 14px 0 6px; }
+  .sub { color: #64748b; margin: 0 0 12px; }
+  .lead { background: #eef2ff; border-left: 4px solid #6366f1; padding: 8px 12px; border-radius: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #4f46e5; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 11px; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 11px; overflow: auto; }
+  .grid2 { display: flex; gap: 12px; }
+  .card { flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+  .card--a { border-top: 4px solid #4f46e5; }
+  .card--b { border-top: 4px solid #7c3aed; }
+  .badge { display: inline-block; background: #ede9fe; color: #6d28d9; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+  ul { margin: 6px 0; padding-left: 18px; }
+  .ok { color: #059669; font-weight: 600; }
+  .note { font-size: 11px; color: #64748b; }
+  .avoid-break { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>Répartition des tâches — Traçabilité IA</h1>
+<p class="sub">Projet en 3 parties : <b>backend</b> (Spring Boot) · <b>frontend</b> (Angular) · <b>ml-service</b> (Flask / scikit-learn). Équipe : <b>A = Yahya</b> · <b>B = binôme</b>.</p>
+
+<p class="lead"><b>Principe : découpage vertical.</b> Chacun prend une <b>fonctionnalité complète de bout en bout</b> (son propre morceau de backend + ml-service + frontend). Les deux verticales sont indépendantes → chacun travaille <b>à son rythme, sans attendre l'autre</b>, tout en touchant les 3 dossiers.</p>
+
+<h2>Stack technique</h2>
+<ul>
+  <li><b>Backend</b> : Spring Boot (Java 21) + PostgreSQL + Spring Security / JWT — <i>squelette à construire</i>.</li>
+  <li><b>Frontend</b> : Angular 21 (standalone, SSR) — <i>landing + login faits</i>, à connecter au backend.</li>
+  <li><b>ml-service</b> : Flask + scikit-learn — <i>fonctionnel</i> (<code>/predict</code>, <code>/train</code>, <code>/domains</code>, <code>/health</code>), à enrichir.</li>
+</ul>
+
+<h2>Règles de travail</h2>
+<ul>
+  <li><b>1 tâche = 1 responsable</b> : une seule personne code ET teste sa tâche avant de la partager.</li>
+  <li><b>Auto-test obligatoire</b> avant de dire « fini » : test unitaire + test réel (Docker / navigateur / Postman), documenté.</li>
+  <li><b>Rétro d'erreurs</b> après chaque tâche (modèle en bas).</li>
+  <li><b>Rotation</b> : chacun touche backend + frontend + ml-service.</li>
+</ul>
+
+<h2>Étape 0 — Fondation commune (à faire ensemble, ~1-2 jours)</h2>
+<p>Base partagée incontournable (sinon conflits). À faire <b>en binôme</b> une seule fois, puis chacun devient autonome.</p>
+<table class="avoid-break">
+  <tr><th>Fondation commune (Sprint 0)</th><th>Dossiers</th></tr>
+  <tr><td>Config PostgreSQL + entité <code>Utilisateur</code> + Auth JWT + <code>/api/auth/login</code> + connexion login frontend</td><td>backend + frontend</td></tr>
+</table>
+
+<h2>Les 2 verticales indépendantes</h2>
+<div class="grid2 avoid-break">
+  <div class="card card--a">
+    <p><span class="badge">Verticale A — Yahya</span></p>
+    <h3>Décisions &amp; Traçabilité</h3>
+    <table>
+      <tr><th>Tâche</th><th>Dossier</th></tr>
+      <tr><td>Entité <code>Decision</code> + repository + <code>DecisionController</code>/<code>Service</code> (CRUD)</td><td>backend</td></tr>
+      <tr><td><code>MLDecisionService</code> : appelle <code>ml-service:5000/predict</code></td><td>backend</td></tr>
+      <tr><td>Hash-chain (audit trail immuable)</td><td>backend</td></tr>
+      <tr><td>Améliorer <code>/predict</code> + explicabilité (facteurs/poids)</td><td>ml-service</td></tr>
+      <tr><td>Page « Nouvelle décision » (formulaire → ML)</td><td>frontend</td></tr>
+      <tr><td>Page « Décisions » (liste + détail + explicabilité)</td><td>frontend</td></tr>
+      <tr><td>Page « Validation humaine »</td><td>frontend</td></tr>
+    </table>
+  </div>
+  <div class="card card--b">
+    <p><span class="badge">Verticale B — Binôme</span></p>
+    <h3>Comparaison d'agents &amp; Dashboard</h3>
+    <table>
+      <tr><th>Tâche</th><th>Dossier</th></tr>
+      <tr><td>Entité <code>Agent</code> + repository + endpoint <code>/api/comparaison</code> (classement %)</td><td>backend</td></tr>
+      <tr><td>Endpoint <code>/api/stats</code> (chiffres du dashboard)</td><td>backend</td></tr>
+      <tr><td>Multi-modèles (plusieurs agents) + endpoint <code>/compare</code></td><td>ml-service</td></tr>
+      <tr><td>Métriques (accuracy / consensus) dans le ML</td><td>ml-service</td></tr>
+      <tr><td>Page « Comparaison agents » (tableau + graphique %)</td><td>frontend</td></tr>
+      <tr><td>Page « Dashboard » (statistiques)</td><td>frontend</td></tr>
+    </table>
+  </div>
+</div>
+<p class="ok">A touche les 3 dossiers. B touche les 3 dossiers. Et ils sont indépendants.</p>
+
+<h2>Workflow git (éviter les conflits)</h2>
+<ul>
+  <li><b>Chacun sa branche</b> : <code>feature/decisions</code> (A) et <code>feature/comparaison</code> (B).</li>
+  <li><b>Petits commits fréquents</b> + <code>git pull</code> régulier de <code>main</code>.</li>
+  <li><b>Pull Requests</b> pour fusionner dans <code>main</code> (l'autre relit).</li>
+  <li>Fichiers partagés (<code>SecurityConfig.java</code>, <code>application.properties</code>, <code>app.routes.ts</code>, <code>pom.xml</code>) : se prévenir avant d'y toucher.</li>
+</ul>
+
+<h2>Tableau de suivi</h2>
+<p class="note">Statuts : ⬜ À faire · 🔄 En cours · 🧪 En test · ✅ Fini · ⛔ Bloqué</p>
+<table>
+  <tr><th>Tâche</th><th>Dossier</th><th>Responsable</th><th>Statut</th><th>Erreurs rencontrées</th><th>Solution</th></tr>
+  <tr><td>Fondation login</td><td>backend+frontend</td><td>A + B</td><td>⬜</td><td>—</td><td>—</td></tr>
+  <tr><td>Entité Decision</td><td>backend</td><td>A</td><td>⬜</td><td>—</td><td>—</td></tr>
+  <tr><td>Multi-modèles ML</td><td>ml-service</td><td>B</td><td>⬜</td><td>—</td><td>—</td></tr>
+  <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+</table>
+
+<h2>Modèle de « rétro d'erreurs » (après chaque tâche)</h2>
+<pre>### [Tâche] — [Responsable] — [Date]
+- Ce qui a été fait :
+- Erreurs rencontrées :
+- Comment résolu :
+- Conseil pour l'autre :
+- Comment j'ai testé : (unitaire + réel)</pre>
+
+</body>
+</html>

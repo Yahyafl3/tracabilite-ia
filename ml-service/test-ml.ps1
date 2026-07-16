@@ -1,120 +1,81 @@
 # Test ML Service - PowerShell Script
 # Run: .\test-ml.ps1
 
-Write-Host "🤖 Testing ML Service..." -ForegroundColor Cyan
+Write-Host "Testing ML Service (Scikit-learn + SHAP)..." -ForegroundColor Cyan
 Write-Host ""
 
+$sample = @{
+    amount = 25000
+    monthlyIncome = 15000
+    companyAgeYears = 5
+    paymentIncidents = 0
+    debtRatio = 0.22
+    sector = "SERVICES"
+}
+
 # Test 1: Health Check
-Write-Host "1️⃣ Test Health Check..." -ForegroundColor Yellow
+Write-Host "1. Health Check..." -ForegroundColor Yellow
 try {
     $response = Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get
-    Write-Host "✅ Status: $($response.status)" -ForegroundColor Green
-    Write-Host "   Service: $($response.service)" -ForegroundColor Green
-    Write-Host "   Models: $($response.models_loaded -join ', ')" -ForegroundColor Green
+    Write-Host "OK Status: $($response.status)" -ForegroundColor Green
+    Write-Host "   Engine: $($response.engine)" -ForegroundColor Green
+    Write-Host "   Ready: $($response.creditModelReady)" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ Error: $_" -ForegroundColor Red
+    Write-Host "Error: $_" -ForegroundColor Red
     Write-Host ""
 }
 
-# Test 2: List Domains
-Write-Host "2️⃣ Test List Domains..." -ForegroundColor Yellow
+# Test 2: Ready
+Write-Host "2. Ready..." -ForegroundColor Yellow
 try {
-    $response = Invoke-RestMethod -Uri "http://localhost:5000/domains" -Method Get
-    Write-Host "✅ Total domains: $($response.total_domains)" -ForegroundColor Green
-    Write-Host "   Available: credit, medical, insurance, hr, legal, education, general" -ForegroundColor Green
+    $response = Invoke-RestMethod -Uri "http://localhost:5000/ready" -Method Get
+    Write-Host "OK Ready: $($response.ready)" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ Error: $_" -ForegroundColor Red
+    Write-Host "Error: $_" -ForegroundColor Red
     Write-Host ""
 }
 
-# Test 3: Prediction - Credit APPROUVÉ
-Write-Host "3️⃣ Test Prediction - Credit (should be APPROVED)..." -ForegroundColor Yellow
+# Test 3: Model Info
+Write-Host "3. Model Info..." -ForegroundColor Yellow
 try {
-    $body = @{
-        domain = "credit"
-        features = @{
-            revenuMensuel = 15000
-            dettesActuelles = 2000
-            age = 35
-            ancienneteEmploi = 5
-        }
-        description = "Demande de crédit immobilier"
-        metadata = @{
-            montantDemande = 500000
-            typeCredit = "immobilier"
-        }
-    } | ConvertTo-Json
+    $response = Invoke-RestMethod -Uri "http://localhost:5000/model/info" -Method Get
+    Write-Host "OK Model: $($response.modelType)" -ForegroundColor Green
+    Write-Host "   Explainability: $($response.explainability)" -ForegroundColor Green
+    Write-Host "   Metrics: $($response.metrics | ConvertTo-Json -Compress)" -ForegroundColor Green
+    Write-Host ""
+} catch {
+    Write-Host "Error: $_" -ForegroundColor Red
+    Write-Host ""
+}
 
+# Test 4: Predict
+Write-Host "4. Predict (should be APPROUVER)..." -ForegroundColor Yellow
+try {
+    $body = $sample | ConvertTo-Json
     $response = Invoke-RestMethod -Uri "http://localhost:5000/predict" -Method Post -Body $body -ContentType "application/json"
-    
-    Write-Host "✅ Decision: $($response.decision)" -ForegroundColor Green
-    Write-Host "   Contenu: $($response.contenu)" -ForegroundColor Green
+    Write-Host "OK Decision: $($response.decision)" -ForegroundColor Green
     Write-Host "   Confiance: $($response.scoreConfiance)%" -ForegroundColor Green
-    Write-Host "   Raison: $($response.raison)" -ForegroundColor Green
+    Write-Host "   Source: $($response.explanationSource)" -ForegroundColor Green
+    Write-Host "   Factors: $($response.factors.Count)" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ Error: $_" -ForegroundColor Red
+    Write-Host "Error: $_" -ForegroundColor Red
     Write-Host ""
 }
 
-# Test 4: Prediction - Credit REFUSÉ
-Write-Host "4️⃣ Test Prediction - Credit (should be REJECTED)..." -ForegroundColor Yellow
+# Test 5: Explain
+Write-Host "5. Explain..." -ForegroundColor Yellow
 try {
-    $body = @{
-        domain = "credit"
-        features = @{
-            revenuMensuel = 5000
-            dettesActuelles = 25000
-            age = 50
-            ancienneteEmploi = 1
-        }
-        description = "Demande de crédit"
-        metadata = @{
-            montantDemande = 100000
-        }
-    } | ConvertTo-Json
-
-    $response = Invoke-RestMethod -Uri "http://localhost:5000/predict" -Method Post -Body $body -ContentType "application/json"
-    
-    Write-Host "✅ Decision: $($response.decision)" -ForegroundColor Green
-    Write-Host "   Contenu: $($response.contenu)" -ForegroundColor Green
-    Write-Host "   Confiance: $($response.scoreConfiance)%" -ForegroundColor Green
-    Write-Host "   Raison: $($response.raison)" -ForegroundColor Green
+    $body = $sample | ConvertTo-Json
+    $response = Invoke-RestMethod -Uri "http://localhost:5000/explain" -Method Post -Body $body -ContentType "application/json"
+    Write-Host "OK Source: $($response.explanationSource)" -ForegroundColor Green
+    Write-Host "   Top factor: $($response.factors[0].name)" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ Error: $_" -ForegroundColor Red
+    Write-Host "Error: $_" -ForegroundColor Red
     Write-Host ""
 }
 
-# Test 5: Prediction - Medical
-Write-Host "5️⃣ Test Prediction - Medical..." -ForegroundColor Yellow
-try {
-    $body = @{
-        domain = "medical"
-        features = @{
-            urgence = 0.8
-            risque = 0.3
-            disponibilite = 0.9
-            priorite = 0.85
-        }
-        description = "Chirurgie cardiaque"
-        metadata = @{
-            patient = "PATIENT_001"
-            medecin = "Dr. Ahmed"
-        }
-    } | ConvertTo-Json
-
-    $response = Invoke-RestMethod -Uri "http://localhost:5000/predict" -Method Post -Body $body -ContentType "application/json"
-    
-    Write-Host "✅ Decision: $($response.decision)" -ForegroundColor Green
-    Write-Host "   Contenu: $($response.contenu)" -ForegroundColor Green
-    Write-Host "   Confiance: $($response.scoreConfiance)%" -ForegroundColor Green
-    Write-Host ""
-} catch {
-    Write-Host "❌ Error: $_" -ForegroundColor Red
-    Write-Host ""
-}
-
-Write-Host "🎉 Tests terminés!" -ForegroundColor Cyan
+Write-Host "Tests termines." -ForegroundColor Cyan
