@@ -11,7 +11,7 @@ COPY config.py feature_validator.py schemas.py sector_schema.py shap_config.py d
 
 # Le modèle est monté via volume (artifacts/) ou entraîné au 1er démarrage
 COPY docker-entrypoint.sh .
-RUN chmod +x docker-entrypoint.sh
+RUN sed -i 's/\r//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
 EXPOSE 5000
 ENTRYPOINT ["./docker-entrypoint.sh"]
