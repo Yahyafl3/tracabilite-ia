@@ -38,7 +38,9 @@
     ],
     "categorical": [
       "sector"
-    ]
+    ],
+    "schemaType": "unified",
+    "description": "Le modèle LogisticRegression utilise un pipeline commun pour tous les secteurs. Le secteur est une feature catégorielle encodée en OneHot (cat__sector_*)."
   },
   "metrics": {
     "accuracy": 0.883,
@@ -66,7 +68,63 @@
     "cat__sector_SERVICES",
     "cat__sector_TECH"
   ],
-  "trainedAt": "2026-07-15T22:23:51.155416+00:00",
+  "shapExplanation": {
+    "explainedClass": "APPROUVER",
+    "explainedClassIndex": 1,
+    "outputClasses": {
+      "0": "REJETER",
+      "1": "APPROUVER"
+    },
+    "inputFeatureOrder": [
+      "amount",
+      "monthlyIncome",
+      "companyAgeYears",
+      "paymentIncidents",
+      "debtRatio",
+      "sector"
+    ],
+    "numericFeatures": [
+      "amount",
+      "monthlyIncome",
+      "companyAgeYears",
+      "paymentIncidents",
+      "debtRatio"
+    ],
+    "transformedFeatureOrder": [
+      "num__amount",
+      "num__monthlyIncome",
+      "num__companyAgeYears",
+      "num__paymentIncidents",
+      "num__debtRatio",
+      "cat__sector_AGRICULTURE",
+      "cat__sector_COMMERCE",
+      "cat__sector_INDUSTRIE",
+      "cat__sector_SERVICES",
+      "cat__sector_TECH"
+    ],
+    "contributionPercentFormula": "contributionPercent_i = |shapValue_i| / sum_j(|shapValue_j|) × 100",
+    "shapValueFormula": "Pour LogisticRegression + LinearExplainer : shapValue_j ≈ coef_j × (x_j_transformed − E[x_j_transformed]) où x_j_transformed provient du pipeline (imputation, StandardScaler, OneHotEncoder).",
+    "logOddsFormula": "sum(shapValue_j) + expected_value ≈ log-odds(APPROUVER) = decision_function(x)",
+    "impactSemantics": {
+      "POSITIVE": "Contribution SHAP > 0 vers la classe expliquée APPROUVER (augmente les log-odds d'approbation par rapport au profil moyen d'entraînement).",
+      "NEGATIVE": "Contribution SHAP < 0 vers la classe expliquée APPROUVER (diminue les log-odds d'approbation par rapport au profil moyen d'entraînement).",
+      "NEUTRAL": "Contribution SHAP nulle."
+    },
+    "expectedCoefficientSignForApproval": {
+      "num__amount": "negative",
+      "num__monthlyIncome": "positive",
+      "num__companyAgeYears": "positive",
+      "num__paymentIncidents": "negative",
+      "num__debtRatio": "negative"
+    },
+    "datasetLimitations": [
+      "Dataset 100 % synthétique — non représentatif d'un portefeuille réel.",
+      "Le label approved est généré via un score utilisant le ratio revenu/montant ; monthlyIncome seul a une corrélation quasi nulle avec approved (~0.004).",
+      "Les valeurs SHAP sont relatives à la distribution d'entraînement : une valeur 'faible' en absolu peut avoir un SHAP positif si elle est meilleure que la moyenne du dataset.",
+      "Les features sont transformées (StandardScaler) avant SHAP : l'interprétation métier directe sur les valeurs brutes est limitée."
+    ]
+  },
+  "trainedAt": "2026-07-17T11:17:43.962468+00:00",
   "randomState": 42,
   "note": "Métriques mesurées sur jeu de test hold-out. Dataset synthétique — prototype académique uniquement."
 }
