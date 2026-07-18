@@ -4,16 +4,18 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { IconComponent } from '../../../shared/icon.component';
+import {
+  AgentResponseCardComponent,
+  ConsensusCardComponent,
+  EmptyStateComponent,
+  LoadingSkeletonComponent,
+  PageHeaderComponent,
+} from '../../../shared/ui';
 import { DecisionService } from '../../../core/services/decision.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { decisionChipClass, riskChipClass } from '../../../core/utils/chip-class.util';
 import { riskLabel } from '../../../core/utils/label.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
-import {
-  ConsensusResponse,
-  formatConsensusDisplay,
-  type ConsensusDisplay,
-} from '../../../core/models/openrouter.models';
 import {
   buildAnalyzePayload,
   ML_FEATURE_KEYS,
@@ -28,7 +30,17 @@ import {
 @Component({
   selector: 'app-decision-new',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    IconComponent,
+    PageHeaderComponent,
+    LoadingSkeletonComponent,
+    EmptyStateComponent,
+    ConsensusCardComponent,
+    AgentResponseCardComponent,
+  ],
   templateUrl: './decision-new.component.html',
   styleUrl: './decision-new.component.scss',
 })
@@ -93,10 +105,6 @@ export class DecisionNewComponent implements OnInit {
   decisionChipClass = decisionChipClass;
   riskChipClass = riskChipClass;
   riskLabel = riskLabel;
-
-  consensusDisplay(consensus: ConsensusResponse): ConsensusDisplay {
-    return formatConsensusDisplay(consensus);
-  }
 
   private rebuildMlControls(sector: Sector): void {
     for (const key of ML_FEATURE_KEYS) {

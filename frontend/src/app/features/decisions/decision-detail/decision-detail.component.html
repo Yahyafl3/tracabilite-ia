@@ -5,67 +5,116 @@
   </a>
 
   @if (loading()) {
-    <div class="loading">
-      <span class="spinner" aria-hidden="true"></span>
-      Chargement de la décision…
-    </div>
-  } @else if (error()) {
-    <p class="state-banner state-banner--error">{{ error() }}</p>
+    <app-loading-skeleton [lines]="8" label="Chargement de la décision…" />
+  } @else if (error(); as err) {
+    <app-error-state [message]="err" />
   } @else if (decision(); as item) {
-    <header class="detail-header">
-      <div class="detail-header__text">
-        <span class="eyebrow">
-          <app-icon name="file-check" [size]="13" />
-          Décision enregistrée
-        </span>
-        <h1 class="page-title">{{ item.prompt }}</h1>
-        <p class="page-subtitle">{{ item.contexte }}</p>
-      </div>
-      <span class="status-chip" [class]="statutChipClass(item.statutValidation)">
-        {{ statutLabel(item.statutValidation) }}
-      </span>
-    </header>
+    <app-page-header
+      [breadcrumbs]="['Accueil', 'Décisions', reference(item)]"
+      [title]="item.prompt"
+      [subtitle]="item.contexte"
+    />
 
-    <nav class="tabs" aria-label="Sections de la décision">
-      @for (tab of tabs; track tab.id) {
+    <dl class="metadata-grid" aria-label="Métadonnées de la décision">
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Référence</dt>
+        <dd class="metadata-grid__value">
+          <span class="ref-code">{{ reference(item) }}</span>
+        </dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Statut</dt>
+        <dd class="metadata-grid__value">
+          <app-status-badge
+            [label]="statutLabel(item.statutValidation)"
+            [chipClass]="statutChipClass(item.statutValidation)"
+          />
+        </dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Date / heure</dt>
+        <dd class="metadata-grid__value">
+          <span class="time-date">{{ formatDate(item.timestamp) }}</span>
+          <span class="time-hour">{{ formatTime(item.timestamp) }}</span>
+        </dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Secteur</dt>
+        <dd class="metadata-grid__value">{{ formatFeature(featureValue(item, 'sector')) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Montant</dt>
+        <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'amount')) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Revenu mensuel</dt>
+        <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'monthlyIncome')) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Créateur / validateur</dt>
+        <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
+      </div>
+    </dl>
+
+    <nav class="ui-tab-nav" aria-label="Sections de la décision">
+      @for (tab of tabs; track tab.id; let i = $index) {
         <button
           type="button"
-          class="tab-btn"
-          [class.tab-btn--active]="activeTab() === tab.id"
-          (click)="setTab(tab.id)">
+          class="ui-tab-nav__btn"
+          role="tab"
+          [id]="'decision-tab-' + tab.id"
+          [class.ui-tab-nav__btn--active]="activeTab() === tab.id"
+          [attr.aria-selected]="activeTab() === tab.id"
+          [attr.aria-controls]="tabPanelId(tab.id)"
+          [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
+          (click)="setTab(tab.id)"
+          (keydown)="onTabKeydown($event, i)"
+        >
           {{ tab.label }}
         </button>
       }
     </nav>
 
     <section class="card">
-      <div class="card__body">
+      <div
+        class="card__body"
+        role="tabpanel"
+        [id]="tabPanelId(activeTab())"
+        [attr.aria-labelledby]="'decision-tab-' + activeTab()"
+      >
         @switch (activeTab()) {
           @case ('resume') {
             <div class="summary-grid">
               <div class="summary-item">
                 <span class="label">Décision ML</span>
-                <span class="status-chip" [class]="decisionChipClass(item.suggestedDecision)">
-                  {{ item.suggestedDecision || 'N/A' }}
-                </span>
+                <app-status-badge
+                  [label]="mlDecision(item) || 'N/A'"
+                  [chipClass]="decisionChipClass(mlDecision(item))"
+                />
               </div>
               <div class="summary-item">
                 <span class="label">Confiance ML</span>
-                <span class="value">{{ item.confidenceScore ?? '-' }}%</span>
+                <app-confidence-display [confidence]="mlConfidence(item)" />
               </div>
               <div class="summary-item">
                 <span class="label">Risque</span>
-                <span class="status-chip" [class]="riskChipClass(item.riskLevel)">
-                  {{ riskLabel(item.riskLevel) }}
-                </span>
+                <app-risk-badge [riskLevel]="item.riskLevel" />
               </div>
               <div class="summary-item">
                 <span class="label">Modèle</span>
                 <span class="value">{{ item.modelName }} {{ item.modelVersion }}</span>
               </div>
+              <div class="summary-item">
+                <span class="label">Consensus</span>
+                <span class="value">{{ consensusLabel(item) }}</span>
+              </div>
               <div class="summary-item summary-item--full">
-                <span class="label">Hash</span>
-                <code class="value value--mono">{{ item.currentHash }}</code>
+                <span class="label">Hash courant</span>
+                @if (item.currentHash) {
+                  <app-copy-hash [hash]="item.currentHash" label="Hash" />
+                } @else {
+                  <span class="value value--muted">—</span>
+                }
               </div>
               <div class="summary-item summary-item--full">
                 <span class="label">Réponse</span>
@@ -75,56 +124,97 @@
           }
 
           @case ('prediction') {
-            <h3 class="section-title">Probabilités</h3>
-            <ul class="list-plain">
-              @for (entry of item.probabilities | keyvalue; track entry.key) {
-                <li>{{ entry.key }} : {{ entry.value }}%</li>
-              } @empty {
-                <li class="muted">Aucune probabilité disponible.</li>
-              }
-            </ul>
+            <article class="ml-prediction-card">
+              <div class="ml-prediction-card__row">
+                <span class="label">Décision ML</span>
+                <app-status-badge
+                  [label]="mlDecision(item) || 'N/A'"
+                  [chipClass]="decisionChipClass(mlDecision(item))"
+                />
+              </div>
+              <div class="ml-prediction-card__row">
+                <span class="label">Confiance</span>
+                <div class="ml-prediction-card__confidence">
+                  <app-confidence-display [confidence]="mlConfidence(item)" />
+                  <div
+                    class="confidence-progress"
+                    role="progressbar"
+                    [attr.aria-valuenow]="mlConfidence(item) ?? 0"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    [attr.aria-label]="'Confiance ML ' + (mlConfidence(item) ?? 0) + ' pour cent'"
+                  >
+                    <div
+                      class="confidence-progress__fill"
+                      [style.width.%]="mlConfidence(item) ?? 0"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ml-prediction-card__row">
+                <span class="label">Risque</span>
+                <app-risk-badge [riskLevel]="item.riskLevel" />
+              </div>
+              <app-model-identity
+                [modelName]="item.modelName"
+                [modelVersion]="item.modelVersion"
+                [analyzedAt]="item.timestamp"
+              />
+            </article>
 
-            <h3 class="section-title">Features</h3>
-            <ul class="list-plain">
-              @for (feature of featureEntries(item); track feature.key) {
-                <li>{{ feature.key }} : {{ feature.value }}</li>
-              } @empty {
-                <li class="muted">Aucune feature enregistrée.</li>
-              }
-            </ul>
+            @if (item.probabilities && (item.probabilities | keyvalue).length > 0) {
+              <h3 class="section-title">Probabilités</h3>
+              <ul class="list-plain">
+                @for (entry of item.probabilities | keyvalue; track entry.key) {
+                  <li>{{ entry.key }} : {{ entry.value }}%</li>
+                }
+              </ul>
+            }
+
+            @if (featureEntries(item).length > 0) {
+              <h3 class="section-title">Features</h3>
+              <ul class="list-plain">
+                @for (feature of featureEntries(item); track feature.key) {
+                  <li>{{ feature.key }} : {{ feature.value }}</li>
+                }
+              </ul>
+            }
           }
 
-          @case ('explain') {
+          @case ('shap') {
             <p class="tech-note">
-              Source : <strong>{{ item.explanationSource }}</strong> —
+              Source : <strong>{{ item.explanationSource || 'SHAP' }}</strong> —
               classe expliquée : <strong>APPROUVER</strong> (log-odds).
               contribution % = |SHAP| / Σ|SHAP| × 100.
             </p>
-            <div class="factors">
+            <div class="shap-factors">
               @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
-                <div class="factor-row">
-                  <div class="factor-meta">
-                    <span>#{{ factor.rank }} {{ factor.name }}</span>
-                    <span class="impact"
-                          [class.positive]="factor.impact === 'POSITIVE'"
-                          [class.negative]="factor.impact === 'NEGATIVE'">
-                      {{ factor.impactLabel || factor.impact }}
+                <div class="shap-factor-row">
+                  <div class="shap-factor-row__meta">
+                    <span class="shap-factor-row__name">#{{ factor.rank }} {{ factor.name }}</span>
+                    <span
+                      class="shap-factor-row__impact"
+                      [class.shap-factor-row__impact--positive]="factor.impact === 'POSITIVE'"
+                      [class.shap-factor-row__impact--negative]="factor.impact === 'NEGATIVE'"
+                      [title]="shapImpactTooltip(factor.impact)"
+                    >
+                      {{ shapImpactLabel(factor) }}
                     </span>
                   </div>
-                  <div class="factor-bar">
-                    <div class="fill" [style.width.%]="factor.contributionPercent"></div>
+                  <div class="shap-factor-row__bar">
+                    <div
+                      class="shap-factor-row__fill"
+                      [style.width.%]="factor.contributionPercent"
+                    ></div>
                   </div>
-                  <div class="factor-values">
+                  <div class="shap-factor-row__values">
                     <span>valeur: {{ factor.value }}</span>
                     <span>{{ factor.contributionPercent | number:'1.0-2' }}%</span>
                     <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
                   </div>
                 </div>
               } @empty {
-                <div class="empty-state">
-                  <app-icon name="lightbulb" [size]="28" />
-                  <p>Aucun facteur explicatif disponible.</p>
-                </div>
+                <app-empty-state icon="lightbulb" message="Aucun facteur explicatif disponible." />
               }
             </div>
           }
@@ -132,7 +222,12 @@
           @case ('agents') {
             @if (isAdmin() && hasRetryableAgents()) {
               <div class="agent-retry-bar">
-                <button type="button" class="btn-secondary" [disabled]="retryLoading()" (click)="retryFailedAgents()">
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  [disabled]="retryLoading()"
+                  (click)="retryFailedAgents()"
+                >
                   @if (retryLoading()) {
                     Relance en cours…
                   } @else {
@@ -140,71 +235,20 @@
                   }
                 </button>
                 @if (retryError()) {
-                  <p class="state-banner state-banner--error">{{ retryError() }}</p>
+                  <app-error-state [message]="retryError()!" />
                 }
               </div>
             }
 
             @if (item.consensus) {
-              @let consensusView = consensusDisplay(item.consensus);
-              <div class="summary-grid">
-                <div class="summary-item">
-                  <span class="label">Consensus (informatif)</span>
-                  @if (consensusView.showDecisionBadge) {
-                    <span class="value">{{ consensusView.decisionLabel }}</span>
-                  } @else {
-                    <span class="value value--muted">{{ consensusView.message }}</span>
-                  }
-                </div>
-                <div class="summary-item">
-                  <span class="label">Agents reussis</span>
-                  <span class="value">{{ consensusView.agentsLabel }}</span>
-                </div>
-              </div>
-              @if (item.consensus.note) {
-                <p class="muted">{{ item.consensus.note }}</p>
-              }
+              <app-consensus-card [consensus]="item.consensus" />
             }
 
             <div class="agent-grid">
               @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
-                <article class="agent-card">
-                  <header class="agent-card__head">
-                    <strong>{{ agentName(agent) }}</strong>
-                    <span class="status-chip">{{ agent.statut }}</span>
-                  </header>
-                  @if (agentFallback(agent); as fallbackMsg) {
-                    <p class="state-banner state-banner--info">{{ fallbackMsg }}</p>
-                  }
-                  <p class="muted">{{ agent.agentKey }} · {{ agent.provider }}</p>
-                  <p class="muted">Modèle utilisé : <code>{{ agent.modelId }}</code></p>
-                  @if (agent.requestedModelId && agent.actualModelId && agent.requestedModelId !== agent.actualModelId) {
-                    <p class="muted tech-note">Demandé : <code>{{ agent.requestedModelId }}</code> · Réel : <code>{{ agent.actualModelId }}</code></p>
-                  }
-                  @if (agent.retryCount != null && agent.retryCount > 0) {
-                    <p class="muted">Tentatives réseau : {{ agent.retryCount + 1 }}</p>
-                  }
-                  @if (agent.decisionProposee) {
-                    <p>Décision : <strong>{{ agent.decisionProposee }}</strong></p>
-                  }
-                  <p>Confiance déclarée par l'agent : <strong>{{ declaredConfidenceLabel(agent.declaredConfidence ?? agent.confianceDeclaree) }}</strong></p>
-                  @if (agent.codeErreur) {
-                    <p class="error-inline">{{ agent.codeErreur }}</p>
-                  }
-                  @if (agent.resume) {
-                    <p class="label-inline">Résumé</p>
-                    <p class="value value--text">{{ agent.resume }}</p>
-                  }
-                  @if (agent.explication) {
-                    <p class="label-inline">Explication</p>
-                    <p class="value value--text">{{ agent.explication }}</p>
-                  }
-                </article>
+                <app-agent-response-card [agent]="agent" />
               } @empty {
-                <div class="empty-state">
-                  <app-icon name="bar-chart" [size]="28" />
-                  <p>Aucune réponse agent OpenRouter enregistrée.</p>
-                </div>
+                <app-empty-state icon="bar-chart" message="Aucune réponse agent OpenRouter enregistrée." />
               }
             </div>
           }
@@ -214,33 +258,37 @@
               <p class="success-banner">{{ validationSuccess() }}</p>
             }
             @if (validationError()) {
-              <p class="state-banner state-banner--error">{{ validationError() }}</p>
+              <app-error-state [message]="validationError()!" />
             }
 
             @if (isPendingValidation()) {
               <p class="pending-banner">Décision en attente de validation humaine</p>
             } @else if (humanFinalLabel(item)) {
-              <p class="final-banner">Décision finale humaine : <strong>{{ humanFinalLabel(item) }}</strong></p>
+              <p class="final-banner">
+                Décision finale humaine : <strong>{{ humanFinalLabel(item) }}</strong>
+              </p>
             }
 
-            <div class="validation-summary">
-              <h3 class="section-title">Dossier complet de la décision</h3>
+            <div class="validation-block">
+              <h3 class="section-title">Dossier consulté</h3>
+              <p class="muted">
+                Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
+              </p>
               <div class="summary-grid">
                 <div class="summary-item">
                   <span class="label">Décision ML</span>
-                  <span class="status-chip" [class]="decisionChipClass(mlDecision(item))">
-                    {{ mlDecision(item) || 'N/A' }}
-                  </span>
+                  <app-status-badge
+                    [label]="mlDecision(item) || 'N/A'"
+                    [chipClass]="decisionChipClass(mlDecision(item))"
+                  />
                 </div>
                 <div class="summary-item">
                   <span class="label">Confiance ML</span>
-                  <span class="value">{{ mlConfidence(item) ?? '-' }}%</span>
+                  <app-confidence-display [confidence]="mlConfidence(item)" />
                 </div>
                 <div class="summary-item">
                   <span class="label">Risque ML</span>
-                  <span class="status-chip" [class]="riskChipClass(item.riskLevel)">
-                    {{ riskLabel(item.riskLevel) }}
-                  </span>
+                  <app-risk-badge [riskLevel]="item.riskLevel" />
                 </div>
                 <div class="summary-item">
                   <span class="label">Consensus</span>
@@ -260,12 +308,17 @@
                   <article class="agent-card">
                     <header class="agent-card__head">
                       <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
-                      <span class="status-chip">{{ agentStatus(agent) }}</span>
+                      <span class="status-chip chip--pending">{{ agentStatus(agent) }}</span>
                     </header>
                     @if (agent) {
                       <p class="muted">{{ agent.modelId }}</p>
                       <p>Décision : <strong>{{ agent.decisionProposee || '—' }}</strong></p>
-                      <p>Confiance déclarée par l'agent : <strong>{{ declaredConfidenceLabel(agent.declaredConfidence ?? agent.confianceDeclaree) }}</strong></p>
+                      <p>
+                        Confiance déclarée :
+                        <app-confidence-display
+                          [confidence]="agent.declaredConfidence ?? agent.confianceDeclaree"
+                        />
+                      </p>
                       @if (agent.resume) {
                         <p class="value value--text">{{ agent.resume }}</p>
                       }
@@ -278,8 +331,11 @@
             </div>
 
             @if (canValidate()) {
-              <div class="validation-form">
-                <h3 class="section-title">Validation du dossier complet</h3>
+              <div class="validation-block validation-form">
+                <h3 class="section-title">Décision humaine</h3>
+                <p class="muted validation-note">
+                  La décision humaine n'efface pas les résultats IA.
+                </p>
                 <p class="muted">
                   La validation porte sur l'ensemble du dossier (ML, SHAP, agents, consensus, sources).
                   L'échec d'un ou plusieurs agents n'empêche pas la validation.
@@ -291,16 +347,42 @@
                   class="field-input"
                   rows="4"
                   [formControl]="validationForm.controls.commentaire"
-                  placeholder="Justification de la décision humaine…"></textarea>
+                  placeholder="Justification de la décision humaine…"
+                ></textarea>
+
+                <label class="validation-confirm">
+                  <input type="checkbox" [formControl]="validationForm.controls.confirmed" />
+                  <span>
+                    Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
+                  </span>
+                </label>
+                @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
+                  <p class="error-inline">Veuillez confirmer avant d'enregistrer votre décision.</p>
+                }
 
                 <div class="validation-actions">
-                  <button type="button" class="btn-primary" [disabled]="validationLoading()" (click)="approve()">
+                  <button
+                    type="button"
+                    class="btn-primary"
+                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
+                    (click)="approve()"
+                  >
                     Approuver (APPROUVER)
                   </button>
-                  <button type="button" class="btn-danger" [disabled]="validationLoading()" (click)="reject()">
+                  <button
+                    type="button"
+                    class="btn-danger"
+                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
+                    (click)="reject()"
+                  >
                     Rejeter (REJETER)
                   </button>
-                  <button type="button" class="btn-secondary" [disabled]="validationLoading()" (click)="review()">
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
+                    (click)="review()"
+                  >
                     Demander revue (REVIEW)
                   </button>
                 </div>
@@ -308,17 +390,26 @@
                 <div class="modify-block">
                   <h4 class="section-subtitle">Modifier la décision ML (MODIFIER)</h4>
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
-                  <select id="decisionHumaine" class="field-input" [formControl]="validationForm.controls.decisionHumaine">
+                  <select
+                    id="decisionHumaine"
+                    class="field-input"
+                    [formControl]="validationForm.controls.decisionHumaine"
+                  >
                     <option value="APPROUVER">APPROUVER</option>
                     <option value="REJETER">REJETER</option>
                   </select>
-                  <button type="button" class="btn-secondary" [disabled]="validationLoading()" (click)="modify()">
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
+                    (click)="modify()"
+                  >
                     Enregistrer la modification
                   </button>
                 </div>
               </div>
             } @else if (!isPendingValidation()) {
-              <div class="validation-result">
+              <div class="validation-block validation-result">
                 <div class="summary-grid">
                   <div class="summary-item">
                     <span class="label">Décision humaine finale</span>
@@ -335,9 +426,7 @@
                 </div>
               </div>
             } @else {
-              <p class="muted">
-                Votre rôle ne permet pas la validation de cette décision.
-              </p>
+              <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
             }
 
             <h3 class="section-title">Historique des validations</h3>
@@ -346,9 +435,10 @@
                 <article class="history-item">
                   <div class="history-item__head">
                     <strong>{{ action.validateurNom }}</strong>
-                    <span class="status-chip" [class]="statutChipClass(action.statutApres)">
-                      {{ statutLabel(action.statutApres) }}
-                    </span>
+                    <app-status-badge
+                      [label]="statutLabel(action.statutApres)"
+                      [chipClass]="statutChipClass(action.statutApres)"
+                    />
                   </div>
                   <p class="muted">
                     {{ action.typeAction }} · {{ action.timestamp | date:'short' }}
@@ -368,72 +458,198 @@
 
           @case ('history') {
             @if (traceLoading()) {
-              <div class="loading">
-                <span class="spinner" aria-hidden="true"></span>
-                Chargement de l'historique…
-              </div>
+              <app-loading-skeleton [lines]="5" label="Chargement de l'historique…" />
             } @else if (historyEntries().length === 0) {
-              <div class="empty-state">
-                <app-icon name="history" [size]="28" />
-                <p>Aucun événement de traçabilité enregistré pour cette décision.</p>
-              </div>
+              <app-empty-state
+                icon="history"
+                message="Aucun événement de traçabilité enregistré pour cette décision."
+              />
             } @else {
-              <div class="history-timeline">
-                @for (entry of historyEntries(); track entry.historyId) {
-                  <article class="history-item" [class]="historyItemClass(entry.action)">
-                    <div class="history-item__head">
-                      <span class="history-item__action">{{ historyActionLabel(entry.action) }}</span>
-                      <span class="history-item__meta">{{ entry.createdAt | date:'short' }}</span>
-                    </div>
-                    @if (entry.performedByEmail) {
-                      <p class="history-item__meta">Par {{ entry.performedByEmail }}</p>
-                    }
-                    @if (entry.previousStatus || entry.newStatus) {
-                      <p class="history-item__meta">
-                        {{ entry.previousStatus ? statutLabel(entry.previousStatus) : '—' }}
-                        →
-                        {{ entry.newStatus ? statutLabel(entry.newStatus) : '—' }}
-                      </p>
-                    }
-                    @if (entry.comment) {
-                      <p class="value value--text">{{ entry.comment }}</p>
-                    }
-                  </article>
-                }
-              </div>
+              <app-timeline [entries]="historyEntries()" />
             }
           }
 
           @case ('sources') {
             @if (traceLoading()) {
-              <div class="loading">
-                <span class="spinner" aria-hidden="true"></span>
-                Chargement des sources…
-              </div>
-            } @else if (sources().length === 0) {
-              <div class="empty-state">
-                <app-icon name="link" [size]="28" />
-                <p>Aucune source documentaire associée à cette décision.</p>
-              </div>
+              <app-loading-skeleton [lines]="5" label="Chargement des sources…" />
             } @else {
-              <div class="agent-grid">
-                @for (source of sources(); track source.sourceId) {
-                  <article class="source-card">
-                    <header class="agent-card__head">
-                      <strong>{{ source.name }}</strong>
-                      <span class="status-chip chip--pending">{{ source.sourceType }}</span>
-                    </header>
-                    @if (source.description) {
-                      <p class="value value--text">{{ source.description }}</p>
+              @if (sourceError()) {
+                <app-error-state [message]="sourceError()!" />
+              }
+
+              @if (sources().length === 0) {
+                <app-empty-state icon="link" message="Aucune source documentaire associée à cette décision." />
+              } @else {
+                <div class="table-scroll">
+                  <table class="decisions-table sources-table" aria-label="Sources documentaires">
+                    <thead>
+                      <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Nom</th>
+                        <th scope="col" class="col-hide-sm">Description</th>
+                        <th scope="col">URL / Réf.</th>
+                        <th scope="col">Hash</th>
+                        <th scope="col" class="col-hide-sm">Date</th>
+                        <th scope="col" class="col-hide-sm">Auteur</th>
+                        @if (canManageSources()) {
+                          <th scope="col">Actions</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (source of sources(); track source.sourceId) {
+                        <tr>
+                          <td>
+                            <span class="status-chip chip--pending">{{ source.sourceType }}</span>
+                          </td>
+                          <td><strong>{{ source.name }}</strong></td>
+                          <td class="col-hide-sm">{{ source.description || '—' }}</td>
+                          <td>
+                            @if (source.url) {
+                              <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+                                {{ source.url }}
+                              </a>
+                            } @else {
+                              {{ source.documentReference || '—' }}
+                            }
+                          </td>
+                          <td>
+                            <app-copy-hash [hash]="source.contentHash" />
+                          </td>
+                          <td class="col-hide-sm td-time">
+                            <span class="time-date">{{ formatDate(source.createdAt) }}</span>
+                            <span class="time-hour">{{ formatTime(source.createdAt) }}</span>
+                          </td>
+                          <td class="col-hide-sm">{{ source.createdByEmail || '—' }}</td>
+                          @if (canManageSources()) {
+                            <td>
+                              <button
+                                type="button"
+                                class="btn-link btn-link--danger"
+                                (click)="removeSource(source.sourceId)"
+                              >
+                                Supprimer
+                              </button>
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+
+              @if (canValidate()) {
+                <form class="source-form" [formGroup]="sourceForm" (ngSubmit)="addSource()">
+                  <h3 class="section-title">Ajouter une source</h3>
+                  <div class="source-form__grid">
+                    <div class="field">
+                      <label for="sourceType">Type</label>
+                      <select id="sourceType" formControlName="sourceType">
+                        @for (type of sourceTypes; track type) {
+                          <option [value]="type">{{ type }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="sourceName">Nom</label>
+                      <input id="sourceName" formControlName="name" placeholder="Nom de la source" />
+                    </div>
+                    <div class="field source-form__field--wide">
+                      <label for="sourceDescription">Description</label>
+                      <textarea
+                        id="sourceDescription"
+                        formControlName="description"
+                        rows="2"
+                        placeholder="Description optionnelle"
+                      ></textarea>
+                    </div>
+                    <div class="field">
+                      <label for="sourceUrl">URL</label>
+                      <input id="sourceUrl" formControlName="url" placeholder="https://…" />
+                    </div>
+                    <div class="field">
+                      <label for="sourceRef">Référence document</label>
+                      <input
+                        id="sourceRef"
+                        formControlName="documentReference"
+                        placeholder="Réf. interne ou externe"
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" class="btn-secondary" [disabled]="sourceLoading()">
+                    @if (sourceLoading()) {
+                      Ajout en cours…
+                    } @else {
+                      Ajouter la source
                     }
-                    <p class="source-card__hash">{{ source.contentHash }}</p>
-                    @if (source.createdByEmail) {
-                      <p class="muted">{{ source.createdByEmail }} · {{ source.createdAt | date:'short' }}</p>
+                  </button>
+                </form>
+              }
+            }
+          }
+
+          @case ('integrity') {
+            <article class="integrity-card">
+              <div class="integrity-card__head">
+                <h3 class="section-title">Chaîne d'intégrité</h3>
+                @if (canAudit()) {
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    [disabled]="auditLoading()"
+                    (click)="verifyIntegrity()"
+                  >
+                    @if (auditLoading()) {
+                      Vérification…
+                    } @else {
+                      Vérifier l'intégrité
                     }
-                  </article>
+                  </button>
                 }
               </div>
-            }
+
+              @if (auditError()) {
+                <app-error-state [message]="auditError()!" />
+              }
+
+              <div class="integrity-card__body">
+                <div class="integrity-card__row">
+                  <span class="label">Hash courant</span>
+                  @if (item.currentHash) {
+                    <app-copy-hash [hash]="item.currentHash" label="Hash courant" />
+                  } @else {
+                    <span class="value value--muted">—</span>
+                  }
+                </div>
+
+                @if (canAudit()) {
+                  <div class="integrity-card__status">
+                    @if (auditLoading()) {
+                      <app-loading-skeleton [lines]="2" label="Vérification de l'intégrité…" />
+                    } @else if (integrityValid() === true) {
+                      <p class="integrity-card__badge integrity-card__badge--ok">
+                        <app-icon name="shield-check" [size]="18" />
+                        Intégrité valide — la chaîne de hash est cohérente.
+                      </p>
+                    } @else if (integrityValid() === false) {
+                      <p class="integrity-card__badge integrity-card__badge--warn">
+                        <app-icon name="shield-alert" [size]="18" />
+                        Intégrité compromise — incohérence détectée dans la chaîne.
+                      </p>
+                    } @else {
+                      <p class="muted">
+                        Cliquez sur « Vérifier l'intégrité » pour contrôler la cohérence du dossier.
+                      </p>
+                    }
+                  </div>
+                } @else {
+                  <p class="muted">
+                    Hash de traçabilité enregistré pour cette décision. La vérification complète est réservée aux auditeurs.
+                  </p>
+                }
+              </div>
+            </article>
           }
         }
       </div>

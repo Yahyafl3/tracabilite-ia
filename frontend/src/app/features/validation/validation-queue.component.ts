@@ -2,15 +2,32 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
+import {
+  PageHeaderComponent,
+  StatusBadgeComponent,
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingSkeletonComponent,
+} from '../../shared/ui';
 import { ValidationService } from '../../core/services/validation.service';
 import { DecisionResponse } from '../../core/models/decision.models';
-import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { decisionChipClass } from '../../core/utils/chip-class.util';
+import { decisionLabel } from '../../core/utils/label.util';
+import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-validation-queue',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    IconComponent,
+    PageHeaderComponent,
+    StatusBadgeComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    LoadingSkeletonComponent,
+  ],
   templateUrl: './validation-queue.component.html',
   styleUrl: './validation-queue.component.scss',
 })
@@ -43,4 +60,5 @@ export class ValidationQueueComponent {
   }
 
   decisionChipClass = decisionChipClass;
+  decisionLabel = decisionLabel;
 }

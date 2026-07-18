@@ -1,18 +1,13 @@
 <div class="shell-page">
-  <header class="page-header">
-    <div class="page-header__left">
-      <a routerLink="/decisions" class="back-link">
-        <app-icon name="arrow-left" [size]="15" />
-        Retour aux décisions
-      </a>
-      <span class="eyebrow">
-        <app-icon name="bar-chart" [size]="13" />
-        Analyse ML
-      </span>
-      <h1 class="page-title">Nouvelle décision</h1>
-      <p class="page-subtitle">Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents OpenRouter.</p>
-    </div>
-  </header>
+  <a routerLink="/decisions" class="back-link">
+    <app-icon name="arrow-left" [size]="15" />
+    Retour aux décisions
+  </a>
+
+  <app-page-header
+    [breadcrumbs]="['Décisions', 'Nouvelle analyse']"
+    title="Nouvelle décision"
+    subtitle="Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents OpenRouter." />
 
   <div class="layout">
     <section class="card form-card">
@@ -80,109 +75,106 @@
       </div>
     </section>
 
-    @if (result(); as analysis) {
-      <section class="card result-card">
-        <div class="card__header">
-          <div>
+    <div class="results-column">
+      @if (loading()) {
+        <section class="card result-card">
+          <div class="card__header">
             <h2 class="card__title">
-              <app-icon name="check-circle" [size]="17" />
+              <app-icon name="scale" [size]="17" />
               Résultat de l'analyse
             </h2>
-            <p class="card__subtitle">Source explicabilité : {{ analysis.explanationSource }}</p>
           </div>
-        </div>
-
-        <div class="card__body">
-          <div class="result-summary">
-            <div class="summary-item">
-              <span class="label">Décision ML</span>
-              <span class="status-chip" [class]="decisionChipClass(analysis.suggestedDecision)">
-                {{ analysis.suggestedDecision }}
-              </span>
-            </div>
-            <div class="summary-item">
-              <span class="label">Confiance</span>
-              <span class="value">{{ analysis.confidenceScore | number:'1.0-2' }}%</span>
-            </div>
-            <div class="summary-item">
-              <span class="label">Risque</span>
-              <span class="status-chip" [class]="riskChipClass(analysis.riskLevel)">
-                {{ riskLabel(analysis.riskLevel) }}
-              </span>
+          <div class="card__body">
+            <app-loading-skeleton [lines]="8" label="Analyse ML et agents en cours…" />
+          </div>
+        </section>
+      } @else if (result(); as analysis) {
+        <section class="card result-card">
+          <div class="card__header">
+            <div>
+              <h2 class="card__title">
+                <app-icon name="check-circle" [size]="17" />
+                Prédiction ML
+              </h2>
+              <p class="card__subtitle">Source explicabilité : {{ analysis.explanationSource }}</p>
             </div>
           </div>
-
-          @if (analysis.consensus) {
-            <section class="consensus-block">
-              <h3 class="section-title">Consensus OpenRouter (informatif)</h3>
-              @if (analysis.consensus.note?.includes('Quota OpenRouter insuffisant')) {
-                <p class="state-banner state-banner--warning">Quota OpenRouter insuffisant. L'analyse ML reste disponible.</p>
-              }
-              @let consensusView = consensusDisplay(analysis.consensus);
-              <p class="value">
-                @if (consensusView.showDecisionBadge) {
-                  {{ consensusView.decisionLabel }}
-                } @else {
-                  {{ consensusView.message }}
-                }
-                · {{ consensusView.agentsLabel }}
-              </p>
-              @if (analysis.consensus.note) {
-                <p class="field-hint">{{ analysis.consensus.note }}</p>
-              }
-            </section>
-          }
-
-          @if ((analysis.agentResponses?.length ?? 0) > 0) {
-            <section>
-              <h3 class="section-title">Réponses des agents OpenRouter</h3>
-              <div class="agent-grid">
-                @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
-                  <article class="agent-card">
-                    <header class="agent-card__head">
-                      <strong>{{ agent.displayName || agent.modelName || agent.agentKey }}</strong>
-                      <span class="status-chip chip--pending">{{ agent.statut }}</span>
-                    </header>
-                    @if (agent.fallbackUsed) {
-                      <p class="state-banner state-banner--info">
-                        Modèle principal indisponible — réponse produite par le modèle de secours
-                      </p>
-                    }
-                    <p class="muted">{{ agent.agentKey }} · {{ agent.provider }}</p>
-                    <p class="muted">Modèle utilisé : <code>{{ agent.modelId }}</code></p>
-                    @if (agent.requestedModelId && agent.actualModelId && agent.requestedModelId !== agent.actualModelId) {
-                      <p class="muted tech-note">Demandé : <code>{{ agent.requestedModelId }}</code> · Réel : <code>{{ agent.actualModelId }}</code></p>
-                    }
-                    @if (agent.decisionProposee) {
-                      <p>Décision : <strong>{{ agent.decisionProposee }}</strong></p>
-                    }
-                    <p>Confiance déclarée par l'agent : <strong>{{ (agent.declaredConfidence ?? agent.confianceDeclaree) == null ? 'Non fournie' : ((agent.declaredConfidence ?? agent.confianceDeclaree)! * 100 | number:'1.0-1') + ' %' }}</strong></p>
-                    @if (agent.codeErreur) {
-                      <p class="error-inline">{{ agent.codeErreur }}</p>
-                    }
-                    @if (agent.resume) {
-                      <p class="label-inline">Résumé</p>
-                      <p class="value value--text">{{ agent.resume }}</p>
-                    }
-                    @if (agent.explication) {
-                      <p class="label-inline">Explication</p>
-                      <p class="value value--text">{{ agent.explication }}</p>
-                    }
-                  </article>
-                }
+          <div class="card__body">
+            <div class="result-summary">
+              <div class="summary-item">
+                <span class="label">Décision ML</span>
+                <span class="status-chip" [class]="decisionChipClass(analysis.suggestedDecision)">
+                  {{ analysis.suggestedDecision }}
+                </span>
               </div>
-            </section>
-          }
+              <div class="summary-item">
+                <span class="label">Confiance</span>
+                <span class="value">{{ analysis.confidenceScore | number:'1.0-2' }}%</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Risque</span>
+                <span class="status-chip" [class]="riskChipClass(analysis.riskLevel)">
+                  {{ riskLabel(analysis.riskLevel) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          @if (analysis.resumeConsensus) {
-            <section class="consensus-block">
-              <h3 class="section-title">Synthèse agents OpenRouter</h3>
+        @if (analysis.consensus) {
+          @if (analysis.consensus.note?.includes('Quota OpenRouter')) {
+            <p class="state-banner state-banner--warning">
+              Quota OpenRouter insuffisant. L'analyse ML reste disponible.
+            </p>
+          }
+          <section class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                <app-icon name="users" [size]="17" />
+                Consensus OpenRouter (informatif)
+              </h2>
+            </div>
+            <div class="card__body">
+              <app-consensus-card [consensus]="analysis.consensus" />
+            </div>
+          </section>
+        }
+
+        @if ((analysis.agentResponses?.length ?? 0) > 0) {
+          <section class="card">
+            <div class="card__header">
+              <h2 class="card__title">
+                <app-icon name="message-square" [size]="17" />
+                Réponses des agents OpenRouter
+              </h2>
+            </div>
+            <div class="card__body agent-grid">
+              @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
+                <app-agent-response-card [agent]="agent" />
+              }
+            </div>
+          </section>
+        }
+
+        @if (analysis.resumeConsensus) {
+          <section class="card">
+            <div class="card__header">
+              <h2 class="card__title">Synthèse agents OpenRouter</h2>
+            </div>
+            <div class="card__body">
               <p class="value value--text">{{ analysis.resumeConsensus }}</p>
-            </section>
-          }
+            </div>
+          </section>
+        }
 
-          <section>
-            <h3 class="section-title">Facteurs explicatifs ({{ analysis.explanationSource }})</h3>
+        <section class="card">
+          <div class="card__header">
+            <h2 class="card__title">
+              <app-icon name="lightbulb" [size]="17" />
+              Facteurs explicatifs ({{ analysis.explanationSource }})
+            </h2>
+          </div>
+          <div class="card__body">
             <p class="tech-note">
               Classe expliquée : <strong>APPROUVER</strong>.
               contribution % = |SHAP| / Σ|SHAP| × 100.
@@ -211,27 +203,28 @@
                 </div>
               }
             </div>
-          </section>
 
-          <button class="btn-secondary result-action" type="button" (click)="openDetail()">
-            <app-icon name="eye" [size]="15" />
-            Voir le détail enregistré
-          </button>
-        </div>
-      </section>
-    } @else {
-      <section class="card result-card result-card--placeholder">
-        <div class="card__header">
-          <h2 class="card__title">
-            <app-icon name="scale" [size]="17" />
-            Résultat de l'analyse
-          </h2>
-        </div>
-        <div class="card__body empty-state">
-          <app-icon name="lightbulb" [size]="32" />
-          <p>Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et les facteurs SHAP.</p>
-        </div>
-      </section>
-    }
+            <button class="btn-secondary result-action" type="button" (click)="openDetail()">
+              <app-icon name="eye" [size]="15" />
+              Voir le détail enregistré
+            </button>
+          </div>
+        </section>
+      } @else {
+        <section class="card result-card result-card--placeholder">
+          <div class="card__header">
+            <h2 class="card__title">
+              <app-icon name="scale" [size]="17" />
+              Résultat de l'analyse
+            </h2>
+          </div>
+          <div class="card__body">
+            <app-empty-state
+              icon="lightbulb"
+              message="Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et les facteurs SHAP." />
+          </div>
+        </section>
+      }
+    </div>
   </div>
 </div>

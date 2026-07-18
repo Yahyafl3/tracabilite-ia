@@ -5,9 +5,24 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { IconComponent } from '../../../shared/icon.component';
+import {
+  PageHeaderComponent,
+  StatusBadgeComponent,
+  RiskBadgeComponent,
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingSkeletonComponent,
+  ConfidenceDisplayComponent,
+  ConsensusCardComponent,
+  AgentResponseCardComponent,
+  CopyHashComponent,
+  TimelineComponent,
+  ModelIdentityComponent,
+} from '../../../shared/ui';
 import { DecisionService } from '../../../core/services/decision.service';
 import { ValidationService } from '../../../core/services/validation.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuditService } from '../../../core/services/audit.service';
 import { UserRole } from '../../../core/models/auth.models';
 import {
   DecisionResponse,
@@ -22,22 +37,51 @@ import {
   agentByKey,
   agentDisplayName,
   agentStatusLabel,
-  formatDeclaredConfidence,
   formatConsensusDisplay,
-  agentFallbackMessage,
   type ConsensusDisplay,
 } from '../../../core/models/openrouter.models';
-import { DecisionTraceService, DecisionHistoryEntry, DecisionSource } from '../../../core/services/decision-trace.service';
+import {
+  DecisionTraceService,
+  DecisionHistoryEntry,
+  DecisionSource,
+  DecisionSourceType,
+  CreateDecisionSourceRequest,
+} from '../../../core/services/decision-trace.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { decisionChipClass, riskChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
 import { historyActionLabel, riskLabel, statutLabel } from '../../../core/utils/label.util';
 
-type DetailTab = 'resume' | 'prediction' | 'explain' | 'agents' | 'validation' | 'history' | 'sources';
+type DetailTab =
+  | 'resume'
+  | 'prediction'
+  | 'shap'
+  | 'agents'
+  | 'validation'
+  | 'history'
+  | 'sources'
+  | 'integrity';
 
 @Component({
   selector: 'app-decision-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, IconComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    IconComponent,
+    PageHeaderComponent,
+    StatusBadgeComponent,
+    RiskBadgeComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    LoadingSkeletonComponent,
+    ConfidenceDisplayComponent,
+    ConsensusCardComponent,
+    AgentResponseCardComponent,
+    CopyHashComponent,
+    TimelineComponent,
+    ModelIdentityComponent,
+  ],
   templateUrl: './decision-detail.component.html',
   styleUrl: './decision-detail.component.scss',
 })
@@ -47,6 +91,7 @@ export class DecisionDetailComponent {
   private readonly validationService = inject(ValidationService);
   private readonly authService = inject(AuthService);
   private readonly traceService = inject(DecisionTraceService);
+  private readonly auditService = inject(AuditService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -62,10 +107,35 @@ export class DecisionDetailComponent {
   readonly activeTab = signal<DetailTab>('resume');
   readonly retryLoading = signal(false);
   readonly retryError = signal<string | null>(null);
+  readonly auditLoading = signal(false);
+  readonly auditError = signal<string | null>(null);
+  readonly integrityValid = signal<boolean | null>(null);
+  readonly sourceLoading = signal(false);
+  readonly sourceError = signal<string | null>(null);
+
+  readonly sourceTypes: DecisionSourceType[] = [
+    'USER_INPUT',
+    'BUSINESS_DATA',
+    'DOCUMENT',
+    'URL',
+    'DATABASE',
+    'MODEL_OUTPUT',
+    'OTHER',
+  ];
 
   readonly isAdmin = computed(() =>
     this.authService.currentUser?.role === UserRole.ADMINISTRATEUR,
   );
+
+  readonly canAudit = computed(() => {
+    const role = this.authService.currentUser?.role;
+    return role === UserRole.ADMINISTRATEUR || role === UserRole.AUDITEUR;
+  });
+
+  readonly canManageSources = computed(() => {
+    const role = this.authService.currentUser?.role;
+    return role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
+  });
 
   readonly hasRetryableAgents = computed(() =>
     (this.decision()?.agentResponses ?? []).some((agent) => {
@@ -78,13 +148,24 @@ export class DecisionDetailComponent {
       if (agent.statut === 'TIMEOUT') {
         return true;
       }
-      return ['OPENROUTER_RATE_LIMITED', 'OPENROUTER_TIMEOUT', 'OPENROUTER_UNAVAILABLE'].includes(agent.codeErreur ?? '');
+      return ['OPENROUTER_RATE_LIMITED', 'OPENROUTER_TIMEOUT', 'OPENROUTER_UNAVAILABLE'].includes(
+        agent.codeErreur ?? '',
+      );
     }),
   );
 
   readonly validationForm = this.fb.group({
     commentaire: ['', Validators.maxLength(2000)],
     decisionHumaine: ['REJETER' as 'APPROUVER' | 'REJETER', Validators.required],
+    confirmed: [false, Validators.requiredTrue],
+  });
+
+  readonly sourceForm = this.fb.group({
+    sourceType: ['DOCUMENT' as DecisionSourceType, Validators.required],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    description: ['', Validators.maxLength(2000)],
+    url: ['', Validators.maxLength(2048)],
+    documentReference: ['', Validators.maxLength(512)],
   });
 
   readonly canValidate = computed(() => {
@@ -101,11 +182,12 @@ export class DecisionDetailComponent {
   readonly tabs: Array<{ id: DetailTab; label: string }> = [
     { id: 'resume', label: 'Résumé' },
     { id: 'prediction', label: 'Prédiction ML' },
-    { id: 'explain', label: 'Explicabilité SHAP' },
+    { id: 'shap', label: 'SHAP' },
     { id: 'agents', label: 'Agents OpenRouter' },
     { id: 'validation', label: 'Validation humaine' },
     { id: 'history', label: 'Historique' },
     { id: 'sources', label: 'Sources' },
+    { id: 'integrity', label: 'Intégrité' },
   ];
 
   constructor() {
@@ -120,6 +202,9 @@ export class DecisionDetailComponent {
         this.error.set(null);
         this.validationSuccess.set(null);
         this.validationError.set(null);
+        this.auditError.set(null);
+        this.integrityValid.set(null);
+        this.activeTab.set('resume');
         this.loadDecision(id);
       });
   }
@@ -160,20 +245,127 @@ export class DecisionDetailComponent {
   statutLabel = statutLabel;
   riskLabel = riskLabel;
 
-  historyItemClass(action: string): string {
-    if (action.includes('FAILED') || action.includes('REJECTED')) return 'history-item--danger';
-    if (action.includes('APPROVED') || action.includes('COMPLETED') || action.includes('SUCCESS') || action.includes('VERIFIED')) {
-      return 'history-item--success';
-    }
-    if (action.includes('MODIFIED') || action.includes('REVIEW')) return 'history-item--warning';
-    return '';
+  reference(item: DecisionResponse): string {
+    return item.reference ?? item.decisionId.slice(0, 8).toUpperCase();
+  }
+
+  formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  formatTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  featureValue(item: DecisionResponse, key: string): unknown {
+    return item.features?.[key];
+  }
+
+  formatCurrency(value: unknown): string {
+    if (value == null || value === '') return '—';
+    const num = Number(value);
+    if (Number.isNaN(num)) return String(value);
+    return `${num.toLocaleString('fr-FR')} €`;
+  }
+
+  formatFeature(value: unknown): string {
+    if (value == null || value === '') return '—';
+    return String(value);
+  }
+
+  creatorLabel(item: DecisionResponse): string {
+    return item.validatorEmail || '—';
+  }
+
+  shapImpactTooltip(impact: string): string {
+    if (impact === 'POSITIVE') return 'Favorise APPROUVER';
+    if (impact === 'NEGATIVE') return 'Favorise REJETER';
+    return impact;
+  }
+
+  shapImpactLabel(factor: { impactLabel?: string; impact: string }): string {
+    if (factor.impact === 'POSITIVE') return 'Favorise APPROUVER';
+    if (factor.impact === 'NEGATIVE') return 'Favorise REJETER';
+    return factor.impactLabel || factor.impact;
+  }
+
+  tabPanelId(tab: DetailTab): string {
+    return `decision-tabpanel-${tab}`;
   }
 
   setTab(tab: DetailTab): void {
     this.activeTab.set(tab);
+    if (tab === 'integrity') {
+      if (this.canAudit()) {
+        this.loadIntegrityAudit();
+      }
+    }
+  }
+
+  onTabKeydown(event: KeyboardEvent, index: number): void {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+
+    event.preventDefault();
+    let next = index;
+
+    if (event.key === 'ArrowLeft') {
+      next = index <= 0 ? this.tabs.length - 1 : index - 1;
+    } else if (event.key === 'ArrowRight') {
+      next = index >= this.tabs.length - 1 ? 0 : index + 1;
+    } else if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = this.tabs.length - 1;
+    }
+
+    this.setTab(this.tabs[next].id);
+    queueMicrotask(() => {
+      const el = document.getElementById(`decision-tab-${this.tabs[next].id}`);
+      el?.focus();
+    });
+  }
+
+  loadIntegrityAudit(): void {
+    const id = this.decision()?.decisionId;
+    if (!id || !this.canAudit()) return;
+
+    this.auditLoading.set(true);
+    this.auditError.set(null);
+
+    this.auditService.getDecisionAudit(id).subscribe({
+      next: (audit) => {
+        this.integrityValid.set(audit.integrityValid);
+        if (audit.currentHash) {
+          this.decision.update((current) =>
+            current ? { ...current, currentHash: audit.currentHash } : current,
+          );
+        }
+        this.auditLoading.set(false);
+      },
+      error: (err) => {
+        this.auditError.set(resolveHttpErrorMessage(err, 'Impossible de vérifier l\'intégrité.'));
+        this.auditLoading.set(false);
+      },
+    });
+  }
+
+  verifyIntegrity(): void {
+    this.loadIntegrityAudit();
   }
 
   approve(): void {
+    if (!this.validationForm.controls.confirmed.value) {
+      this.validationForm.controls.confirmed.markAsTouched();
+      return;
+    }
     const id = this.decision()?.decisionId;
     if (!id) return;
     this.submitValidation(() =>
@@ -182,6 +374,10 @@ export class DecisionDetailComponent {
   }
 
   reject(): void {
+    if (!this.validationForm.controls.confirmed.value) {
+      this.validationForm.controls.confirmed.markAsTouched();
+      return;
+    }
     const id = this.decision()?.decisionId;
     if (!id) return;
     this.submitValidation(() =>
@@ -190,6 +386,10 @@ export class DecisionDetailComponent {
   }
 
   modify(): void {
+    if (!this.validationForm.controls.confirmed.value) {
+      this.validationForm.controls.confirmed.markAsTouched();
+      return;
+    }
     const id = this.decision()?.decisionId;
     if (!id || this.validationForm.invalid) {
       this.validationForm.markAllAsTouched();
@@ -204,6 +404,10 @@ export class DecisionDetailComponent {
   }
 
   review(): void {
+    if (!this.validationForm.controls.confirmed.value) {
+      this.validationForm.controls.confirmed.markAsTouched();
+      return;
+    }
     const id = this.decision()?.decisionId;
     if (!id) return;
     this.submitValidation(() =>
@@ -229,6 +433,62 @@ export class DecisionDetailComponent {
     });
   }
 
+  addSource(): void {
+    const id = this.decision()?.decisionId;
+    if (!id || this.sourceForm.invalid) {
+      this.sourceForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.sourceForm.getRawValue();
+    const request: CreateDecisionSourceRequest = {
+      sourceType: raw.sourceType!,
+      name: raw.name!.trim(),
+      description: raw.description?.trim() || undefined,
+      url: raw.url?.trim() || undefined,
+      documentReference: raw.documentReference?.trim() || undefined,
+    };
+
+    this.sourceLoading.set(true);
+    this.sourceError.set(null);
+
+    this.traceService.addSource(id, request).subscribe({
+      next: (source) => {
+        this.sources.update((items) => [...items, source]);
+        this.sourceForm.reset({
+          sourceType: 'DOCUMENT',
+          name: '',
+          description: '',
+          url: '',
+          documentReference: '',
+        });
+        this.sourceLoading.set(false);
+      },
+      error: (err) => {
+        this.sourceError.set(resolveHttpErrorMessage(err, 'Impossible d\'ajouter la source.'));
+        this.sourceLoading.set(false);
+      },
+    });
+  }
+
+  removeSource(sourceId: string): void {
+    const id = this.decision()?.decisionId;
+    if (!id) return;
+
+    this.traceService.removeSource(id, sourceId).subscribe({
+      next: () => {
+        this.sources.update((items) => items.filter((s) => s.sourceId !== sourceId));
+      },
+      error: (err) => {
+        this.sourceError.set(resolveHttpErrorMessage(err, 'Impossible de supprimer la source.'));
+      },
+    });
+  }
+
+  sourceRef(source: DecisionSource): string {
+    return source.url || source.documentReference || '—';
+  }
+
   private submitValidation(action: () => import('rxjs').Observable<DecisionResponse>): void {
     this.validationLoading.set(true);
     this.validationError.set(null);
@@ -239,6 +499,7 @@ export class DecisionDetailComponent {
         this.decision.set(response);
         this.validationLoading.set(false);
         this.validationSuccess.set('Validation enregistrée avec succès.');
+        this.validationForm.patchValue({ confirmed: false });
       },
       error: (err) => {
         this.validationError.set(resolveHttpErrorMessage(err, 'Erreur lors de la validation.'));
@@ -260,8 +521,6 @@ export class DecisionDetailComponent {
   }
 
   agentName = agentDisplayName;
-  agentFallback = agentFallbackMessage;
-  declaredConfidenceLabel = formatDeclaredConfidence;
   agentForKey = agentByKey;
   agentStatus = agentStatusLabel;
   mlDecision = mlDecision;

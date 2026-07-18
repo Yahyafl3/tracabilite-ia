@@ -1,16 +1,38 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IconComponent } from '../../shared/icon.component';
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingSkeletonComponent,
+  PageHeaderComponent,
+} from '../../shared/ui';
 import { ComparaisonAgent, ComparaisonService } from '../../core/services/comparaison.service';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 
-type SortField = 'rang' | 'nom' | 'totalDecisions' | 'approuvees' | 'rejetees' | 'scorePourcentage';
+type SortField =
+  | 'rang'
+  | 'nom'
+  | 'totalDecisions'
+  | 'approuvees'
+  | 'modifiees'
+  | 'rejetees'
+  | 'enAttente'
+  | 'scorePourcentage';
 type SortDir = 'asc' | 'desc';
 
 @Component({
   selector: 'app-comparaison',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, IconComponent],
+  imports: [
+    CommonModule,
+    DecimalPipe,
+    IconComponent,
+    PageHeaderComponent,
+    LoadingSkeletonComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
+  ],
   templateUrl: './comparaison.component.html',
   styleUrl: './comparaison.component.scss',
 })
@@ -98,9 +120,9 @@ export class ComparaisonComponent {
     return String(rang);
   }
 
-  scoreClass(score: number): string {
-    if (score >= 70) return 'score-high';
-    if (score >= 40) return 'score-mid';
+  successRateClass(rate: number): string {
+    if (rate >= 70) return 'score-high';
+    if (rate >= 40) return 'score-mid';
     return 'score-low';
   }
 

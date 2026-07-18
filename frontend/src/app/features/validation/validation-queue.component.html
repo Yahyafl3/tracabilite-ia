@@ -1,44 +1,41 @@
 <div class="shell-page">
-  <header class="page-header">
-    <div>
-      <span class="eyebrow">
-        <app-icon name="file-check" [size]="13" />
-        Validation humaine
-      </span>
-      <h1 class="page-title">Décisions en attente</h1>
-      <p class="page-subtitle">
-        File de validation pour les décisions ML nécessitant un contrôle humain.
-      </p>
-    </div>
+  <app-page-header
+    [breadcrumbs]="['Accueil', 'Validation']"
+    title="Décisions en attente"
+    subtitle="File de validation pour les décisions ML nécessitant un contrôle humain."
+  >
     <span class="count-badge">{{ totalElements() }} en attente</span>
-  </header>
+  </app-page-header>
 
-  @if (loading()) {
-    <div class="loading">
-      <span class="spinner" aria-hidden="true"></span>
-      Chargement…
-    </div>
-  } @else if (error()) {
-    <p class="error">{{ error() }}</p>
-  } @else if (decisions().length === 0) {
-    <section class="card">
-      <div class="card__body empty-state">
-        <app-icon name="check-circle" [size]="28" />
-        <p>Aucune décision en attente de validation.</p>
+  <section class="card table-card">
+    @if (loading()) {
+      <app-loading-skeleton [lines]="6" label="Chargement de la file de validation…" />
+    } @else if (error()) {
+      <app-error-state [message]="error()!" />
+    } @else if (decisions().length === 0) {
+      <app-empty-state
+        icon="check-circle"
+        message="Aucune décision en attente de validation."
+      />
+    } @else {
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="file-check" [size]="17" />
+          File de validation
+        </h2>
+        <span class="card__hint">{{ totalElements() }} en attente</span>
       </div>
-    </section>
-  } @else {
-    <section class="card">
-      <div class="card__body table-scroll">
-        <table class="decisions-table">
+
+      <div class="table-scroll">
+        <table class="decisions-table" aria-label="Décisions en attente de validation">
           <thead>
             <tr>
-              <th>Dossier</th>
-              <th>Décision ML</th>
-              <th>Confiance</th>
-              <th>Risque</th>
-              <th>Date</th>
-              <th></th>
+              <th scope="col">Dossier</th>
+              <th scope="col">Décision ML</th>
+              <th scope="col">Confiance</th>
+              <th scope="col">Risque</th>
+              <th scope="col">Date</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -49,13 +46,17 @@
                   <span class="prompt-sub">{{ row.contexte }}</span>
                 </td>
                 <td>
-                  <span class="status-chip" [class]="decisionChipClass(row.suggestedDecision)">
-                    {{ row.suggestedDecision || 'N/A' }}
-                  </span>
+                  <app-status-badge
+                    [label]="decisionLabel(row.suggestedDecision) || 'N/A'"
+                    [chipClass]="decisionChipClass(row.suggestedDecision)"
+                  />
                 </td>
-                <td>{{ row.confidenceScore ?? '-' }}%</td>
-                <td>{{ row.riskLevel || '-' }}</td>
-                <td>{{ row.timestamp | date:'short' }}</td>
+                <td>{{ row.confidenceScore ?? '—' }}@if (row.confidenceScore != null) { %}</td>
+                <td>{{ row.riskLevel || '—' }}</td>
+                <td class="td-time">
+                  <span class="time-date">{{ row.timestamp | date:'dd MMM' }}</span>
+                  <span class="time-hour">{{ row.timestamp | date:'HH:mm' }}</span>
+                </td>
                 <td>
                   <a class="btn-primary btn-primary--sm" [routerLink]="['/decisions', row.decisionId]">
                     Valider
@@ -66,6 +67,6 @@
           </tbody>
         </table>
       </div>
-    </section>
-  }
+    }
+  </section>
 </div>

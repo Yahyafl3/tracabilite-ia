@@ -1,51 +1,38 @@
 <div class="shell-page">
 
-  <div class="page-header">
-    <div class="page-header__left">
-      <span class="eyebrow">
-        <app-icon name="activity" [size]="13" />
-        Vue d'ensemble
-      </span>
-      <h1 class="page-title">Tableau de bord</h1>
-    </div>
+  <app-page-header
+    [breadcrumbs]="['Accueil', 'Tableau de bord']"
+    title="Tableau de bord"
+    subtitle="Vue d'ensemble des décisions, agents OpenRouter et intégrité de la chaîne de traçabilité."
+  >
     @if (generatedAt()) {
       <span class="date-chip">
         <app-icon name="history" [size]="13" />
         {{ formatGeneratedAt(generatedAt()) }}
       </span>
     }
-  </div>
+  </app-page-header>
 
   @if (loading()) {
-    <div class="loading">
-      <span class="spinner" aria-hidden="true"></span>
-      Chargement des statistiques…
-    </div>
+    <app-loading-skeleton [lines]="5" label="Chargement des statistiques…" />
   } @else if (error()) {
-    <p class="state-banner state-banner--error">{{ error() }}</p>
+    <app-error-state [message]="error()!" />
   } @else {
 
-    <section class="kpi-row" aria-label="Indicateurs clés">
+    <section class="ui-kpi-row" aria-label="Indicateurs clés">
       @for (kpi of kpiCards(); track kpi.label) {
-        <div class="kpi-card kpi-card--{{ kpi.accent }}">
-          <div class="kpi-card__icon-wrap">
-            <app-icon [name]="kpi.icon" [size]="20" />
-          </div>
-          <div class="kpi-card__body">
-            <p class="kpi-card__label">{{ kpi.label }}</p>
-            <p class="kpi-card__value">{{ kpi.value }}{{ kpi.unit }}</p>
-            <p class="kpi-card__trend" [class.kpi-card__trend--up]="kpi.trendUp">
-              @if (kpi.trendUp) {
-                <app-icon name="check" [size]="11" />
-              }
-              {{ kpi.trend }}
-            </p>
-          </div>
-        </div>
+        <app-kpi-card
+          [label]="kpi.label"
+          [value]="kpi.value"
+          [unit]="kpi.unit"
+          [icon]="kpi.icon"
+          [accent]="kpi.accent"
+          [hint]="kpi.hint"
+        />
       }
     </section>
 
-    <div class="charts-row">
+    <div class="ui-charts-row">
 
       <section class="card donut-card">
         <div class="card__header">
@@ -114,18 +101,25 @@
                     <span class="perf-item__name">{{ agent.nom }}</span>
                     <span class="perf-item__vendor">{{ agent.fournisseur }} · {{ agent.modele }}</span>
                   </div>
-                  <span class="score-chip" [class]="scoreClass(agent.scorePourcentage)">
-                    {{ agent.scorePourcentage | number:'1.0-0' }} %
-                  </span>
+                  <div class="perf-item__metrics">
+                    <span class="score-chip" [class]="scoreClass(agent.scorePourcentage)">
+                      {{ agent.scorePourcentage | number:'1.0-0' }}&nbsp;%
+                    </span>
+                    <span class="perf-item__rate-label">Taux de succès API</span>
+                  </div>
                 </div>
                 <div class="perf-bar">
                   <div class="perf-bar__fill" [class]="barFillClass(agent.scorePourcentage)"
                        [style.width.%]="agent.scorePourcentage"></div>
                 </div>
+                <div class="perf-stats">
+                  <span class="perf-stats__item"><strong>{{ agent.totalDecisions }}</strong> décisions</span>
+                  <span class="perf-stats__item"><strong>{{ agentReussies(agent) }}</strong> réussies</span>
+                </div>
                 <div class="perf-pills">
-                  <span class="mini-chip mini-chip--approved">{{ agent.approuvees }} APPROUVER</span>
-                  <span class="mini-chip mini-chip--modified">{{ agent.modifiees }} REVIEW</span>
-                  <span class="mini-chip mini-chip--rejected">{{ agent.rejetees }} REJETER</span>
+                  <span class="mini-chip mini-chip--approved">{{ agent.approuvees }} approuvées</span>
+                  <span class="mini-chip mini-chip--rejected">{{ agent.rejetees }} rejetées</span>
+                  <span class="mini-chip mini-chip--pending">{{ agent.enAttente }} en attente</span>
                 </div>
               </div>
             }
@@ -181,9 +175,10 @@
                     <code class="model-tag">{{ d.modelName }}</code>
                   </td>
                   <td>
-                    <span class="status-chip" [class]="statutClass(d.statutValidation)">
-                      {{ statutLabel(d.statutValidation) }}
-                    </span>
+                    <app-status-badge
+                      [label]="statutLabel(d.statutValidation)"
+                      [chipClass]="statutClass(d.statutValidation)"
+                    />
                   </td>
                   <td class="td-time">
                     <span class="time-date">{{ formatDate(d.timestamp) }}</span>
@@ -196,7 +191,7 @@
         </div>
       }
 
-      <footer class="table-footer">
+      <footer class="integrity-footer" [class.integrity-footer--ok]="hashChainIntact()" [class.integrity-footer--warn]="!hashChainIntact()">
         <app-icon name="shield-check" [size]="13" />
         @if (hashChainIntact()) {
           Intégrité cryptographique vérifiée — chaîne SHA-256 intacte

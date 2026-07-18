@@ -1,23 +1,7 @@
 @import '../decisions-shared';
 
-.pager__label {
-  font-size: 0.78rem;
-  color: var(--muted);
-}
+// Decision list — styles spécifiques (toolbar, pagination dans _ui-shared.scss)
 
-.pager__select {
-  padding: 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 0.82rem;
-}
-
-.table-footer {
-  justify-content: space-between;
-}
-
-.empty-state {
-  padding: var(--space-5) var(--space-4);
+.table-card {
+  overflow: hidden;
 }

@@ -3,16 +3,44 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../../shared/icon.component';
+import {
+  PageHeaderComponent,
+  StatusBadgeComponent,
+  RiskBadgeComponent,
+  ConfidenceDisplayComponent,
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingSkeletonComponent,
+} from '../../../shared/ui';
 import { DecisionService } from '../../../core/services/decision.service';
-import { DecisionResponse, StatutDecisionEnum, consensusLabel, humanFinalLabel, mlDecision } from '../../../core/models/decision.models';
-import { decisionChipClass, riskChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
+import {
+  DecisionResponse,
+  StatutDecisionEnum,
+  consensusLabel,
+  humanFinalLabel,
+  mlDecision,
+  mlConfidence,
+} from '../../../core/models/decision.models';
+import { decisionChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
 import { statutLabel } from '../../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-decision-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    IconComponent,
+    PageHeaderComponent,
+    StatusBadgeComponent,
+    RiskBadgeComponent,
+    ConfidenceDisplayComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    LoadingSkeletonComponent,
+  ],
   templateUrl: './decision-list.component.html',
   styleUrl: './decision-list.component.scss',
 })
@@ -96,7 +124,6 @@ export class DecisionListComponent {
   }
 
   decisionChipClass = decisionChipClass;
-  riskChipClass = riskChipClass;
   statutChipClass = statutChipClass;
   statutLabel = statutLabel;
 
@@ -113,6 +140,11 @@ export class DecisionListComponent {
   }
 
   mlDecisionLabel = mlDecision;
+  mlConfidenceValue = mlConfidence;
   consensusText = consensusLabel;
   humanFinal = humanFinalLabel;
+
+  riskLevel(row: DecisionResponse): string | undefined {
+    return row.mlPrediction?.riskLevel ?? row.riskLevel;
+  }
 }
