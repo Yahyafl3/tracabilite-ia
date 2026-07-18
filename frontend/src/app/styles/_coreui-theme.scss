@@ -1,0 +1,76 @@
+// ================================================================
+// CoreUI-inspired design tokens (sans dépendance npm @coreui/angular)
+// Référence : https://github.com/coreui/coreui-free-angular-admin-template
+// ================================================================
+
+:root {
+  // CoreUI default palette
+  --cui-primary: #321fdb;
+  --cui-secondary: #9da5b1;
+  --cui-success: #2eb85c;
+  --cui-info: #39f;
+  --cui-warning: #f9b115;
+  --cui-danger: #e55353;
+  --cui-light: #ebedef;
+  --cui-dark: #4f5d73;
+
+  --cui-sidebar-bg: #3c4b64;
+  --cui-sidebar-color: rgba(255, 255, 255, 0.87);
+  --cui-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --cui-sidebar-active: rgba(255, 255, 255, 0.14);
+  --cui-sidebar-brand-bg: rgba(0, 0, 0, 0.15);
+  --cui-sidebar-width: 256px;
+  --cui-sidebar-narrow: 64px;
+  --cui-header-height: 56px;
+
+  --cui-body-bg: #ebedef;
+  --cui-card-bg: #ffffff;
+  --cui-border-color: #d8dbe0;
+
+  // Bridge vers tokens app existants
+  --color-primary: var(--cui-primary);
+  --color-success: var(--cui-success);
+  --color-warning: var(--cui-warning);
+  --color-danger: var(--cui-danger);
+  --color-info: var(--cui-info);
+
+  --bg-page: var(--cui-body-bg);
+  --bg-card: var(--cui-card-bg);
+  --border-color: var(--cui-border-color);
+  --surface: var(--cui-card-bg);
+  --surface-2: #f8f9fa;
+  --border: var(--cui-border-color);
+
+  --brand-600: var(--cui-primary);
+  --brand-700: #2819b8;
+  --brand-tint: rgba(50, 31, 219, 0.1);
+  --brand-tint-ink: var(--cui-primary);
+  --brand-100: rgba(50, 31, 219, 0.12);
+  --brand-200: rgba(50, 31, 219, 0.2);
+
+  --grad-brand: linear-gradient(180deg, #4638c2 0%, var(--cui-primary) 100%);
+  --shadow-brand: 0 4px 14px rgba(50, 31, 219, 0.35);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+}
+
+[data-theme='dark'] {
+  --cui-sidebar-bg: #2a3441;
+  --cui-body-bg: #1b1f24;
+  --cui-card-bg: #23282e;
+  --cui-border-color: #3a424a;
+
+  --bg-page: var(--cui-body-bg);
+  --bg-card: var(--cui-card-bg);
+  --border-color: var(--cui-border-color);
+  --surface: var(--cui-card-bg);
+  --surface-2: #2a3038;
+  --border: var(--cui-border-color);
+
+  --text-primary: #ebedef;
+  --text-muted: #9da5b1;
+  --ink: #ebedef;
+  --ink-soft: #d8dbe0;
+  --muted: #9da5b1;
+}

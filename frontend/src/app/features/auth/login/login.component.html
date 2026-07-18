@@ -1,92 +1,103 @@
-<div class="auth">
-  <div class="auth__overlay"></div>
+<div class="login-layout">
+  <aside class="login-aside" aria-hidden="true">
+    <div class="login-aside__content">
+      <app-logo [size]="52" />
+      <h2>Traçabilité IA</h2>
+      <p>
+        Plateforme de traçabilité des décisions assistées par IA — ML, SHAP,
+        agents OpenRouter, validation humaine et chaîne SHA-256.
+      </p>
+      <ul class="login-aside__features">
+        <li><app-icon name="shield-check" [size]="16" /> Intégrité cryptographique</li>
+        <li><app-icon name="bar-chart" [size]="16" /> Consensus multi-agents</li>
+        <li><app-icon name="file-check" [size]="16" /> Validation humaine</li>
+      </ul>
+    </div>
+  </aside>
 
-  <div class="auth__card">
-    <a routerLink="/" class="auth__back">
-      <app-icon name="arrow-left" [size]="18" />
+  <main class="login-main">
+    <a routerLink="/" class="login-back">
+      <app-icon name="arrow-left" [size]="16" />
       Retour au site
     </a>
 
-    <header class="auth__head">
-      <a routerLink="/" class="brand" aria-label="Traçabilité IA — accueil">
-        <app-logo [size]="46" />
-        <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
-      </a>
-      <h1 class="auth__title">Connexion</h1>
-      <p class="auth__subtitle">Accédez à votre espace Traçabilité IA</p>
-    </header>
+    <div class="login-card">
+      <header class="login-head">
+        <h1>Connexion</h1>
+        <p>Accédez à votre espace Traçabilité IA</p>
+      </header>
 
-    @if (errorMessage()) {
-      <div class="auth__alert" role="alert">
-        <app-icon name="shield-alert" [size]="18" />
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth__form" novalidate>
-      <!-- Email -->
-      <div class="field" [class.field--error]="hasError('email')">
-        <label for="email">Adresse email</label>
-        <div class="field__control">
-          <app-icon name="mail" [size]="18" />
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="vous@entreprise.com"
-            autocomplete="email"
-          />
+      @if (errorMessage()) {
+        <div class="alert alert-danger" role="alert">
+          <app-icon name="shield-alert" [size]="18" />
+          <span>{{ errorMessage() }}</span>
         </div>
-        @if (hasError('email')) {
-          <p class="field__msg">{{ getErrorMessage('email') }}</p>
-        }
-      </div>
+      }
 
-      <!-- Mot de passe -->
-      <div class="field" [class.field--error]="hasError('password')">
-        <label for="password">Mot de passe</label>
-        <div class="field__control">
-          <app-icon name="lock" [size]="18" />
-          <input
-            id="password"
-            [type]="hidePassword() ? 'password' : 'text'"
-            formControlName="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-          />
-          <button
-            type="button"
-            class="field__toggle"
-            (click)="togglePasswordVisibility()"
-            [attr.aria-label]="hidePassword() ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
-          >
-            <app-icon [name]="hidePassword() ? 'eye' : 'eye-off'" [size]="18" />
-          </button>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+        <div class="mb-3" [class.is-invalid]="hasError('email')">
+          <label class="form-label" for="email">Adresse email</label>
+          <div class="input-group">
+            <span class="input-group-text"><app-icon name="mail" [size]="18" /></span>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="vous@entreprise.com"
+              autocomplete="email"
+            />
+          </div>
+          @if (hasError('email')) {
+            <div class="invalid-feedback">{{ getErrorMessage('email') }}</div>
+          }
         </div>
-        @if (hasError('password')) {
-          <p class="field__msg">{{ getErrorMessage('password') }}</p>
-        }
-      </div>
 
-      <label class="remember">
-        <input type="checkbox" formControlName="rememberMe" />
-        <span>Se souvenir de moi</span>
-      </label>
+        <div class="mb-3" [class.is-invalid]="hasError('password')">
+          <label class="form-label" for="password">Mot de passe</label>
+          <div class="input-group">
+            <span class="input-group-text"><app-icon name="lock" [size]="18" /></span>
+            <input
+              id="password"
+              [type]="hidePassword() ? 'password' : 'text'"
+              class="form-control"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="input-group-text input-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="hidePassword() ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
+            >
+              <app-icon [name]="hidePassword() ? 'eye' : 'eye-off'" [size]="18" />
+            </button>
+          </div>
+          @if (hasError('password')) {
+            <div class="invalid-feedback">{{ getErrorMessage('password') }}</div>
+          }
+        </div>
 
-      <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="isLoading()">
-        @if (isLoading()) {
-          <span class="spinner" aria-hidden="true"></span>
-          <span>Connexion…</span>
-        } @else {
-          <span>Se connecter</span>
-          <app-icon name="arrow-right" [size]="18" />
-        }
-      </button>
-    </form>
+        <label class="form-check mb-4">
+          <input type="checkbox" class="form-check-input" formControlName="rememberMe" />
+          <span class="form-check-label">Se souvenir de moi</span>
+        </label>
 
-    <p class="auth__footnote">
-      © 2024 Traçabilité IA · <a routerLink="/">Conditions</a> ·
-      <a routerLink="/">Confidentialité</a>
-    </p>
-  </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner spinner--sm" aria-hidden="true"></span>
+            Connexion…
+          } @else {
+            Se connecter
+            <app-icon name="arrow-right" [size]="18" />
+          }
+        </button>
+      </form>
+
+      <p class="login-footnote">
+        © Traçabilité IA · Conformité & audit des décisions IA
+      </p>
+    </div>
+  </main>
 </div>

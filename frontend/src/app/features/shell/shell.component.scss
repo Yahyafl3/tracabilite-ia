@@ -1,409 +1,89 @@
-// ================================================================
-//  Shell Layout — Sidebar + Topbar + Page Outlet
-//  Uses global design tokens from styles.scss
-// ================================================================
-
-// ── Shell grid ──────────────────────────────────────────────────
-.shell {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
-  background: var(--bg-soft);
-  transition: grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.shell--collapsed {
-    grid-template-columns: 68px 1fr;
-  }
+:host {
+  display: block;
 }
 
-// ══════════════════════════════════════════════════════════════
-//  SIDEBAR
-// ══════════════════════════════════════════════════════════════
-.sidebar {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  z-index: 100;
-}
+// Styles spécifiques shell — layout principal dans _coreui-layout.scss
 
-// ── Brand ────────────────────────────────────────────────────
-.sidebar__brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid var(--border);
-  min-height: 68px;
-  flex-shrink: 0;
-}
-
-.brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--grad-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-brand);
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-.brand-accent {
-  color: var(--brand-600);
-}
-
-// ── Nav ──────────────────────────────────────────────────────
-.sidebar__nav {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+.theme-toggle {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--cui-border-color);
   border-radius: var(--radius-sm);
+  background: var(--surface-2);
   color: var(--muted);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-  position: relative;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: var(--bg-mute);
-    color: var(--ink);
-  }
-
-  &--active {
-    background: var(--brand-tint);
-    color: var(--brand-600);
-    font-weight: 600;
-
-    .nav-item__icon { background: var(--brand-100); color: var(--brand-600); }
-  }
-}
-
-.nav-item__icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  flex-shrink: 0;
-  transition: background 0.15s ease;
-}
-
-.nav-item__label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nav-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: var(--radius-full);
-  background: var(--brand-600);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  flex-shrink: 0;
-
-  &--dot {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    min-width: unset;
-    padding: 0;
-    background: var(--danger);
-    border-radius: 50%;
-  }
-}
-
-// ── Sidebar footer ───────────────────────────────────────────
-.sidebar__footer {
-  padding: 12px 8px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.sidebar-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-}
-
-.sidebar-user__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--grad-brand);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.sidebar-user__info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.sidebar-user__name {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sidebar-user__role {
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.sidebar-toggle {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg-mute);
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: var(--brand-tint);
-    color: var(--brand-600);
-    border-color: var(--brand-200);
+    border-color: var(--cui-primary);
+    color: var(--cui-primary);
   }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  MAIN AREA
-// ══════════════════════════════════════════════════════════════
-.main {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-width: 0;
-}
-
-// ── Topbar ───────────────────────────────────────────────────
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 90;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 68px;
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    padding: 0 16px;
-  }
-}
-
-.topbar__left {
-  display: flex;
-  align-items: center;
-}
-
-// Mobile-only brand name (sidebar is collapsed on small screens)
-.brand-name-mobile {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  display: none;
-
-  @media (max-width: 768px) { display: block; }
-}
-
-.topbar__right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .integrity-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--chip-approved-fg);
-  background: var(--chip-approved-bg);
-  border: 1px solid var(--chip-approved-border);
-  white-space: nowrap;
-
-  app-icon { color: var(--color-success); }
-
-  @media (max-width: 640px) { display: none; }
-}
-
-.theme-toggle {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm);
-  background: var(--bg-mute);
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cui-success);
+  background: rgba(46, 184, 92, 0.12);
+  border: 1px solid rgba(46, 184, 92, 0.25);
 
-  &:hover {
-    background: var(--brand-tint);
-    color: var(--brand-600);
-    border-color: var(--brand-200);
+  @media (max-width: 640px) {
+    display: none;
   }
 }
 
 .topbar-user {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border: 1px solid var(--cui-border-color);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-mute);
-  box-shadow: var(--shadow-sm);
-}
-
-.topbar-user__avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--grad-brand);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  background: var(--surface-2);
 }
 
 .topbar-user__info {
   display: flex;
   flex-direction: column;
 
-  @media (max-width: 640px) { display: none; }
+  @media (max-width: 640px) {
+    display: none;
+  }
 }
 
 .topbar-user__name {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--ink);
-  white-space: nowrap;
 }
 
 .topbar-user__role {
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .logout-btn {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background: rgba(229, 83, 83, 0.12);
+    color: var(--cui-danger);
   }
-}
-
-// ── Page outlet ──────────────────────────────────────────────
-.page-outlet {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  // Each child page manages its own padding
-}
-
-// ══════════════════════════════════════════════════════════════
-//  RESPONSIVE
-// ══════════════════════════════════════════════════════════════
-@media (max-width: 768px) {
-  .shell {
-    grid-template-columns: 68px 1fr;
-  }
-
-  .sidebar__brand .brand-name,
-  .sidebar-user { display: none; }
 }

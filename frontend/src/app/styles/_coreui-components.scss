@@ -1,0 +1,106 @@
+// CoreUI-inspired cards, tables, forms (complète _app-ui.scss)
+
+.card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--cui-border-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card__header {
+  background: transparent;
+  padding: 1rem 1.25rem;
+}
+
+.card__body {
+  padding: 1.25rem;
+}
+
+.btn-primary {
+  background: var(--cui-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  font-weight: 600;
+
+  &:hover {
+    background: #2819b8;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(50, 31, 219, 0.35);
+  }
+}
+
+.btn-secondary {
+  border-radius: var(--radius-sm);
+  background: var(--cui-card-bg);
+  border-color: var(--cui-border-color);
+}
+
+.decisions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted, var(--muted));
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--cui-border-color);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--cui-border-color);
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background: rgba(50, 31, 219, 0.04);
+  }
+}
+
+.field input,
+.field select,
+.field textarea,
+.filters input,
+.filters select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--cui-border-color);
+  border-radius: var(--radius-sm);
+  background: var(--cui-card-bg);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--cui-primary);
+    box-shadow: 0 0 0 0.2rem rgba(50, 31, 219, 0.15);
+  }
+}
+
+.status-chip {
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+}
+
+.state-banner {
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.shell-page {
+  padding: 0;
+  gap: 1.5rem;
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+}

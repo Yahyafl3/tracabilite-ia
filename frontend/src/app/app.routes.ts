@@ -49,6 +49,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/comparaison/comparaison.component').then(m => m.ComparaisonComponent)
       },
       {
+        path: 'audit',
+        canActivate: [roleGuard([UserRole.AUDITEUR, UserRole.ADMINISTRATEUR])],
+        loadComponent: () => import('./features/audit/audit-page.component').then(m => m.AuditPageComponent)
+      },
+      {
         path: 'validation',
         loadComponent: () => import('./features/validation/validation-queue.component').then(m => m.ValidationQueueComponent)
       },

@@ -1,0 +1,34 @@
+<div class="shell-page">
+  <header class="page-header">
+    <div class="page-header__left">
+      <span class="eyebrow">
+        <app-icon name="shield-check" [size]="13" />
+        Conformité
+      </span>
+      <h1 class="page-title">Audit & traçabilité</h1>
+      <p class="page-subtitle">
+        Consultation des journaux d'audit, vérifications d'intégrité SHA-256 et exports réglementaires.
+      </p>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title">
+        <app-icon name="history" [size]="17" />
+        Module audit
+      </h2>
+    </div>
+    <div class="card__body">
+      <div class="empty-state">
+        <app-icon name="shield-check" [size]="32" />
+        <p>
+          L'espace audit regroupe l'historique des actions, la vérification de chaîne cryptographique
+          et les rapports exportables. Utilisez l'onglet <strong>Historique</strong> et
+          <strong>Sources</strong> dans le détail d'une décision pour l'audit opérationnel.
+        </p>
+        <a routerLink="/decisions" class="btn-secondary">Parcourir les décisions</a>
+      </div>
+    </div>
+  </section>
+</div>
