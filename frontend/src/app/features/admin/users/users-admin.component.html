@@ -1,33 +1,24 @@
 <div class="shell-page">
-  <header class="page-header">
-    <div class="page-header__left">
-      <span class="eyebrow">
-        <app-icon name="shield-check" [size]="13" />
-        Administration
-      </span>
-      <h1 class="page-title">Utilisateurs</h1>
-      <p class="page-subtitle">
-        Gestion des comptes Administrateur, Validateur et Auditeur.
-      </p>
-    </div>
+  <app-page-header
+    [breadcrumbs]="['Accueil', 'Administration', 'Utilisateurs']"
+    title="Utilisateurs"
+    subtitle="Gestion des comptes Administrateur, Validateur et Auditeur."
+  >
     <button class="btn-primary" type="button" (click)="openCreateForm()">
       <app-icon name="file-check" [size]="16" />
       Nouvel utilisateur
     </button>
-  </header>
+  </app-page-header>
 
   @if (success()) {
-    <p class="success-banner">{{ success() }}</p>
+    <p class="success-banner" role="status">{{ success() }}</p>
   }
   @if (error()) {
-    <p class="state-banner state-banner--error">{{ error() }}</p>
+    <app-error-state [message]="error()!" />
   }
 
   @if (loading()) {
-    <div class="loading">
-      <span class="spinner" aria-hidden="true"></span>
-      Chargement des utilisateurs…
-    </div>
+    <app-loading-skeleton [lines]="6" label="Chargement des utilisateurs…" />
   } @else {
     <section class="card table-card">
       <div class="card__header">
@@ -42,11 +33,11 @@
         <table class="decisions-table" aria-label="Liste des utilisateurs">
           <thead>
             <tr>
-              <th>Utilisateur</th>
-              <th>Email</th>
-              <th>Rôle</th>
-              <th>Créé le</th>
-              <th></th>
+              <th scope="col">Utilisateur</th>
+              <th scope="col">Email</th>
+              <th scope="col">Rôle</th>
+              <th scope="col">Créé le</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
@@ -67,9 +58,10 @@
                 </td>
                 <td class="td-email">{{ user.email }}</td>
                 <td>
-                  <span class="status-chip" [class]="roleChipClass(user.role)">
-                    {{ roleLabel(user.role) }}
-                  </span>
+                  <app-status-badge
+                    [label]="roleLabel(user.role)"
+                    [chipClass]="roleChipClass(user.role)"
+                  />
                 </td>
                 <td class="td-time">
                   <span class="time-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span>
@@ -84,6 +76,7 @@
                       class="btn-danger btn-danger--sm"
                       type="button"
                       [disabled]="isCurrentUser(user)"
+                      [attr.aria-label]="'Supprimer ' + user.email"
                       (click)="deleteUser(user)">
                       Supprimer
                     </button>
@@ -95,10 +88,10 @@
             } @empty {
               <tr>
                 <td colspan="5">
-                  <div class="empty-state">
-                    <app-icon name="users" [size]="28" />
-                    <p>Aucun utilisateur enregistré.</p>
-                  </div>
+                  <app-empty-state
+                    icon="users"
+                    message="Aucun utilisateur enregistré pour le moment."
+                  />
                 </td>
               </tr>
             }
@@ -109,14 +102,20 @@
   }
 
   @if (formOpen()) {
-    <div class="modal-backdrop" (click)="closeForm()"></div>
-    <section class="modal card" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
+    <div class="modal-backdrop" (click)="closeForm()" aria-hidden="true"></div>
+    <section
+      class="modal card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="user-modal-title"
+      (keydown.escape)="closeForm()"
+    >
       <div class="card__header">
         <h2 class="card__title" id="user-modal-title">
           <app-icon [name]="formMode() === 'create' ? 'file-check' : 'file-text'" [size]="17" />
           {{ formMode() === 'create' ? 'Créer un utilisateur' : 'Modifier l\'utilisateur' }}
         </h2>
-        <button class="btn-link" type="button" (click)="closeForm()">
+        <button class="btn-link" type="button" (click)="closeForm()" aria-label="Fermer la fenêtre">
           <app-icon name="close" [size]="14" />
           Fermer
         </button>
@@ -125,12 +124,12 @@
       <form class="modal__body" [formGroup]="form" (ngSubmit)="submitForm()">
         <div class="field">
           <label for="nom">Nom</label>
-          <input id="nom" formControlName="nom" placeholder="Nom complet" />
+          <input id="nom" formControlName="nom" placeholder="Nom complet" autocomplete="name" />
         </div>
 
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" type="email" formControlName="email" placeholder="email@exemple.fr" />
+          <input id="email" type="email" formControlName="email" placeholder="email@exemple.fr" autocomplete="email" />
         </div>
 
         <div class="field">
@@ -149,7 +148,13 @@
               <span class="field-hint-inline"> (laisser vide pour conserver)</span>
             }
           </label>
-          <input id="motDePasse" type="password" formControlName="motDePasse" placeholder="••••••••" />
+          <input
+            id="motDePasse"
+            type="password"
+            formControlName="motDePasse"
+            placeholder="••••••••"
+            autocomplete="new-password"
+          />
         </div>
 
         <footer class="modal__footer">

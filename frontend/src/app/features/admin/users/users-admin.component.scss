@@ -1,6 +1,5 @@
-@import '../../decisions/decisions-shared';
+// Styles spécifiques à la page utilisateurs (styles communs via styles.scss global)
 
-// ── Table utilisateurs ───────────────────────────────────────
 .user-cell {
   display: flex;
   align-items: center;
@@ -96,11 +95,6 @@
   opacity: 0.82;
 }
 
-.empty-state {
-  padding: var(--space-5) var(--space-4);
-}
-
-// ── Modale ───────────────────────────────────────────────────
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -115,6 +109,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
   z-index: 210;
   box-shadow: var(--shadow-lg);
 }
@@ -136,4 +132,17 @@
   font-weight: 400;
   color: var(--text-muted);
   font-size: 0.78rem;
+}
+
+@media (max-width: 768px) {
+  .td-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-secondary--sm,
+  .btn-danger--sm {
+    width: 100%;
+    justify-content: center;
+  }
 }

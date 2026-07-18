@@ -23,7 +23,9 @@
         <a class="nav-link"
            [routerLink]="item.route"
            routerLinkActive="active"
+           #rla="routerLinkActive"
            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+           [attr.aria-current]="rla.isActive ? 'page' : null"
            [attr.title]="!sidebarOpen() ? item.label : null"
            (click)="closeMobileSidebar()">
           <span class="nav-link__icon">
@@ -72,7 +74,7 @@
         <app-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" [size]="16" />
       </button>
 
-      <span class="integrity-chip">
+      <span class="integrity-chip" role="status" aria-label="Chaîne d'intégrité SHA-256">
         <app-icon name="shield-check" [size]="13" />
         SHA-256
       </span>

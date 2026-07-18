@@ -2,6 +2,13 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IconComponent } from '../../../shared/icon.component';
+import {
+  PageHeaderComponent,
+  StatusBadgeComponent,
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingSkeletonComponent,
+} from '../../../shared/ui';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   CreateManagedUserRequest,
@@ -19,7 +26,16 @@ type FormMode = 'create' | 'edit';
 @Component({
   selector: 'app-users-admin',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IconComponent,
+    PageHeaderComponent,
+    StatusBadgeComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    LoadingSkeletonComponent,
+  ],
   templateUrl: './users-admin.component.html',
   styleUrl: './users-admin.component.scss',
 })

@@ -30,4 +30,18 @@ describe('AgentResponseCardComponent', () => {
 
     expect(banner).toContain('Modèle principal indisponible');
   });
+
+  it('shows technical error code for MODEL_UNAVAILABLE agent', () => {
+    const unavailableAgent: AgentResponse = {
+      agentKey: 'AGENT_2',
+      modelId: 'anthropic/claude-3-haiku',
+      provider: 'OpenRouter',
+      statut: 'MODEL_UNAVAILABLE',
+      codeErreur: 'MODEL_UNAVAILABLE',
+    };
+    fixture.componentRef.setInput('agent', unavailableAgent);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('MODEL_UNAVAILABLE');
+  });
 });
