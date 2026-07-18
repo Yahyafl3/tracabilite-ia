@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guard';
+import { UserRole } from './core/models/auth.models';
 
 export const routes: Routes = [
   {
@@ -50,6 +51,11 @@ export const routes: Routes = [
       {
         path: 'validation',
         loadComponent: () => import('./features/validation/validation-queue.component').then(m => m.ValidationQueueComponent)
+      },
+      {
+        path: 'admin/users',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
+        loadComponent: () => import('./features/admin/users/users-admin.component').then(m => m.UsersAdminComponent)
       }
     ]
   },

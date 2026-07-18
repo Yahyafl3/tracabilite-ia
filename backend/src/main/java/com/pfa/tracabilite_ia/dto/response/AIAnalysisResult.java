@@ -1,11 +1,14 @@
 package com.pfa.tracabilite_ia.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AIAnalysisResult {
 
     private String suggestedDecision;
-    private double confidence;
+    private Double confidence;
     private String riskLevel;
     private String summary;
     private String explanation;
@@ -19,11 +22,11 @@ public class AIAnalysisResult {
         this.suggestedDecision = suggestedDecision;
     }
 
-    public double getConfidence() {
+    public Double getConfidence() {
         return confidence;
     }
 
-    public void setConfidence(double confidence) {
+    public void setConfidence(Double confidence) {
         this.confidence = confidence;
     }
 

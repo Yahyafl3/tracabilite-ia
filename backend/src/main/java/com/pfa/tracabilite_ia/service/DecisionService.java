@@ -6,6 +6,7 @@ import com.pfa.tracabilite_ia.dto.response.DecisionPageResponse;
 import com.pfa.tracabilite_ia.dto.response.DecisionResponse;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.entities.Decision;
+import com.pfa.tracabilite_ia.entities.Utilisateur;
 
 import java.util.UUID;
 
@@ -20,4 +21,6 @@ public interface DecisionService {
     DecisionPageResponse rechercher(String search, StatutDecisionEnum statut, int page, int size);
 
     DecisionResponse analyserCredit(CreditFeaturesRequest request);
+
+    DecisionResponse retryFailedAgents(UUID id, Utilisateur user);
 }

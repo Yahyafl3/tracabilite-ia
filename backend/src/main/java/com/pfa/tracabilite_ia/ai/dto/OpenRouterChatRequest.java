@@ -9,6 +9,7 @@ import java.util.List;
 public class OpenRouterChatRequest {
 
     private String model;
+    private List<String> models;
     private List<Message> messages;
 
     @JsonProperty("response_format")
@@ -17,10 +18,19 @@ public class OpenRouterChatRequest {
     public OpenRouterChatRequest() {
     }
 
-    public OpenRouterChatRequest(String model, List<Message> messages, ResponseFormat responseFormat) {
+    public OpenRouterChatRequest(String model, List<String> models, List<Message> messages, ResponseFormat responseFormat) {
         this.model = model;
+        this.models = models;
         this.messages = messages;
         this.responseFormat = responseFormat;
+    }
+
+    public List<String> getModels() {
+        return models;
+    }
+
+    public void setModels(List<String> models) {
+        this.models = models;
     }
 
     public String getModel() {

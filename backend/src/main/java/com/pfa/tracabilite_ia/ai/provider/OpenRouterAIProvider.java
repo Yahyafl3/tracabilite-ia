@@ -47,7 +47,7 @@ public class OpenRouterAIProvider implements AIProvider {
                 promptTemplateService.userPromptForDecisionAnalysis(prompt, contexte),
                 currentCorrelationId()
         );
-        return responseParser.parse(chatResult.getRawContent());
+        return responseParser.parse(chatResult.getRawContent()).requireValid();
     }
 
     @Override

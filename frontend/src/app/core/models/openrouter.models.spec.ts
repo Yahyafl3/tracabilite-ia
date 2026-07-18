@@ -1,4 +1,4 @@
-import { formatConsensusDisplay, successfulAgentCount, type ConsensusResponse } from './openrouter.models';
+import { formatConsensusDisplay, formatDeclaredConfidence, successfulAgentCount, agentFallbackMessage, agentDisplayName, type ConsensusResponse, type AgentResponse } from './openrouter.models';
 
 describe('consensus display', () => {
   const base: ConsensusResponse = {
@@ -75,5 +75,28 @@ describe('consensus display', () => {
 
   it('falls back to agentsReussis when successfulAgentCount is missing', () => {
     expect(successfulAgentCount({ agentsConsultes: 3, agentsReussis: 2 })).toBe(2);
+  });
+
+  it('shows Non fournie when declared confidence is null', () => {
+    expect(formatDeclaredConfidence(null)).toBe('Non fournie');
+    expect(formatDeclaredConfidence(undefined)).toBe('Non fournie');
+  });
+
+  it('formats declared confidence as percentage', () => {
+    expect(formatDeclaredConfidence(0.42)).toBe('42.0 %');
+  });
+
+  it('shows fallback message and actual model display name', () => {
+    const agent: AgentResponse = {
+      agentKey: 'AGENT_1',
+      modelId: 'google/gemma-4-26b-a4b-it:free',
+      actualModelId: 'google/gemma-4-26b-a4b-it:free',
+      provider: 'GOOGLE_OPENROUTER',
+      statut: 'SUCCESS',
+      fallbackUsed: true,
+    };
+
+    expect(agentFallbackMessage(agent)).toContain('Modèle principal indisponible');
+    expect(agentDisplayName(agent)).toBe('google/gemma-4-26b-a4b-it:free');
   });
 });

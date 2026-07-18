@@ -1,20 +1,36 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { IconComponent } from '../../../shared/icon.component';
 import { DecisionService } from '../../../core/services/decision.service';
 import { ValidationService } from '../../../core/services/validation.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/auth.models';
-import { DecisionResponse, StatutDecisionEnum } from '../../../core/models/decision.models';
+import {
+  DecisionResponse,
+  StatutDecisionEnum,
+  humanFinalLabel,
+  mlConfidence,
+  mlDecision,
+  consensusLabel,
+} from '../../../core/models/decision.models';
 import {
   ConsensusResponse,
+  agentByKey,
+  agentDisplayName,
+  agentStatusLabel,
+  formatDeclaredConfidence,
   formatConsensusDisplay,
+  agentFallbackMessage,
   type ConsensusDisplay,
 } from '../../../core/models/openrouter.models';
 import { DecisionTraceService, DecisionHistoryEntry, DecisionSource } from '../../../core/services/decision-trace.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
+import { decisionChipClass, riskChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
+import { historyActionLabel, riskLabel, statutLabel } from '../../../core/utils/label.util';
 
 type DetailTab = 'resume' | 'prediction' | 'explain' | 'agents' | 'validation' | 'history' | 'sources';
 
@@ -32,6 +48,7 @@ export class DecisionDetailComponent {
   private readonly authService = inject(AuthService);
   private readonly traceService = inject(DecisionTraceService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly decision = signal<DecisionResponse | null>(null);
   readonly historyEntries = signal<DecisionHistoryEntry[]>([]);
@@ -43,6 +60,27 @@ export class DecisionDetailComponent {
   readonly validationError = signal<string | null>(null);
   readonly validationSuccess = signal<string | null>(null);
   readonly activeTab = signal<DetailTab>('resume');
+  readonly retryLoading = signal(false);
+  readonly retryError = signal<string | null>(null);
+
+  readonly isAdmin = computed(() =>
+    this.authService.currentUser?.role === UserRole.ADMINISTRATEUR,
+  );
+
+  readonly hasRetryableAgents = computed(() =>
+    (this.decision()?.agentResponses ?? []).some((agent) => {
+      if (agent.statut === 'SUCCESS') {
+        return false;
+      }
+      if (['RATE_LIMITED', 'TIMEOUT', 'TEMPORARILY_UNAVAILABLE'].includes(agent.fallbackReason ?? '')) {
+        return true;
+      }
+      if (agent.statut === 'TIMEOUT') {
+        return true;
+      }
+      return ['OPENROUTER_RATE_LIMITED', 'OPENROUTER_TIMEOUT', 'OPENROUTER_UNAVAILABLE'].includes(agent.codeErreur ?? '');
+    }),
+  );
 
   readonly validationForm = this.fb.group({
     commentaire: ['', Validators.maxLength(2000)],
@@ -56,6 +94,10 @@ export class DecisionDetailComponent {
     return isValidator && item?.statutValidation === StatutDecisionEnum.EN_ATTENTE;
   });
 
+  readonly isPendingValidation = computed(() =>
+    this.decision()?.statutValidation === StatutDecisionEnum.EN_ATTENTE,
+  );
+
   readonly tabs: Array<{ id: DetailTab; label: string }> = [
     { id: 'resume', label: 'Résumé' },
     { id: 'prediction', label: 'Prédiction ML' },
@@ -67,14 +109,19 @@ export class DecisionDetailComponent {
   ];
 
   constructor() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.error.set('Identifiant de décision manquant.');
-      this.loading.set(false);
-      return;
-    }
-
-    this.loadDecision(id);
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        filter((id): id is string => !!id),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((id) => {
+        this.loading.set(true);
+        this.error.set(null);
+        this.validationSuccess.set(null);
+        this.validationError.set(null);
+        this.loadDecision(id);
+      });
   }
 
   loadDecision(id: string): void {
@@ -109,8 +156,17 @@ export class DecisionDetailComponent {
     });
   }
 
-  historyActionLabel(action: string): string {
-    return action.replaceAll('_', ' ');
+  historyActionLabel = historyActionLabel;
+  statutLabel = statutLabel;
+  riskLabel = riskLabel;
+
+  historyItemClass(action: string): string {
+    if (action.includes('FAILED') || action.includes('REJECTED')) return 'history-item--danger';
+    if (action.includes('APPROVED') || action.includes('COMPLETED') || action.includes('SUCCESS') || action.includes('VERIFIED')) {
+      return 'history-item--success';
+    }
+    if (action.includes('MODIFIED') || action.includes('REVIEW')) return 'history-item--warning';
+    return '';
   }
 
   setTab(tab: DetailTab): void {
@@ -147,6 +203,32 @@ export class DecisionDetailComponent {
     );
   }
 
+  review(): void {
+    const id = this.decision()?.decisionId;
+    if (!id) return;
+    this.submitValidation(() =>
+      this.validationService.review(id, { commentaire: this.validationForm.value.commentaire ?? undefined }),
+    );
+  }
+
+  retryFailedAgents(): void {
+    const id = this.decision()?.decisionId;
+    if (!id) return;
+    this.retryLoading.set(true);
+    this.retryError.set(null);
+    this.decisionService.retryFailedAgents(id).subscribe({
+      next: (response) => {
+        this.decision.set(response);
+        this.retryLoading.set(false);
+        this.validationSuccess.set('Agents OpenRouter relancés avec succès.');
+      },
+      error: (err) => {
+        this.retryError.set(resolveHttpErrorMessage(err, 'Impossible de relancer les agents.'));
+        this.retryLoading.set(false);
+      },
+    });
+  }
+
   private submitValidation(action: () => import('rxjs').Observable<DecisionResponse>): void {
     this.validationLoading.set(true);
     this.validationError.set(null);
@@ -169,31 +251,21 @@ export class DecisionDetailComponent {
     return Object.entries(decision.features ?? {}).map(([key, value]) => ({ key, value }));
   }
 
-  decisionChipClass(decision?: string): string {
-    if (decision === 'APPROUVER') return 'chip--approved';
-    if (decision === 'REJETER') return 'chip--rejected';
-    return 'chip--pending';
-  }
-
-  riskChipClass(risk?: string): string {
-    if (risk === 'HIGH') return 'chip--rejected';
-    if (risk === 'MEDIUM') return 'chip--modified';
-    if (risk === 'LOW') return 'chip--approved';
-    return 'chip--pending';
-  }
-
-  statutChipClass(statut: StatutDecisionEnum): string {
-    const map: Record<StatutDecisionEnum, string> = {
-      [StatutDecisionEnum.APPROUVEE]: 'chip--approved',
-      [StatutDecisionEnum.MODIFIEE]: 'chip--modified',
-      [StatutDecisionEnum.REJETEE]: 'chip--rejected',
-      [StatutDecisionEnum.EN_ATTENTE]: 'chip--pending',
-      [StatutDecisionEnum.BROUILLON]: 'chip--pending',
-    };
-    return map[statut] ?? 'chip--pending';
-  }
+  decisionChipClass = decisionChipClass;
+  riskChipClass = riskChipClass;
+  statutChipClass = statutChipClass;
 
   consensusDisplay(consensus: ConsensusResponse): ConsensusDisplay {
     return formatConsensusDisplay(consensus);
   }
+
+  agentName = agentDisplayName;
+  agentFallback = agentFallbackMessage;
+  declaredConfidenceLabel = formatDeclaredConfidence;
+  agentForKey = agentByKey;
+  agentStatus = agentStatusLabel;
+  mlDecision = mlDecision;
+  mlConfidence = mlConfidence;
+  consensusLabel = consensusLabel;
+  humanFinalLabel = humanFinalLabel;
 }

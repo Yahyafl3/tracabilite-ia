@@ -39,6 +39,19 @@ public class ReponseAgentIA {
     @Column(nullable = false)
     private String provider;
 
+    private String requestedModelId;
+
+    private String actualModelId;
+
+    private Boolean fallbackUsed;
+
+    @Column(length = 64)
+    private String fallbackReason;
+
+    private String responseHash;
+
+    private Integer retryCount;
+
     @Column(columnDefinition = "TEXT")
     private String reponseBrute;
 

@@ -1,0 +1,259 @@
+// ================================================================
+//  App UI — composants partagés (dashboard, décisions, shell…)
+//  Importé globalement via styles.scss
+// ================================================================
+
+// ── Cards ────────────────────────────────────────────────────
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.card__hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.card__body {
+  padding: 20px 22px;
+}
+
+// ── KPI cards ────────────────────────────────────────────────
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px)  { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.kpi-card__icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .kpi-card--indigo & { background: var(--chip-approved-bg); color: var(--color-primary); }
+  .kpi-card--green  & { background: var(--chip-approved-bg); color: var(--color-success); }
+  .kpi-card--amber  & { background: var(--chip-modified-bg); color: var(--color-warning); }
+  .kpi-card--violet & { background: rgba(139, 92, 246, 0.12); color: var(--violet-600); }
+}
+
+.kpi-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kpi-card__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-card__value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.kpi-card__trend {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+
+  &--up { color: var(--color-success); }
+}
+
+// ── Badges & chips utilitaires ───────────────────────────────
+.date-chip,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.date-chip {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.badge--neutral {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background: var(--chip-info-bg);
+  color: var(--chip-info-fg);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+// ── États vides & messages ───────────────────────────────────
+.empty-hint,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.state-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  &--loading {
+    color: var(--text-muted);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-color);
+  }
+
+  &--error {
+    color: var(--chip-rejected-fg);
+    background: var(--chip-rejected-bg);
+    border: 1px solid var(--chip-rejected-border);
+  }
+}
+
+// ── Loading ──────────────────────────────────────────────────
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: app-ui-spin 0.8s linear infinite;
+  flex-shrink: 0;
+
+  &--sm {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+  }
+}
+
+@keyframes app-ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Table utilities ──────────────────────────────────────────
+.table-card { width: 100%; }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ── Score & mini chips (dashboard perf) ──────────────────────
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &--high { background: var(--chip-approved-bg); color: var(--chip-approved-fg); }
+  &--mid  { background: var(--chip-modified-bg); color: var(--chip-modified-fg); }
+  &--low  { background: var(--chip-rejected-bg); color: var(--chip-rejected-fg); }
+}
+
+.mini-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  &--approved { background: var(--chip-approved-bg); color: var(--chip-approved-fg); border-color: var(--chip-approved-border); }
+  &--modified { background: var(--chip-modified-bg); color: var(--chip-modified-fg); border-color: var(--chip-modified-border); }
+  &--rejected { background: var(--chip-rejected-bg); color: var(--chip-rejected-fg); border-color: var(--chip-rejected-border); }
+}

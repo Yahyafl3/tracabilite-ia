@@ -1,0 +1,169 @@
+<div class="shell-page">
+  <header class="page-header">
+    <div class="page-header__left">
+      <span class="eyebrow">
+        <app-icon name="shield-check" [size]="13" />
+        Administration
+      </span>
+      <h1 class="page-title">Utilisateurs</h1>
+      <p class="page-subtitle">
+        Gestion des comptes Administrateur, Validateur et Auditeur.
+      </p>
+    </div>
+    <button class="btn-primary" type="button" (click)="openCreateForm()">
+      <app-icon name="file-check" [size]="16" />
+      Nouvel utilisateur
+    </button>
+  </header>
+
+  @if (success()) {
+    <p class="success-banner">{{ success() }}</p>
+  }
+  @if (error()) {
+    <p class="state-banner state-banner--error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="loading">
+      <span class="spinner" aria-hidden="true"></span>
+      Chargement des utilisateurs…
+    </div>
+  } @else {
+    <section class="card table-card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <app-icon name="users" [size]="17" />
+          Comptes enregistrés
+        </h2>
+        <span class="count-badge">{{ users().length }} utilisateur(s)</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="decisions-table" aria-label="Liste des utilisateurs">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Créé le</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr [class.row-muted]="!isManaged(user)">
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar" [class.user-avatar--muted]="!isManaged(user)">
+                      {{ userInitial(user) }}
+                    </span>
+                    <span class="user-cell__info">
+                      <strong>{{ user.nom }}</strong>
+                      @if (isCurrentUser(user)) {
+                        <span class="user-cell__tag">Vous</span>
+                      }
+                    </span>
+                  </div>
+                </td>
+                <td class="td-email">{{ user.email }}</td>
+                <td>
+                  <span class="status-chip" [class]="roleChipClass(user.role)">
+                    {{ roleLabel(user.role) }}
+                  </span>
+                </td>
+                <td class="td-time">
+                  <span class="time-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span>
+                  <span class="time-hour">{{ user.dateCreation | date:'HH:mm' }}</span>
+                </td>
+                <td class="td-actions">
+                  @if (isManaged(user)) {
+                    <button class="btn-secondary btn-secondary--sm" type="button" (click)="openEditForm(user)">
+                      Modifier
+                    </button>
+                    <button
+                      class="btn-danger btn-danger--sm"
+                      type="button"
+                      [disabled]="isCurrentUser(user)"
+                      (click)="deleteUser(user)">
+                      Supprimer
+                    </button>
+                  } @else {
+                    <span class="muted-inline">Compte opérateur</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">
+                  <div class="empty-state">
+                    <app-icon name="users" [size]="28" />
+                    <p>Aucun utilisateur enregistré.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (formOpen()) {
+    <div class="modal-backdrop" (click)="closeForm()"></div>
+    <section class="modal card" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
+      <div class="card__header">
+        <h2 class="card__title" id="user-modal-title">
+          <app-icon [name]="formMode() === 'create' ? 'file-check' : 'file-text'" [size]="17" />
+          {{ formMode() === 'create' ? 'Créer un utilisateur' : 'Modifier l\'utilisateur' }}
+        </h2>
+        <button class="btn-link" type="button" (click)="closeForm()">
+          <app-icon name="close" [size]="14" />
+          Fermer
+        </button>
+      </div>
+
+      <form class="modal__body" [formGroup]="form" (ngSubmit)="submitForm()">
+        <div class="field">
+          <label for="nom">Nom</label>
+          <input id="nom" formControlName="nom" placeholder="Nom complet" />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" placeholder="email@exemple.fr" />
+        </div>
+
+        <div class="field">
+          <label for="role">Rôle</label>
+          <select id="role" formControlName="role">
+            @for (role of roles; track role) {
+              <option [value]="role">{{ roleLabel(role) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="motDePasse">
+            Mot de passe
+            @if (formMode() === 'edit') {
+              <span class="field-hint-inline"> (laisser vide pour conserver)</span>
+            }
+          </label>
+          <input id="motDePasse" type="password" formControlName="motDePasse" placeholder="••••••••" />
+        </div>
+
+        <footer class="modal__footer">
+          <button class="btn-secondary" type="button" (click)="closeForm()">Annuler</button>
+          <button class="btn-primary" type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner spinner--sm" aria-hidden="true"></span>
+              Enregistrement…
+            } @else {
+              Enregistrer
+            }
+          </button>
+        </footer>
+      </form>
+    </section>
+  }
+</div>

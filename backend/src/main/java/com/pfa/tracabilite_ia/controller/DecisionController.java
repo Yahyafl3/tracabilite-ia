@@ -8,6 +8,7 @@ import com.pfa.tracabilite_ia.dto.response.DecisionPageResponse;
 import com.pfa.tracabilite_ia.dto.response.DecisionResponse;
 import com.pfa.tracabilite_ia.entities.Decision;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
+import com.pfa.tracabilite_ia.service.AuthService;
 import com.pfa.tracabilite_ia.service.DecisionService;
 import com.pfa.tracabilite_ia.service.ValidationService;
 import jakarta.validation.Valid;
@@ -25,11 +26,14 @@ public class DecisionController {
 
     private final DecisionService decisionService;
     private final ValidationService validationService;
+    private final AuthService authService;
 
     public DecisionController(DecisionService decisionService,
-                              ValidationService validationService) {
+                              ValidationService validationService,
+                              AuthService authService) {
         this.decisionService = decisionService;
         this.validationService = validationService;
+        this.authService = authService;
     }
 
     @PostMapping
@@ -62,6 +66,18 @@ public class DecisionController {
         return decisionService.obtenir(id);
     }
 
+    @GetMapping("/{id}/validation")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
+    public DecisionResponse obtenirContexteValidation(@PathVariable UUID id) {
+        return validationService.obtenirContexteValidation(id);
+    }
+
+    @PostMapping("/{id}/submit-validation")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN', 'USER')")
+    public DecisionResponse soumettreValidation(@PathVariable UUID id) {
+        return validationService.soumettreValidation(id);
+    }
+
     @PutMapping("/{id}")
     public DecisionResponse mettreAJour(@PathVariable UUID id,
                                         @Valid @RequestBody DecisionRequest request) {
@@ -78,7 +94,7 @@ public class DecisionController {
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
     public DecisionResponse rejeter(@PathVariable UUID id,
-                                      @RequestBody(required = false) @Valid ValidationRequest request) {
+                                    @RequestBody(required = false) @Valid ValidationRequest request) {
         return validationService.rejeter(id, request != null ? request : new ValidationRequest());
     }
 
@@ -87,5 +103,18 @@ public class DecisionController {
     public DecisionResponse modifier(@PathVariable UUID id,
                                      @Valid @RequestBody ValidationRequest request) {
         return validationService.modifier(id, request);
+    }
+
+    @PostMapping("/{id}/review")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
+    public DecisionResponse review(@PathVariable UUID id,
+                                   @RequestBody(required = false) @Valid ValidationRequest request) {
+        return validationService.review(id, request != null ? request : new ValidationRequest());
+    }
+
+    @PostMapping("/{id}/retry-failed-agents")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DecisionResponse retryFailedAgents(@PathVariable UUID id) {
+        return decisionService.retryFailedAgents(id, authService.getCurrentUser());
     }
 }

@@ -8,13 +8,18 @@ public class OpenRouterProperties {
     private String baseUrl = "https://openrouter.ai/api/v1";
     private String apiKey = "";
     private String model1 = "meta-llama/llama-3.3-70b-instruct:free";
-    private String model2 = "google/gemma-4-31b-it:free";
+    private String model2 = "google/gemma-4-26b-a4b-it:free";
     private String model3 = "openai/gpt-oss-20b:free";
+    private String agent1Fallback = "";
+    private String agent2Fallback = "";
+    private String agent3Fallback = "";
     private String httpReferer = "http://localhost";
     private String appTitle = "Tracabilite-IA";
     private int connectTimeoutMs = 5000;
     private int readTimeoutMs = 120000;
-    private int agentDelayMs = 2000;
+    private int agentDelayMs = 3000;
+    private long modelsCacheTtlMs = 300_000L;
+    private boolean useFreeRouter = false;
 
     public boolean isConfigured() {
         return apiKey != null && !apiKey.isBlank();
@@ -60,6 +65,39 @@ public class OpenRouterProperties {
         this.model3 = model3;
     }
 
+    public String getAgent1Fallback() {
+        return agent1Fallback;
+    }
+
+    public void setAgent1Fallback(String agent1Fallback) {
+        this.agent1Fallback = agent1Fallback;
+    }
+
+    public String getAgent2Fallback() {
+        return agent2Fallback;
+    }
+
+    public void setAgent2Fallback(String agent2Fallback) {
+        this.agent2Fallback = agent2Fallback;
+    }
+
+    public String getAgent3Fallback() {
+        return agent3Fallback;
+    }
+
+    public void setAgent3Fallback(String agent3Fallback) {
+        this.agent3Fallback = agent3Fallback;
+    }
+
+    public String fallbackForAgentKey(String agentKey) {
+        return switch (agentKey) {
+            case "AGENT_1" -> agent1Fallback;
+            case "AGENT_2" -> agent2Fallback;
+            case "AGENT_3" -> agent3Fallback;
+            default -> "";
+        };
+    }
+
     public String getHttpReferer() {
         return httpReferer;
     }
@@ -98,5 +136,21 @@ public class OpenRouterProperties {
 
     public void setAgentDelayMs(int agentDelayMs) {
         this.agentDelayMs = agentDelayMs;
+    }
+
+    public long getModelsCacheTtlMs() {
+        return modelsCacheTtlMs;
+    }
+
+    public void setModelsCacheTtlMs(long modelsCacheTtlMs) {
+        this.modelsCacheTtlMs = modelsCacheTtlMs;
+    }
+
+    public boolean isUseFreeRouter() {
+        return useFreeRouter;
+    }
+
+    public void setUseFreeRouter(boolean useFreeRouter) {
+        this.useFreeRouter = useFreeRouter;
     }
 }

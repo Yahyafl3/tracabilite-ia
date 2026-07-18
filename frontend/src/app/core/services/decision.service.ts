@@ -18,6 +18,10 @@ export class DecisionService {
     return this.http.post<DecisionResponse>(`${this.baseUrl}/analyze`, request);
   }
 
+  retryFailedAgents(id: string): Observable<DecisionResponse> {
+    return this.http.post<DecisionResponse>(`${this.baseUrl}/${id}/retry-failed-agents`, {});
+  }
+
   getById(id: string): Observable<DecisionResponse> {
     return this.http.get<DecisionResponse>(`${this.baseUrl}/${id}`);
   }

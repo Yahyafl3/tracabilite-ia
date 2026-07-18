@@ -14,9 +14,15 @@ public interface ValidationService {
 
     List<ValidationActionResponse> historique(UUID decisionId);
 
+    DecisionResponse obtenirContexteValidation(UUID decisionId);
+
+    DecisionResponse soumettreValidation(UUID decisionId);
+
     DecisionResponse approuver(UUID decisionId, ValidationRequest request);
 
     DecisionResponse rejeter(UUID decisionId, ValidationRequest request);
 
     DecisionResponse modifier(UUID decisionId, ValidationRequest request);
+
+    DecisionResponse review(UUID decisionId, ValidationRequest request);
 }

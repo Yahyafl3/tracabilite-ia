@@ -75,7 +75,7 @@
         </form>
 
         @if (error()) {
-          <p class="error">{{ error() }}</p>
+          <p class="state-banner state-banner--error">{{ error() }}</p>
         }
       </div>
     </section>
@@ -107,7 +107,7 @@
             <div class="summary-item">
               <span class="label">Risque</span>
               <span class="status-chip" [class]="riskChipClass(analysis.riskLevel)">
-                {{ analysis.riskLevel }}
+                {{ riskLabel(analysis.riskLevel) }}
               </span>
             </div>
           </div>
@@ -115,6 +115,9 @@
           @if (analysis.consensus) {
             <section class="consensus-block">
               <h3 class="section-title">Consensus OpenRouter (informatif)</h3>
+              @if (analysis.consensus.note?.includes('Quota OpenRouter insuffisant')) {
+                <p class="state-banner state-banner--warning">Quota OpenRouter insuffisant. L'analyse ML reste disponible.</p>
+              }
               @let consensusView = consensusDisplay(analysis.consensus);
               <p class="value">
                 @if (consensusView.showDecisionBadge) {
@@ -136,19 +139,34 @@
               <div class="agent-grid">
                 @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
                   <article class="agent-card">
-                    <header>
-                      <strong>{{ agent.modelName }}</strong>
-                      <span class="status-chip">{{ agent.statut }}</span>
+                    <header class="agent-card__head">
+                      <strong>{{ agent.displayName || agent.modelName || agent.agentKey }}</strong>
+                      <span class="status-chip chip--pending">{{ agent.statut }}</span>
                     </header>
-                    <p class="muted">{{ agent.provider }} · {{ agent.modelId }}</p>
+                    @if (agent.fallbackUsed) {
+                      <p class="state-banner state-banner--info">
+                        Modèle principal indisponible — réponse produite par le modèle de secours
+                      </p>
+                    }
+                    <p class="muted">{{ agent.agentKey }} · {{ agent.provider }}</p>
+                    <p class="muted">Modèle utilisé : <code>{{ agent.modelId }}</code></p>
+                    @if (agent.requestedModelId && agent.actualModelId && agent.requestedModelId !== agent.actualModelId) {
+                      <p class="muted tech-note">Demandé : <code>{{ agent.requestedModelId }}</code> · Réel : <code>{{ agent.actualModelId }}</code></p>
+                    }
                     @if (agent.decisionProposee) {
                       <p>Décision : <strong>{{ agent.decisionProposee }}</strong></p>
                     }
+                    <p>Confiance déclarée par l'agent : <strong>{{ (agent.declaredConfidence ?? agent.confianceDeclaree) == null ? 'Non fournie' : ((agent.declaredConfidence ?? agent.confianceDeclaree)! * 100 | number:'1.0-1') + ' %' }}</strong></p>
                     @if (agent.codeErreur) {
                       <p class="error-inline">{{ agent.codeErreur }}</p>
                     }
                     @if (agent.resume) {
+                      <p class="label-inline">Résumé</p>
                       <p class="value value--text">{{ agent.resume }}</p>
+                    }
+                    @if (agent.explication) {
+                      <p class="label-inline">Explication</p>
+                      <p class="value value--text">{{ agent.explication }}</p>
                     }
                   </article>
                 }
@@ -164,10 +182,11 @@
           }
 
           <section>
-            <h3 class="section-title">Facteurs explicatifs ({{ analysis.explanationSource }} — classe APPROUVER)</h3>
-            <p class="field-hint field--full">
-              contribution % = |valeur SHAP| / Σ|valeurs SHAP| × 100.
-              Un SHAP positif favorise l'approbation par rapport à la moyenne du dataset d'entraînement.
+            <h3 class="section-title">Facteurs explicatifs ({{ analysis.explanationSource }})</h3>
+            <p class="tech-note">
+              Classe expliquée : <strong>APPROUVER</strong>.
+              contribution % = |SHAP| / Σ|SHAP| × 100.
+              Les signes sont relatifs au profil moyen d'entraînement.
             </p>
             <div class="factors">
               @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
@@ -198,6 +217,19 @@
             <app-icon name="eye" [size]="15" />
             Voir le détail enregistré
           </button>
+        </div>
+      </section>
+    } @else {
+      <section class="card result-card result-card--placeholder">
+        <div class="card__header">
+          <h2 class="card__title">
+            <app-icon name="scale" [size]="17" />
+            Résultat de l'analyse
+          </h2>
+        </div>
+        <div class="card__body empty-state">
+          <app-icon name="lightbulb" [size]="32" />
+          <p>Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et les facteurs SHAP.</p>
         </div>
       </section>
     }

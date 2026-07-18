@@ -1,58 +1,7 @@
 @import '../decisions/decisions-shared';
 
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.count-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  background: rgba(79, 70, 229, 0.1);
-  color: var(--brand-700);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th,
-  td {
-    padding: 14px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-
-  th {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-  }
-
-  td strong {
-    display: block;
-    margin-bottom: 4px;
-  }
-
-  .muted {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
+  margin-bottom: 0;
 }
 
 .btn-primary--sm {
@@ -60,12 +9,20 @@
   font-size: 0.82rem;
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  color: var(--muted);
-  padding: 32px 16px;
+.td-prompt {
+  max-width: 320px;
+}
+
+.prompt-text {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.prompt-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }

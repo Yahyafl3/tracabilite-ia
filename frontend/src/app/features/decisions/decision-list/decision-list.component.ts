@@ -4,7 +4,10 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../../shared/icon.component';
 import { DecisionService } from '../../../core/services/decision.service';
-import { DecisionResponse, StatutDecisionEnum } from '../../../core/models/decision.models';
+import { DecisionResponse, StatutDecisionEnum, consensusLabel, humanFinalLabel, mlDecision } from '../../../core/models/decision.models';
+import { decisionChipClass, riskChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
+import { statutLabel } from '../../../core/utils/label.util';
+import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-decision-list',
@@ -24,6 +27,7 @@ export class DecisionListComponent {
   readonly page = signal(0);
   readonly size = signal(10);
   readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.totalElements() / this.size()))
@@ -48,6 +52,7 @@ export class DecisionListComponent {
 
   load(page = this.page(), size = this.size()): void {
     this.loading.set(true);
+    this.error.set(null);
     const filters = this.filters.getRawValue();
     this.decisionService.search({
       search: filters.search,
@@ -62,7 +67,10 @@ export class DecisionListComponent {
         this.size.set(response.size);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger les décisions.'));
+        this.loading.set(false);
+      },
     });
   }
 
@@ -87,29 +95,10 @@ export class DecisionListComponent {
     }
   }
 
-  decisionChipClass(decision?: string): string {
-    if (decision === 'APPROUVER') return 'chip--approved';
-    if (decision === 'REJETER') return 'chip--rejected';
-    return 'chip--pending';
-  }
-
-  riskChipClass(risk?: string): string {
-    if (risk === 'HIGH') return 'chip--rejected';
-    if (risk === 'MEDIUM') return 'chip--modified';
-    if (risk === 'LOW') return 'chip--approved';
-    return 'chip--pending';
-  }
-
-  statutChipClass(statut: StatutDecisionEnum): string {
-    const map: Record<StatutDecisionEnum, string> = {
-      [StatutDecisionEnum.APPROUVEE]: 'chip--approved',
-      [StatutDecisionEnum.MODIFIEE]: 'chip--modified',
-      [StatutDecisionEnum.REJETEE]: 'chip--rejected',
-      [StatutDecisionEnum.EN_ATTENTE]: 'chip--pending',
-      [StatutDecisionEnum.BROUILLON]: 'chip--pending',
-    };
-    return map[statut] ?? 'chip--pending';
-  }
+  decisionChipClass = decisionChipClass;
+  riskChipClass = riskChipClass;
+  statutChipClass = statutChipClass;
+  statutLabel = statutLabel;
 
   formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -118,4 +107,12 @@ export class DecisionListComponent {
   formatTime(iso: string): string {
     return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
+
+  reference(row: DecisionResponse): string {
+    return row.reference ?? row.decisionId.slice(0, 8).toUpperCase();
+  }
+
+  mlDecisionLabel = mlDecision;
+  consensusText = consensusLabel;
+  humanFinal = humanFinalLabel;
 }

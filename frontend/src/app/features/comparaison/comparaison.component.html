@@ -1,8 +1,5 @@
-<div class="page">
+<div class="shell-page">
 
-  <!-- ══════════════════════════════════════════════
-       PAGE HEADER
-  ══════════════════════════════════════════════ -->
   <header class="page-header">
     <div class="page-header__left">
       <span class="eyebrow">
@@ -22,9 +19,12 @@
   </header>
 
   @if (loading()) {
-    <p class="muted">Chargement de la comparaison OpenRouter…</p>
+    <div class="loading">
+      <span class="spinner" aria-hidden="true"></span>
+      Chargement de la comparaison OpenRouter…
+    </div>
   } @else if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="state-banner state-banner--error">{{ error() }}</p>
   } @else {
 
   <!-- ══════════════════════════════════════════════

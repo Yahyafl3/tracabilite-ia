@@ -4,6 +4,7 @@ export enum TypeActionEnum {
   APPROUVER = 'APPROUVER',
   REJETER = 'REJETER',
   MODIFIER = 'MODIFIER',
+  REVIEW = 'REVIEW',
 }
 
 export interface ValidationRequest {

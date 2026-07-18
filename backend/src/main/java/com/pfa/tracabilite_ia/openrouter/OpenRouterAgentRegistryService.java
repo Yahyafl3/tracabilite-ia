@@ -1,6 +1,5 @@
 package com.pfa.tracabilite_ia.openrouter;
 
-import com.pfa.tracabilite_ia.ai.client.OpenRouterClient;
 import com.pfa.tracabilite_ia.config.OpenRouterProperties;
 import com.pfa.tracabilite_ia.dto.response.OpenRouterModelStatusResponse;
 import com.pfa.tracabilite_ia.exception.OpenRouterErrorCode;
@@ -20,31 +19,40 @@ public class OpenRouterAgentRegistryService {
     public static final String AGENT_3 = "AGENT_3";
 
     public static final String MODEL_1_ID = "meta-llama/llama-3.3-70b-instruct:free";
-    public static final String MODEL_2_ID = "google/gemma-4-31b-it:free";
+    public static final String MODEL_2_ID = "google/gemma-4-26b-a4b-it:free";
     public static final String MODEL_3_ID = "openai/gpt-oss-20b:free";
+    public static final String LEGACY_MODEL_2_ID = "google/gemma-4-31b-it:free";
     public static final String LEGACY_MODEL_3_ID = "openai/gpt-oss-120b:free";
 
     private final OpenRouterProperties properties;
-    private final OpenRouterClient openRouterClient;
+    private final OpenRouterModelsCacheService modelsCacheService;
 
     public OpenRouterAgentRegistryService(OpenRouterProperties properties,
-                                          OpenRouterClient openRouterClient) {
+                                          OpenRouterModelsCacheService modelsCacheService) {
         this.properties = properties;
-        this.openRouterClient = openRouterClient;
+        this.modelsCacheService = modelsCacheService;
     }
 
     public List<OpenRouterAgentDefinition> configuredAgents() {
         return List.of(
-                new OpenRouterAgentDefinition(
-                        AGENT_1, "Llama 3.3 70B", properties.getModel1(), "META_OPENROUTER", 1, true),
-                new OpenRouterAgentDefinition(
-                        AGENT_2, "Gemma 4 31B", properties.getModel2(), "GOOGLE_OPENROUTER", 2, true),
-                new OpenRouterAgentDefinition(
-                        AGENT_3, "GPT-OSS 20B", properties.getModel3(), "OPENAI_OPENROUTER", 3, true)
+                agentDefinition(AGENT_1, properties.getModel1(), "META_OPENROUTER", 1),
+                agentDefinition(AGENT_2, properties.getModel2(), "GOOGLE_OPENROUTER", 2),
+                agentDefinition(AGENT_3, properties.getModel3(), "OPENAI_OPENROUTER", 3)
         ).stream()
                 .filter(OpenRouterAgentDefinition::active)
                 .sorted(Comparator.comparingInt(OpenRouterAgentDefinition::orderIndex))
                 .toList();
+    }
+
+    private OpenRouterAgentDefinition agentDefinition(String agentKey, String modelId, String provider, int order) {
+        return new OpenRouterAgentDefinition(
+                agentKey,
+                OpenRouterAgentDisplayNames.resolve(modelId),
+                modelId,
+                provider,
+                order,
+                true
+        );
     }
 
     public List<OpenRouterModelStatusResponse> modelStatuses() {
@@ -89,7 +97,7 @@ public class OpenRouterAgentRegistryService {
     }
 
     public Set<String> fetchAvailableModelIds() {
-        return openRouterClient.listAvailableModelIds();
+        return modelsCacheService.availableModelIds();
     }
 
     private Set<String> fetchAvailableModelIdsSafely() {
@@ -98,7 +106,7 @@ public class OpenRouterAgentRegistryService {
         }
         try {
             return fetchAvailableModelIds();
-        } catch (OpenRouterException ex) {
+        } catch (Exception ex) {
             return Set.of();
         }
     }

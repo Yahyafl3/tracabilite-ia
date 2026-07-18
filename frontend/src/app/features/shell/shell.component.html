@@ -73,6 +73,14 @@
       </div>
 
       <div class="topbar__right">
+        <button class="theme-toggle"
+                type="button"
+                (click)="toggleTheme()"
+                [attr.aria-label]="themeService.theme() === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'"
+                [attr.title]="themeService.theme() === 'dark' ? 'Mode clair' : 'Mode sombre'">
+          <app-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" [size]="16" />
+        </button>
+
         <span class="integrity-chip">
           <app-icon name="shield-check" [size]="13" />
           Chaîne SHA-256 intègre

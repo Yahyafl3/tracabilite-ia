@@ -10,7 +10,7 @@
       Chargement de la décision…
     </div>
   } @else if (error()) {
-    <p class="error">{{ error() }}</p>
+    <p class="state-banner state-banner--error">{{ error() }}</p>
   } @else if (decision(); as item) {
     <header class="detail-header">
       <div class="detail-header__text">
@@ -22,7 +22,7 @@
         <p class="page-subtitle">{{ item.contexte }}</p>
       </div>
       <span class="status-chip" [class]="statutChipClass(item.statutValidation)">
-        {{ item.statutValidation }}
+        {{ statutLabel(item.statutValidation) }}
       </span>
     </header>
 
@@ -50,13 +50,13 @@
                 </span>
               </div>
               <div class="summary-item">
-                <span class="label">Confiance</span>
+                <span class="label">Confiance ML</span>
                 <span class="value">{{ item.confidenceScore ?? '-' }}%</span>
               </div>
               <div class="summary-item">
                 <span class="label">Risque</span>
                 <span class="status-chip" [class]="riskChipClass(item.riskLevel)">
-                  {{ item.riskLevel || '-' }}
+                  {{ riskLabel(item.riskLevel) }}
                 </span>
               </div>
               <div class="summary-item">
@@ -95,11 +95,10 @@
           }
 
           @case ('explain') {
-            <p class="source-note">
-              Source : <strong>{{ item.explanationSource }}</strong>
-              <span class="muted">— Classe expliquée : <strong>APPROUVER</strong> (log-odds).
-              contribution % = |valeur SHAP| / Σ|valeurs SHAP| × 100.
-              Les signes sont relatifs au profil moyen d'entraînement, pas aux valeurs brutes.</span>
+            <p class="tech-note">
+              Source : <strong>{{ item.explanationSource }}</strong> —
+              classe expliquée : <strong>APPROUVER</strong> (log-odds).
+              contribution % = |SHAP| / Σ|SHAP| × 100.
             </p>
             <div class="factors">
               @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
@@ -122,12 +121,30 @@
                   </div>
                 </div>
               } @empty {
-                <p class="muted">Aucun facteur explicatif disponible.</p>
+                <div class="empty-state">
+                  <app-icon name="lightbulb" [size]="28" />
+                  <p>Aucun facteur explicatif disponible.</p>
+                </div>
               }
             </div>
           }
 
           @case ('agents') {
+            @if (isAdmin() && hasRetryableAgents()) {
+              <div class="agent-retry-bar">
+                <button type="button" class="btn-secondary" [disabled]="retryLoading()" (click)="retryFailedAgents()">
+                  @if (retryLoading()) {
+                    Relance en cours…
+                  } @else {
+                    Relancer les agents en échec
+                  }
+                </button>
+                @if (retryError()) {
+                  <p class="state-banner state-banner--error">{{ retryError() }}</p>
+                }
+              </div>
+            }
+
             @if (item.consensus) {
               @let consensusView = consensusDisplay(item.consensus);
               <div class="summary-grid">
@@ -153,25 +170,41 @@
               @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
                 <article class="agent-card">
                   <header class="agent-card__head">
-                    <strong>{{ agent.modelName }} ({{ agent.agentKey }})</strong>
+                    <strong>{{ agentName(agent) }}</strong>
                     <span class="status-chip">{{ agent.statut }}</span>
                   </header>
-                  <p class="muted">{{ agent.provider }} · {{ agent.modelId }}</p>
-                  @if (agent.decisionProposee) {
-                    <p>Décision : <strong>{{ agent.decisionProposee }}</strong> · Confiance : {{ agent.confianceDeclaree ?? '-' }}</p>
+                  @if (agentFallback(agent); as fallbackMsg) {
+                    <p class="state-banner state-banner--info">{{ fallbackMsg }}</p>
                   }
+                  <p class="muted">{{ agent.agentKey }} · {{ agent.provider }}</p>
+                  <p class="muted">Modèle utilisé : <code>{{ agent.modelId }}</code></p>
+                  @if (agent.requestedModelId && agent.actualModelId && agent.requestedModelId !== agent.actualModelId) {
+                    <p class="muted tech-note">Demandé : <code>{{ agent.requestedModelId }}</code> · Réel : <code>{{ agent.actualModelId }}</code></p>
+                  }
+                  @if (agent.retryCount != null && agent.retryCount > 0) {
+                    <p class="muted">Tentatives réseau : {{ agent.retryCount + 1 }}</p>
+                  }
+                  @if (agent.decisionProposee) {
+                    <p>Décision : <strong>{{ agent.decisionProposee }}</strong></p>
+                  }
+                  <p>Confiance déclarée par l'agent : <strong>{{ declaredConfidenceLabel(agent.declaredConfidence ?? agent.confianceDeclaree) }}</strong></p>
                   @if (agent.codeErreur) {
-                    <p class="error">{{ agent.codeErreur }}</p>
+                    <p class="error-inline">{{ agent.codeErreur }}</p>
                   }
                   @if (agent.resume) {
+                    <p class="label-inline">Résumé</p>
                     <p class="value value--text">{{ agent.resume }}</p>
                   }
                   @if (agent.explication) {
+                    <p class="label-inline">Explication</p>
                     <p class="value value--text">{{ agent.explication }}</p>
                   }
                 </article>
               } @empty {
-                <p class="muted">Aucune reponse agent OpenRouter enregistree.</p>
+                <div class="empty-state">
+                  <app-icon name="bar-chart" [size]="28" />
+                  <p>Aucune réponse agent OpenRouter enregistrée.</p>
+                </div>
               }
             </div>
           }
@@ -181,36 +214,99 @@
               <p class="success-banner">{{ validationSuccess() }}</p>
             }
             @if (validationError()) {
-              <p class="error">{{ validationError() }}</p>
+              <p class="state-banner state-banner--error">{{ validationError() }}</p>
             }
+
+            @if (isPendingValidation()) {
+              <p class="pending-banner">Décision en attente de validation humaine</p>
+            } @else if (humanFinalLabel(item)) {
+              <p class="final-banner">Décision finale humaine : <strong>{{ humanFinalLabel(item) }}</strong></p>
+            }
+
+            <div class="validation-summary">
+              <h3 class="section-title">Dossier complet de la décision</h3>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="label">Décision ML</span>
+                  <span class="status-chip" [class]="decisionChipClass(mlDecision(item))">
+                    {{ mlDecision(item) || 'N/A' }}
+                  </span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Confiance ML</span>
+                  <span class="value">{{ mlConfidence(item) ?? '-' }}%</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Risque ML</span>
+                  <span class="status-chip" [class]="riskChipClass(item.riskLevel)">
+                    {{ riskLabel(item.riskLevel) }}
+                  </span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Consensus</span>
+                  <span class="value">{{ consensusLabel(item) }}</span>
+                </div>
+                @if (item.consensus?.agreementRate != null) {
+                  <div class="summary-item">
+                    <span class="label">Taux d'accord</span>
+                    <span class="value">{{ item.consensus?.agreementRate }}%</span>
+                  </div>
+                }
+              </div>
+
+              <div class="agent-grid validation-agent-grid">
+                @for (agentKey of ['AGENT_1', 'AGENT_2', 'AGENT_3']; track agentKey) {
+                  @let agent = agentForKey(item.agentResponses, agentKey);
+                  <article class="agent-card">
+                    <header class="agent-card__head">
+                      <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
+                      <span class="status-chip">{{ agentStatus(agent) }}</span>
+                    </header>
+                    @if (agent) {
+                      <p class="muted">{{ agent.modelId }}</p>
+                      <p>Décision : <strong>{{ agent.decisionProposee || '—' }}</strong></p>
+                      <p>Confiance déclarée par l'agent : <strong>{{ declaredConfidenceLabel(agent.declaredConfidence ?? agent.confianceDeclaree) }}</strong></p>
+                      @if (agent.resume) {
+                        <p class="value value--text">{{ agent.resume }}</p>
+                      }
+                    } @else {
+                      <p class="muted">Aucune réponse enregistrée pour cet agent.</p>
+                    }
+                  </article>
+                }
+              </div>
+            </div>
 
             @if (canValidate()) {
               <div class="validation-form">
-                <h3 class="section-title">Contrôle humain</h3>
+                <h3 class="section-title">Validation du dossier complet</h3>
                 <p class="muted">
-                  Décision ML proposée :
-                  <strong>{{ item.suggestedDecision || 'N/A' }}</strong>
+                  La validation porte sur l'ensemble du dossier (ML, SHAP, agents, consensus, sources).
+                  L'échec d'un ou plusieurs agents n'empêche pas la validation.
                 </p>
 
-                <label class="field-label" for="commentaire">Commentaire (optionnel)</label>
+                <label class="field-label" for="commentaire">Justification</label>
                 <textarea
                   id="commentaire"
                   class="field-input"
                   rows="4"
                   [formControl]="validationForm.controls.commentaire"
-                  placeholder="Justification de la validation…"></textarea>
+                  placeholder="Justification de la décision humaine…"></textarea>
 
                 <div class="validation-actions">
                   <button type="button" class="btn-primary" [disabled]="validationLoading()" (click)="approve()">
-                    Approuver la décision ML
+                    Approuver (APPROUVER)
                   </button>
                   <button type="button" class="btn-danger" [disabled]="validationLoading()" (click)="reject()">
-                    Rejeter
+                    Rejeter (REJETER)
+                  </button>
+                  <button type="button" class="btn-secondary" [disabled]="validationLoading()" (click)="review()">
+                    Demander revue (REVIEW)
                   </button>
                 </div>
 
                 <div class="modify-block">
-                  <h4 class="section-subtitle">Modifier la décision ML</h4>
+                  <h4 class="section-subtitle">Modifier la décision ML (MODIFIER)</h4>
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
                   <select id="decisionHumaine" class="field-input" [formControl]="validationForm.controls.decisionHumaine">
                     <option value="APPROUVER">APPROUVER</option>
@@ -221,9 +317,26 @@
                   </button>
                 </div>
               </div>
+            } @else if (!isPendingValidation()) {
+              <div class="validation-result">
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <span class="label">Décision humaine finale</span>
+                    <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Validateur</span>
+                    <span class="value">{{ item.validatorEmail || '—' }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Date</span>
+                    <span class="value">{{ item.validatedAt | date:'short' }}</span>
+                  </div>
+                </div>
+              </div>
             } @else {
               <p class="muted">
-                Cette décision n'est plus en attente ou votre rôle ne permet pas la validation.
+                Votre rôle ne permet pas la validation de cette décision.
               </p>
             }
 
@@ -234,7 +347,7 @@
                   <div class="history-item__head">
                     <strong>{{ action.validateurNom }}</strong>
                     <span class="status-chip" [class]="statutChipClass(action.statutApres)">
-                      {{ action.statutApres }}
+                      {{ statutLabel(action.statutApres) }}
                     </span>
                   </div>
                   <p class="muted">
@@ -255,22 +368,32 @@
 
           @case ('history') {
             @if (traceLoading()) {
-              <p class="muted">Chargement de l'historique…</p>
+              <div class="loading">
+                <span class="spinner" aria-hidden="true"></span>
+                Chargement de l'historique…
+              </div>
             } @else if (historyEntries().length === 0) {
-              <p class="muted">Aucun événement enregistré.</p>
+              <div class="empty-state">
+                <app-icon name="history" [size]="28" />
+                <p>Aucun événement de traçabilité enregistré pour cette décision.</p>
+              </div>
             } @else {
-              <div class="validation-history">
+              <div class="history-timeline">
                 @for (entry of historyEntries(); track entry.historyId) {
-                  <article class="history-item">
+                  <article class="history-item" [class]="historyItemClass(entry.action)">
                     <div class="history-item__head">
-                      <strong>{{ historyActionLabel(entry.action) }}</strong>
-                      <span class="muted">{{ entry.createdAt | date:'short' }}</span>
+                      <span class="history-item__action">{{ historyActionLabel(entry.action) }}</span>
+                      <span class="history-item__meta">{{ entry.createdAt | date:'short' }}</span>
                     </div>
                     @if (entry.performedByEmail) {
-                      <p class="muted">Par {{ entry.performedByEmail }}</p>
+                      <p class="history-item__meta">Par {{ entry.performedByEmail }}</p>
                     }
                     @if (entry.previousStatus || entry.newStatus) {
-                      <p class="muted">{{ entry.previousStatus }} → {{ entry.newStatus }}</p>
+                      <p class="history-item__meta">
+                        {{ entry.previousStatus ? statutLabel(entry.previousStatus) : '—' }}
+                        →
+                        {{ entry.newStatus ? statutLabel(entry.newStatus) : '—' }}
+                      </p>
                     }
                     @if (entry.comment) {
                       <p class="value value--text">{{ entry.comment }}</p>
@@ -283,23 +406,29 @@
 
           @case ('sources') {
             @if (traceLoading()) {
-              <p class="muted">Chargement des sources…</p>
+              <div class="loading">
+                <span class="spinner" aria-hidden="true"></span>
+                Chargement des sources…
+              </div>
             } @else if (sources().length === 0) {
-              <p class="muted">Aucune source enregistrée.</p>
+              <div class="empty-state">
+                <app-icon name="link" [size]="28" />
+                <p>Aucune source documentaire associée à cette décision.</p>
+              </div>
             } @else {
               <div class="agent-grid">
                 @for (source of sources(); track source.sourceId) {
-                  <article class="agent-card">
+                  <article class="source-card">
                     <header class="agent-card__head">
                       <strong>{{ source.name }}</strong>
-                      <span class="status-chip">{{ source.sourceType }}</span>
+                      <span class="status-chip chip--pending">{{ source.sourceType }}</span>
                     </header>
                     @if (source.description) {
                       <p class="value value--text">{{ source.description }}</p>
                     }
-                    <p class="muted">Hash : <code>{{ source.contentHash }}</code></p>
+                    <p class="source-card__hash">{{ source.contentHash }}</p>
                     @if (source.createdByEmail) {
-                      <p class="muted">Créé par {{ source.createdByEmail }} · {{ source.createdAt | date:'short' }}</p>
+                      <p class="muted">{{ source.createdByEmail }} · {{ source.createdAt | date:'short' }}</p>
                     }
                   </article>
                 }

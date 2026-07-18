@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,16 +84,56 @@ class OpenRouterClientTest {
                 .isInstanceOf(OpenRouterException.class)
                 .extracting(ex -> ((OpenRouterException) ex).getErrorCode())
                 .isEqualTo(OpenRouterErrorCode.OPENROUTER_AUTHENTICATION_FAILED);
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
     }
 
     @Test
-    void chatCompletion_maps429ToRateLimited() {
+    void chatCompletion_maps429ToRateLimitedAfterRetries() {
+        mockWebServer.enqueue(new MockResponse().setResponseCode(429));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(429));
         mockWebServer.enqueue(new MockResponse().setResponseCode(429));
 
         assertThatThrownBy(() -> client.chatCompletion("openai/gpt-oss-20b:free", "system", "user", "corr-429"))
                 .isInstanceOf(OpenRouterException.class)
                 .extracting(ex -> ((OpenRouterException) ex).getErrorCode())
                 .isEqualTo(OpenRouterErrorCode.OPENROUTER_RATE_LIMITED);
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(3);
+    }
+
+    @Test
+    void chatCompletionWithModels_recordsActualModelWhenFallbackUsed() throws InterruptedException {
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("""
+                        {
+                          "model": "google/gemma-4-26b-a4b-it:free",
+                          "choices": [{
+                            "message": {
+                              "role": "assistant",
+                              "content": "{\\"suggestedDecision\\":\\"APPROUVER\\",\\"confidence\\":0.7,\\"riskLevel\\":\\"LOW\\",\\"summary\\":\\"ok\\",\\"explanation\\":\\"fallback\\",\\"recommendations\\":[]}"
+                            }
+                          }],
+                          "usage": {"total_tokens": 10}
+                        }
+                        """)
+                .addHeader("Content-Type", "application/json"));
+
+        OpenRouterChatResult result = client.chatCompletionWithModels(
+                List.of("meta-llama/llama-3.3-70b-instruct:free", "google/gemma-4-26b-a4b-it:free"),
+                "meta-llama/llama-3.3-70b-instruct:free",
+                "system",
+                "user",
+                "corr-fallback"
+        );
+
+        assertThat(result.getRequestedModelId()).isEqualTo("meta-llama/llama-3.3-70b-instruct:free");
+        assertThat(result.getActualModelId()).isEqualTo("google/gemma-4-26b-a4b-it:free");
+        assertThat(result.isFallbackUsed()).isTrue();
+        assertThat(result.getResponseHash()).isNotBlank();
+
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat(request.getBody().readUtf8()).contains("\"models\"");
     }
 
     @Test

@@ -95,6 +95,52 @@ class OpenRouterConsensusServiceTest {
         assertThat(consensus.isConsensusAvailable()).isFalse();
     }
 
+    @Test
+    void compute_rejectVersusReviewWithTwoAgents_returnsNoConsensus() {
+        ReponseAgentIA reject = response("REJETER", StatutReponseAgentEnum.SUCCESS, 0.7);
+        ReponseAgentIA review = response("REVIEW", StatutReponseAgentEnum.SUCCESS, 0.6);
+        ReponseAgentIA failed = response(null, StatutReponseAgentEnum.FAILURE, null);
+
+        ConsensusResponse consensus = service.compute(List.of(reject, review, failed));
+
+        assertThat(consensus.getDecisionConsensus()).isEqualTo("NO_CONSENSUS");
+        assertThat(consensus.isConsensusAvailable()).isFalse();
+    }
+
+    @Test
+    void compute_rejectVersusReview_returnsNoConsensus() {
+        ReponseAgentIA reject = response("REJETER", StatutReponseAgentEnum.SUCCESS, 0.7);
+        ReponseAgentIA review = response("REVIEW", StatutReponseAgentEnum.SUCCESS, 0.6);
+        ReponseAgentIA approve = response("APPROUVER", StatutReponseAgentEnum.SUCCESS, 0.8);
+
+        ConsensusResponse consensus = service.compute(List.of(reject, review, approve));
+
+        assertThat(consensus.getDecisionConsensus()).isEqualTo("NO_CONSENSUS");
+        assertThat(consensus.isConsensusAvailable()).isFalse();
+    }
+
+    @Test
+    void compute_invalidResponseAgentsAreExcludedFromConsensus() {
+        ReponseAgentIA invalid = response("REVIEW", StatutReponseAgentEnum.INVALID_RESPONSE, null);
+        ReponseAgentIA ok1 = response("APPROUVER", StatutReponseAgentEnum.SUCCESS, 0.8);
+        ReponseAgentIA ok2 = response("APPROUVER", StatutReponseAgentEnum.SUCCESS, 0.7);
+
+        ConsensusResponse consensus = service.compute(List.of(invalid, ok1, ok2));
+
+        assertThat(consensus.getDecisionConsensus()).isEqualTo("APPROUVER");
+        assertThat(consensus.getSuccessfulAgentCount()).isEqualTo(2);
+    }
+
+    @Test
+    void buildSkippedConsensus_returnsQuotaMessage() {
+        ConsensusResponse consensus = service.buildSkippedConsensus(
+                "Quota OpenRouter insuffisant. L'analyse ML reste disponible.");
+
+        assertThat(consensus.getDecisionConsensus()).isEqualTo("INSUFFICIENT_RESPONSES");
+        assertThat(consensus.isConsensusAvailable()).isFalse();
+        assertThat(consensus.getResume()).contains("Quota OpenRouter insuffisant");
+    }
+
     private ReponseAgentIA response(String decision, StatutReponseAgentEnum statut, Double confidence) {
         ReponseAgentIA entity = new ReponseAgentIA();
         entity.setDecisionProposee(decision);

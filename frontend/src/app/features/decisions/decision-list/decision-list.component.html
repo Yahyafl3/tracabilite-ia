@@ -34,7 +34,7 @@
         <select id="statut" formControlName="statut">
           <option value="">Tous</option>
           @for (statut of statuts; track statut) {
-            <option [value]="statut">{{ statut }}</option>
+            <option [value]="statut">{{ statutLabel(statut) }}</option>
           }
         </select>
       </div>
@@ -50,49 +50,45 @@
         <span class="spinner" aria-hidden="true"></span>
         Chargement des décisions…
       </div>
+    } @else if (error()) {
+      <p class="state-banner state-banner--error">{{ error() }}</p>
     } @else {
       <div class="table-scroll">
         <table class="decisions-table" aria-label="Liste des décisions">
           <thead>
             <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Demande</th>
+              <th scope="col">Réf.</th>
+              <th scope="col">Titre</th>
               <th scope="col">Décision ML</th>
-              <th scope="col">Confiance</th>
-              <th scope="col">Risque</th>
+              <th scope="col">Consensus</th>
+              <th scope="col">Décision humaine</th>
               <th scope="col">Statut</th>
+              <th scope="col">Date</th>
               <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (row of decisions(); track row.decisionId) {
               <tr>
-                <td class="td-time">
-                  <span class="time-date">{{ formatDate(row.timestamp) }}</span>
-                  <span class="time-hour">{{ formatTime(row.timestamp) }}</span>
-                </td>
+                <td><span class="ref-code">{{ reference(row) }}</span></td>
                 <td class="td-prompt">
                   <span class="prompt-text">{{ row.prompt }}</span>
                 </td>
                 <td>
-                  <span class="status-chip" [class]="decisionChipClass(row.suggestedDecision)">
-                    {{ row.suggestedDecision || 'N/A' }}
+                  <span class="status-chip" [class]="decisionChipClass(mlDecisionLabel(row))">
+                    {{ mlDecisionLabel(row) || 'N/A' }}
                   </span>
                 </td>
-                <td>{{ row.confidenceScore ?? '-' }}%</td>
-                <td>
-                  @if (row.riskLevel) {
-                    <span class="status-chip" [class]="riskChipClass(row.riskLevel)">
-                      {{ row.riskLevel }}
-                    </span>
-                  } @else {
-                    -
-                  }
-                </td>
+                <td>{{ consensusText(row) }}</td>
+                <td>{{ humanFinal(row) || '—' }}</td>
                 <td>
                   <span class="status-chip" [class]="statutChipClass(row.statutValidation)">
-                    {{ row.statutValidation }}
+                    {{ statutLabel(row.statutValidation) }}
                   </span>
+                </td>
+                <td class="td-time">
+                  <span class="time-date">{{ formatDate(row.timestamp) }}</span>
+                  <span class="time-hour">{{ formatTime(row.timestamp) }}</span>
                 </td>
                 <td>
                   <a class="btn-link" [routerLink]="['/decisions', row.decisionId]">
@@ -103,7 +99,12 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="empty-row">Aucune décision trouvée.</td>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <app-icon name="file-text" [size]="28" />
+                    <p>Aucune décision ne correspond à vos critères.</p>
+                  </div>
+                </td>
               </tr>
             }
           </tbody>

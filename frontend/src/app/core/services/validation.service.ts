@@ -19,6 +19,14 @@ export class ValidationService {
     return this.http.get<DecisionPageResponse>(`${this.validationUrl}/pending`, { params });
   }
 
+  getValidationContext(decisionId: string): Observable<DecisionResponse> {
+    return this.http.get<DecisionResponse>(`${this.decisionsUrl}/${decisionId}/validation`);
+  }
+
+  submitValidation(decisionId: string): Observable<DecisionResponse> {
+    return this.http.post<DecisionResponse>(`${this.decisionsUrl}/${decisionId}/submit-validation`, {});
+  }
+
   getHistory(decisionId: string): Observable<ValidationActionResponse[]> {
     return this.http.get<ValidationActionResponse[]>(
       `${this.validationUrl}/decision/${decisionId}/history`,
@@ -43,6 +51,13 @@ export class ValidationService {
     return this.http.post<DecisionResponse>(
       `${this.decisionsUrl}/${decisionId}/modify`,
       request,
+    );
+  }
+
+  review(decisionId: string, request?: ValidationRequest): Observable<DecisionResponse> {
+    return this.http.post<DecisionResponse>(
+      `${this.decisionsUrl}/${decisionId}/review`,
+      request ?? {},
     );
   }
 }

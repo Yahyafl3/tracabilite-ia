@@ -10,6 +10,45 @@
    Design tokens
    ============================================================ */
 :root {
+  // Couleurs sémantiques (alias design system)
+  --color-primary: #4f46e5;
+  --color-secondary: #7c3aed;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  // Textes
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #64748b;
+
+  // Surfaces
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --border-color: #e2e8f0;
+
+  // Espacements
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  // Chips sémantiques (compatibles thème sombre)
+  --chip-approved-bg: rgba(16, 185, 129, 0.12);
+  --chip-approved-fg: #065f46;
+  --chip-approved-border: rgba(16, 185, 129, 0.25);
+  --chip-modified-bg: rgba(245, 158, 11, 0.12);
+  --chip-modified-fg: #92400e;
+  --chip-modified-border: rgba(245, 158, 11, 0.25);
+  --chip-rejected-bg: rgba(239, 68, 68, 0.12);
+  --chip-rejected-fg: #991b1b;
+  --chip-rejected-border: rgba(239, 68, 68, 0.25);
+  --chip-info-bg: rgba(79, 70, 229, 0.1);
+  --chip-info-fg: #4338ca;
+
   // Palette
   --brand-50: #eef2ff;
   --brand-100: #e0e7ff;
@@ -66,9 +105,10 @@
   --shadow-brand: 0 18px 40px rgba(79, 70, 229, 0.28);
 
   // Rayons
-  --radius-sm: 10px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius: 16px;
-  --radius-lg: 24px;
+  --radius-lg: 20px;
   --radius-full: 999px;
 
   // Layout
@@ -82,6 +122,30 @@
    Thème sombre
    ============================================================ */
 [data-theme='dark'] {
+  --color-primary: #818cf8;
+  --color-secondary: #a78bfa;
+  --color-info: #60a5fa;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+
+  --bg-page: #0b1120;
+  --bg-card: #131c31;
+  --border-color: #24314d;
+
+  --chip-approved-bg: rgba(16, 185, 129, 0.18);
+  --chip-approved-fg: #6ee7b7;
+  --chip-approved-border: rgba(16, 185, 129, 0.35);
+  --chip-modified-bg: rgba(245, 158, 11, 0.18);
+  --chip-modified-fg: #fcd34d;
+  --chip-modified-border: rgba(245, 158, 11, 0.35);
+  --chip-rejected-bg: rgba(239, 68, 68, 0.18);
+  --chip-rejected-fg: #fca5a5;
+  --chip-rejected-border: rgba(239, 68, 68, 0.35);
+  --chip-info-bg: rgba(99, 102, 241, 0.2);
+  --chip-info-fg: #a5b4fc;
+
   --brand-50: #1e1b4b;
   --brand-100: #312e81;
 
@@ -431,3 +495,9 @@ button {
     background: var(--muted);
   }
 }
+
+/* ============================================================
+   App UI — composants partagés
+   ============================================================ */
+@import 'app/styles/app-ui';
+@import 'app/styles/comparaison-ui';

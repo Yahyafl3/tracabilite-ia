@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../shared/icon.component';
 import { ValidationService } from '../../core/services/validation.service';
-import { DecisionResponse, StatutDecisionEnum } from '../../core/models/decision.models';
+import { DecisionResponse } from '../../core/models/decision.models';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
+import { decisionChipClass } from '../../core/utils/chip-class.util';
 
 @Component({
   selector: 'app-validation-queue',
@@ -41,20 +42,5 @@ export class ValidationQueueComponent {
     });
   }
 
-  statutChipClass(statut: StatutDecisionEnum): string {
-    const map: Record<StatutDecisionEnum, string> = {
-      [StatutDecisionEnum.APPROUVEE]: 'chip--approved',
-      [StatutDecisionEnum.MODIFIEE]: 'chip--modified',
-      [StatutDecisionEnum.REJETEE]: 'chip--rejected',
-      [StatutDecisionEnum.EN_ATTENTE]: 'chip--pending',
-      [StatutDecisionEnum.BROUILLON]: 'chip--pending',
-    };
-    return map[statut] ?? 'chip--pending';
-  }
-
-  decisionChipClass(decision?: string): string {
-    if (decision === 'APPROUVER') return 'chip--approved';
-    if (decision === 'REJETER') return 'chip--rejected';
-    return 'chip--pending';
-  }
+  decisionChipClass = decisionChipClass;
 }

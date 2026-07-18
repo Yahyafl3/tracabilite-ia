@@ -1,16 +1,9 @@
 @import '../decisions-shared';
 
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .field--full {
@@ -39,16 +32,8 @@
 .result-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.consensus-block {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 16px;
-  margin-bottom: 20px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .rank {
@@ -60,14 +45,8 @@
   flex: 1;
 }
 
-.value--text {
-  font-weight: 500;
-  line-height: 1.6;
-  margin: 0;
-}
-
 .result-action {
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .field-hint {
@@ -85,7 +64,6 @@
 }
 
 @media (max-width: 960px) {
-  .layout,
   .form-grid,
   .result-summary {
     grid-template-columns: 1fr;

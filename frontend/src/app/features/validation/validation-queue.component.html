@@ -29,11 +29,11 @@
     </section>
   } @else {
     <section class="card">
-      <div class="card__body table-wrap">
-        <table class="data-table">
+      <div class="card__body table-scroll">
+        <table class="decisions-table">
           <thead>
             <tr>
-              <th>Référence</th>
+              <th>Dossier</th>
               <th>Décision ML</th>
               <th>Confiance</th>
               <th>Risque</th>
@@ -44,9 +44,9 @@
           <tbody>
             @for (row of decisions(); track row.decisionId) {
               <tr>
-                <td>
-                  <strong>{{ row.prompt }}</strong>
-                  <span class="muted">{{ row.contexte }}</span>
+                <td class="td-prompt">
+                  <span class="prompt-text">{{ row.prompt }}</span>
+                  <span class="prompt-sub">{{ row.contexte }}</span>
                 </td>
                 <td>
                   <span class="status-chip" [class]="decisionChipClass(row.suggestedDecision)">

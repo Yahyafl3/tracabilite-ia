@@ -1,6 +1,5 @@
 package com.pfa.tracabilite_ia.openrouter;
 
-import com.pfa.tracabilite_ia.ai.client.OpenRouterClient;
 import com.pfa.tracabilite_ia.config.OpenRouterProperties;
 import com.pfa.tracabilite_ia.dto.response.OpenRouterModelStatusResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.when;
 class OpenRouterAgentRegistryServiceTest {
 
     @Mock
-    private OpenRouterClient openRouterClient;
+    private OpenRouterModelsCacheService modelsCacheService;
 
     private OpenRouterProperties properties;
     private OpenRouterAgentRegistryService service;
@@ -30,7 +29,7 @@ class OpenRouterAgentRegistryServiceTest {
         properties.setModel1(OpenRouterAgentRegistryService.MODEL_1_ID);
         properties.setModel2(OpenRouterAgentRegistryService.MODEL_2_ID);
         properties.setModel3(OpenRouterAgentRegistryService.MODEL_3_ID);
-        service = new OpenRouterAgentRegistryService(properties, openRouterClient);
+        service = new OpenRouterAgentRegistryService(properties, modelsCacheService);
     }
 
     @Test
@@ -46,8 +45,9 @@ class OpenRouterAgentRegistryServiceTest {
         assertThat(agents.get(0).active()).isTrue();
 
         assertThat(agents.get(1).agentKey()).isEqualTo(OpenRouterAgentRegistryService.AGENT_2);
-        assertThat(agents.get(1).displayName()).isEqualTo("Gemma 4 31B");
+        assertThat(agents.get(1).displayName()).isEqualTo("Gemma 4 26B A4B");
         assertThat(agents.get(1).modelId()).isEqualTo(OpenRouterAgentRegistryService.MODEL_2_ID);
+        assertThat(agents.get(1).displayName()).doesNotContain("31B");
         assertThat(agents.get(1).provider()).isEqualTo("GOOGLE_OPENROUTER");
 
         assertThat(agents.get(2).agentKey()).isEqualTo(OpenRouterAgentRegistryService.AGENT_3);
@@ -70,7 +70,7 @@ class OpenRouterAgentRegistryServiceTest {
 
     @Test
     void modelStatuses_marksListedModelsAsAvailable() {
-        when(openRouterClient.listAvailableModelIds()).thenReturn(Set.of(
+        when(modelsCacheService.availableModelIds()).thenReturn(Set.of(
                 OpenRouterAgentRegistryService.MODEL_1_ID,
                 OpenRouterAgentRegistryService.MODEL_2_ID,
                 OpenRouterAgentRegistryService.MODEL_3_ID
@@ -88,7 +88,7 @@ class OpenRouterAgentRegistryServiceTest {
                 );
         assertThat(statuses)
                 .extracting(OpenRouterModelStatusResponse::getDisplayName)
-                .containsExactly("Llama 3.3 70B", "Gemma 4 31B", "GPT-OSS 20B");
+                .containsExactly("Llama 3.3 70B", "Gemma 4 26B A4B", "GPT-OSS 20B");
         assertThat(statuses)
                 .extracting(OpenRouterModelStatusResponse::getStatus)
                 .containsOnly("AVAILABLE");
@@ -103,7 +103,7 @@ class OpenRouterAgentRegistryServiceTest {
 
     @Test
     void modelStatuses_marksMissingModelAsNotListed() {
-        when(openRouterClient.listAvailableModelIds()).thenReturn(Set.of(
+        when(modelsCacheService.availableModelIds()).thenReturn(Set.of(
                 OpenRouterAgentRegistryService.MODEL_1_ID,
                 OpenRouterAgentRegistryService.MODEL_2_ID
         ));

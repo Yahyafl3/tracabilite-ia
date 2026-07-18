@@ -4,6 +4,7 @@ import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../core/models/auth.models';
 import { IconComponent } from '../../shared/icon.component';
+import { ThemeService } from '../../shared/theme.service';
 export interface NavItem {
   label: string;
   icon: string;
@@ -20,6 +21,7 @@ export interface NavItem {
 })
 export class ShellComponent {
   private readonly authService = inject(AuthService);
+  readonly themeService = inject(ThemeService);
 
   // ── Sidebar ──────────────────────────────────────────────────
   readonly sidebarOpen = signal(true);
@@ -27,6 +29,7 @@ export class ShellComponent {
   readonly navItems = computed<NavItem[]>(() => {
     const role = this.authService.currentUser?.role;
     const canValidate = role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
+    const isAdmin = role === UserRole.ADMINISTRATEUR;
     const items: NavItem[] = [
       { label: 'Tableau de bord', icon: 'activity', route: '/dashboard' },
       { label: 'Décisions', icon: 'file-text', route: '/decisions' },
@@ -35,10 +38,17 @@ export class ShellComponent {
       items.push({ label: 'Validation', icon: 'file-check', route: '/validation' });
     }
     items.push({ label: 'Comparaison IA', icon: 'bar-chart', route: '/comparaison' });
+    if (isAdmin) {
+      items.push({ label: 'Utilisateurs', icon: 'shield-check', route: '/admin/users' });
+    }
     return items;
   });
   toggleSidebar(): void {
     this.sidebarOpen.update(v => !v);
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   // ── User ─────────────────────────────────────────────────────

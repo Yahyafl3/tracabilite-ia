@@ -1,4 +1,4 @@
-<div class="dashboard">
+<div class="shell-page">
 
   <div class="page-header">
     <div class="page-header__left">
@@ -17,9 +17,12 @@
   </div>
 
   @if (loading()) {
-    <p class="dashboard-status">Chargement des statistiques…</p>
+    <div class="loading">
+      <span class="spinner" aria-hidden="true"></span>
+      Chargement des statistiques…
+    </div>
   } @else if (error()) {
-    <p class="dashboard-status dashboard-status--error">{{ error() }}</p>
+    <p class="state-banner state-banner--error">{{ error() }}</p>
   } @else {
 
     <section class="kpi-row" aria-label="Indicateurs clés">

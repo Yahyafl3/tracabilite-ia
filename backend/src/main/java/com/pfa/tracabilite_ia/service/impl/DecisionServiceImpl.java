@@ -32,6 +32,7 @@ import com.pfa.tracabilite_ia.mapper.DecisionMapper;
 
 import com.pfa.tracabilite_ia.mapper.ValidationMapper;
 
+import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRetryService;
 import com.pfa.tracabilite_ia.openrouter.OpenRouterMultiAgentService;
 
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
@@ -54,7 +55,6 @@ import org.springframework.data.domain.PageRequest;
 
 import org.springframework.data.domain.Sort;
 
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +89,8 @@ public class DecisionServiceImpl implements DecisionService {
 
     private final OpenRouterMultiAgentService openRouterMultiAgentService;
 
+    private final OpenRouterAgentRetryService openRouterAgentRetryService;
+
     private final DecisionMapper decisionMapper;
 
     private final ValidationMapper validationMapper;
@@ -105,6 +107,8 @@ public class DecisionServiceImpl implements DecisionService {
 
     private final AuthService authService;
 
+    private final DecisionScopeService decisionScopeService;
+
 
 
     public DecisionServiceImpl(DecisionRepository decisionRepository,
@@ -116,6 +120,8 @@ public class DecisionServiceImpl implements DecisionService {
                                  MLDecisionService mlDecisionService,
 
                                  OpenRouterMultiAgentService openRouterMultiAgentService,
+
+                                 OpenRouterAgentRetryService openRouterAgentRetryService,
 
                                  DecisionMapper decisionMapper,
 
@@ -131,7 +137,9 @@ public class DecisionServiceImpl implements DecisionService {
 
                                  DecisionHashService decisionHashService,
 
-                                 AuthService authService) {
+                                 AuthService authService,
+
+                                 DecisionScopeService decisionScopeService) {
 
         this.decisionRepository = decisionRepository;
 
@@ -142,6 +150,8 @@ public class DecisionServiceImpl implements DecisionService {
         this.mlDecisionService = mlDecisionService;
 
         this.openRouterMultiAgentService = openRouterMultiAgentService;
+
+        this.openRouterAgentRetryService = openRouterAgentRetryService;
 
         this.decisionMapper = decisionMapper;
 
@@ -158,6 +168,8 @@ public class DecisionServiceImpl implements DecisionService {
         this.decisionHashService = decisionHashService;
 
         this.authService = authService;
+
+        this.decisionScopeService = decisionScopeService;
 
     }
 
@@ -194,15 +206,11 @@ public class DecisionServiceImpl implements DecisionService {
     @Transactional(readOnly = true)
     public DecisionResponse obtenir(UUID id) {
 
-        Decision decision = decisionRepository.findByIdWithFactors(id)
-
-                .orElseThrow(() -> new ResourceNotFoundException("Decision introuvable : " + id));
-
-        Hibernate.initialize(decision.getReponsesAgents());
+        Decision decision = decisionScopeService.loadForRead(id);
 
         DecisionResponse response = decisionMapper.toResponse(decision);
 
-        response.setValidations(validationMapper.toResponseList(
+        decisionMapper.applyValidationMetadata(response, validationMapper.toResponseList(
 
                 validationActionRepository.findByDecisionDecisionIdOrderByTimestampDesc(id)));
 
@@ -398,29 +406,15 @@ public class DecisionServiceImpl implements DecisionService {
 
                     buildOpenRouterPrompt(request, prediction),
 
-                    "Analyse complementaire OpenRouter uniquement. Ne pas inventer de poids SHAP ni remplacer la prediction ML.",
+                    """
+                    Analyse complementaire OpenRouter uniquement. Ne pas inventer de poids SHAP ni remplacer la prediction ML.
+                    La confiance ML fournie est une donnee de contexte. Ne la recopiez pas automatiquement comme votre propre confiance.
+                    Retournez votre propre niveau de confiance uniquement si vous pouvez le justifier.
+                    """,
 
                     user
 
             );
-
-            if (bundle.consensus() != null) {
-
-                decision.setReponse(decision.getReponse()
-
-                        + "\n\n[Consensus OpenRouter] "
-
-                        + bundle.consensus().getDecisionConsensus()
-
-                        + " | agents reussis="
-
-                        + bundle.consensus().getAgentsReussis()
-
-                        + "/"
-
-                        + bundle.consensus().getAgentsConsultes());
-
-            }
 
             decision.setAgentResponsesHash(decisionHashService.computeAgentResponsesHash(decision.getReponsesAgents()));
 
@@ -728,6 +722,12 @@ public class DecisionServiceImpl implements DecisionService {
 
         return decision;
 
+    }
+
+    @Override
+    @Transactional
+    public DecisionResponse retryFailedAgents(UUID id, Utilisateur user) {
+        return openRouterAgentRetryService.retryFailedAgents(id, user);
     }
 
 }

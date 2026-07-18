@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pfa.tracabilite_ia.dto.response.AIAnalysisResult;
 import com.pfa.tracabilite_ia.exception.OpenRouterErrorCode;
 import com.pfa.tracabilite_ia.exception.OpenRouterException;
+import com.pfa.tracabilite_ia.util.AgentTextSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,18 +28,30 @@ public class OpenRouterResponseParser {
         this.objectMapper = objectMapper;
     }
 
-    public AIAnalysisResult parse(String rawContent) {
+    public ParsedAgentResponse parse(String rawContent) {
         String jsonPayload = extractJsonPayload(rawContent);
+        String parseablePayload = sanitizeJsonPayloadForParsing(jsonPayload);
         try {
-            JsonNode node = objectMapper.readTree(jsonPayload);
+            JsonNode node = objectMapper.readTree(parseablePayload);
             AIAnalysisResult result = new AIAnalysisResult();
-            result.setSuggestedDecision(normalizeDecision(readText(node, "suggestedDecision", "REVIEW")));
-            result.setConfidence(readConfidence(node));
-            result.setRiskLevel(readText(node, "riskLevel", "MEDIUM"));
-            result.setSummary(readText(node, "summary", ""));
-            result.setExplanation(readText(node, "explanation", ""));
+
+            String rawDecision = readOptionalText(node, "suggestedDecision");
+            String normalizedDecision = normalizeDecision(rawDecision);
+            result.setSuggestedDecision(normalizedDecision);
+
+            result.setConfidence(readDeclaredConfidence(node));
+            result.setRiskLevel(normalizeRiskLevel(readOptionalText(node, "riskLevel")));
+            result.setSummary(AgentTextSanitizer.sanitize(readOptionalText(node, "summary")));
+            result.setExplanation(AgentTextSanitizer.sanitize(readOptionalText(node, "explanation")));
             result.setRecommendations(readRecommendations(node));
-            return result;
+
+            boolean valid = isValid(result, rawDecision);
+            if (!valid) {
+                log.warn("Réponse agent invalide après validation");
+            }
+            return new ParsedAgentResponse(valid, result, toNormalizedJson(result));
+        } catch (OpenRouterException ex) {
+            throw ex;
         } catch (Exception ex) {
             log.warn("JSON OpenRouter invalide");
             throw new OpenRouterException(
@@ -62,6 +76,19 @@ public class OpenRouterResponseParser {
         }
     }
 
+    private boolean isValid(AIAnalysisResult result, String rawDecision) {
+        if (result.getSuggestedDecision() == null) {
+            return false;
+        }
+        if (rawDecision != null && normalizeDecision(rawDecision) == null) {
+            return false;
+        }
+        if (isBlank(result.getSummary()) && isBlank(result.getExplanation())) {
+            return false;
+        }
+        return true;
+    }
+
     private String extractJsonPayload(String rawContent) {
         Matcher matcher = JSON_BLOCK.matcher(rawContent);
         if (matcher.find()) {
@@ -73,17 +100,24 @@ public class OpenRouterResponseParser {
         );
     }
 
-    private String readText(JsonNode node, String field, String defaultValue) {
+    private String readOptionalText(JsonNode node, String field) {
         JsonNode value = node.get(field);
-        return value != null && !value.isNull() ? value.asText(defaultValue) : defaultValue;
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        return value.asText();
     }
 
-    private double readConfidence(JsonNode node) {
+    private Double readDeclaredConfidence(JsonNode node) {
         JsonNode value = node.get("confidence");
-        if (value == null || value.isNull()) {
-            return 0.0;
+        if (value == null || value.isNull() || !value.isNumber()) {
+            return null;
         }
-        return value.asDouble(0.0);
+        double confidence = value.doubleValue();
+        if (confidence < 0.0 || confidence > 1.0) {
+            return null;
+        }
+        return confidence;
     }
 
     private List<String> readRecommendations(JsonNode node) {
@@ -92,18 +126,49 @@ public class OpenRouterResponseParser {
             return List.of();
         }
         List<String> recommendations = new ArrayList<>();
-        value.forEach(item -> recommendations.add(item.asText()));
+        value.forEach(item -> {
+            String sanitized = AgentTextSanitizer.sanitize(item.asText());
+            if (sanitized != null && !sanitized.isBlank()) {
+                recommendations.add(sanitized);
+            }
+        });
         return recommendations;
     }
 
     private String normalizeDecision(String value) {
-        if (value == null) {
-            return "REVIEW";
+        if (value == null || value.isBlank()) {
+            return null;
         }
-        return switch (value.trim().toUpperCase()) {
+        return switch (value.trim().toUpperCase(Locale.ROOT)) {
             case "APPROVE", "APPROUVER" -> "APPROUVER";
             case "REJECT", "REJETER" -> "REJETER";
-            default -> "REVIEW";
+            case "REVIEW" -> "REVIEW";
+            default -> null;
         };
+    }
+
+    private String normalizeRiskLevel(String value) {
+        if (value == null || value.isBlank()) {
+            return "MEDIUM";
+        }
+        return switch (value.trim().toUpperCase(Locale.ROOT)) {
+            case "LOW", "MEDIUM", "HIGH" -> value.trim().toUpperCase(Locale.ROOT);
+            default -> "MEDIUM";
+        };
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private String sanitizeJsonPayloadForParsing(String jsonPayload) {
+        StringBuilder builder = new StringBuilder(jsonPayload.length());
+        for (int index = 0; index < jsonPayload.length(); index++) {
+            char character = jsonPayload.charAt(index);
+            if (character == '\n' || character == '\r' || character == '\t' || !Character.isISOControl(character)) {
+                builder.append(character);
+            }
+        }
+        return builder.toString();
     }
 }

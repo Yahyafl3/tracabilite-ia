@@ -56,6 +56,18 @@ public class OpenRouterConsensusService {
                 .build();
     }
 
+    public ConsensusResponse buildSkippedConsensus(String message) {
+        return ConsensusResponse.builder()
+                .decisionConsensus("INSUFFICIENT_RESPONSES")
+                .agentsConsultes(0)
+                .agentsReussis(0)
+                .successfulAgentCount(0)
+                .consensusAvailable(false)
+                .resume(message)
+                .note(message)
+                .build();
+    }
+
     private ConsensusOutcome determineConsensus(int successfulCount, Map<String, Integer> votes) {
         if (successfulCount <= 1) {
             return new ConsensusOutcome("INSUFFICIENT_RESPONSES", null, false);

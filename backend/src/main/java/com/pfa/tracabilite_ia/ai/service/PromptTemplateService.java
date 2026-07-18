@@ -18,6 +18,10 @@ public class PromptTemplateService {
                   "explanation": "explication de la recommandation",
                   "recommendations": ["action 1", "action 2"]
                 }
+                La confiance ML fournie dans le contexte est une donnee de contexte.
+                Ne la recopiez pas automatiquement comme votre propre confiance.
+                Retournez votre propre niveau de confiance uniquement si vous pouvez le justifier.
+                Le champ confidence doit etre un nombre entre 0 et 1, ou omis si non justifie.
                 """;
     }
 

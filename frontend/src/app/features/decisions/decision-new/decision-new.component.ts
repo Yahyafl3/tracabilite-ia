@@ -6,6 +6,8 @@ import { Router, RouterModule } from '@angular/router';
 import { IconComponent } from '../../../shared/icon.component';
 import { DecisionService } from '../../../core/services/decision.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
+import { decisionChipClass, riskChipClass } from '../../../core/utils/chip-class.util';
+import { riskLabel } from '../../../core/utils/label.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
 import {
   ConsensusResponse,
@@ -88,18 +90,9 @@ export class DecisionNewComponent implements OnInit {
     }
   }
 
-  decisionChipClass(decision?: string): string {
-    if (decision === 'APPROUVER') return 'chip--approved';
-    if (decision === 'REJETER') return 'chip--rejected';
-    return 'chip--pending';
-  }
-
-  riskChipClass(risk?: string): string {
-    if (risk === 'HIGH') return 'chip--rejected';
-    if (risk === 'MEDIUM') return 'chip--modified';
-    if (risk === 'LOW') return 'chip--approved';
-    return 'chip--pending';
-  }
+  decisionChipClass = decisionChipClass;
+  riskChipClass = riskChipClass;
+  riskLabel = riskLabel;
 
   consensusDisplay(consensus: ConsensusResponse): ConsensusDisplay {
     return formatConsensusDisplay(consensus);
