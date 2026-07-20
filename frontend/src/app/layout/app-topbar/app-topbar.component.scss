@@ -126,6 +126,12 @@
   color: #64748b;
 }
 
+.layout-topbar__action:focus-visible,
+.layout-topbar__brand:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
 @media (min-width: 768px) {
   .layout-topbar__user-meta {
     display: flex;

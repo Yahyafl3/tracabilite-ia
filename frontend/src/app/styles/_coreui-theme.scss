@@ -55,7 +55,8 @@
   --radius-md: 0.5rem;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'],
+html.app-dark {
   --cui-sidebar-bg: #2a3441;
   --cui-body-bg: #1b1f24;
   --cui-card-bg: #23282e;

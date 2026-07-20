@@ -1,4 +1,5 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface LayoutConfig {
   preset: string;
@@ -14,8 +15,14 @@ interface LayoutState {
   configSidebarVisible: boolean;
 }
 
+/** Single source of truth for light/dark preference (also used by landing ThemeService). */
+export const THEME_STORAGE_KEY = 'theme';
+
 @Injectable({ providedIn: 'root' })
 export class LayoutService {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   readonly layoutConfig = signal<LayoutConfig>({
     preset: 'Aura',
     primary: 'indigo',
@@ -32,19 +39,16 @@ export class LayoutService {
 
   readonly isDarkTheme = computed(() => this.layoutConfig().darkTheme);
   readonly isOverlay = computed(() => this.layoutConfig().menuMode === 'overlay');
-
-  private initialized = false;
+  readonly isMobileMenuOpen = computed(
+    () => this.layoutState().mobileMenuActive || this.layoutState().overlayMenuActive,
+  );
 
   constructor() {
-    effect(() => {
-      const config = this.layoutConfig();
-      if (!this.initialized) {
-        this.initialized = true;
-        this.applyDarkMode(config);
-        return;
-      }
-      this.applyDarkMode(config);
-    });
+    if (this.isBrowser) {
+      const dark = this.resolveInitialDark();
+      this.layoutConfig.update((c) => ({ ...c, darkTheme: dark }));
+      this.applyDarkMode(dark);
+    }
   }
 
   onMenuToggle(): void {
@@ -71,7 +75,13 @@ export class LayoutService {
   }
 
   toggleDarkMode(): void {
-    this.layoutConfig.update((c) => ({ ...c, darkTheme: !c.darkTheme }));
+    this.setDarkTheme(!this.layoutConfig().darkTheme);
+  }
+
+  setDarkTheme(darkTheme: boolean): void {
+    this.layoutConfig.update((c) => ({ ...c, darkTheme }));
+    this.applyDarkMode(darkTheme);
+    this.persistTheme(darkTheme);
   }
 
   toggleConfigSidebar(): void {
@@ -86,10 +96,34 @@ export class LayoutService {
     return typeof window !== 'undefined' && window.innerWidth > 991;
   }
 
-  private applyDarkMode(config: LayoutConfig): void {
-    if (typeof document === 'undefined') {
+  private resolveInitialDark(): boolean {
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === 'dark') return true;
+      if (stored === 'light') return false;
+    } catch {
+      // ignore storage errors
+    }
+    return (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
+  }
+
+  private persistTheme(darkTheme: boolean): void {
+    if (!this.isBrowser) return;
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, darkTheme ? 'dark' : 'light');
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  private applyDarkMode(darkTheme: boolean): void {
+    if (!this.isBrowser || typeof document === 'undefined') {
       return;
     }
-    document.documentElement.classList.toggle('app-dark', config.darkTheme);
+    document.documentElement.classList.toggle('app-dark', darkTheme);
+    document.documentElement.setAttribute('data-theme', darkTheme ? 'dark' : 'light');
   }
 }

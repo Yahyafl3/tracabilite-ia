@@ -2,21 +2,33 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Password } from 'primeng/password';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Checkbox } from 'primeng/checkbox';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/auth.models';
-import { IconComponent } from '../../../shared/icon.component';
-import { LogoComponent } from '../../../shared/logo.component';
 
-/**
- * Login — UI moderne alignée sur la charte de la landing page.
- * Icônes SVG internes (IconComponent), aucun composant Material.
- */
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, IconComponent, LogoComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    Card,
+    InputText,
+    Password,
+    Button,
+    Message,
+    ProgressSpinner,
+    Checkbox,
+  ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -26,7 +38,6 @@ export class LoginComponent {
 
   loginForm: FormGroup;
   isLoading = signal(false);
-  hidePassword = signal(true);
   errorMessage = signal<string | null>(null);
   returnUrl = '/decisions';
 
@@ -53,7 +64,7 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: () => {
-        this.router.navigate([this.returnUrl]);
+        void this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
         this.isLoading.set(false);
@@ -63,10 +74,6 @@ export class LoginComponent {
         this.isLoading.set(false);
       },
     });
-  }
-
-  togglePasswordVisibility(): void {
-    this.hidePassword.update((value) => !value);
   }
 
   hasError(field: string): boolean {

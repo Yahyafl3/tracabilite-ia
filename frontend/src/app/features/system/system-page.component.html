@@ -1,0 +1,23 @@
+<div class="system-page">
+  <p-card styleClass="system-card">
+    <p-tag [value]="code" [severity]="severity" styleClass="system-code" />
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+
+    <div class="system-actions">
+      <p-button
+        label="Retour"
+        icon="pi pi-arrow-left"
+        [outlined]="true"
+        (onClick)="goBack()"
+        ariaLabel="Retour à la page précédente"
+      />
+      <p-button
+        label="Tableau de bord"
+        icon="pi pi-home"
+        routerLink="/dashboard"
+        ariaLabel="Retour au tableau de bord"
+      />
+    </div>
+  </p-card>
+</div>

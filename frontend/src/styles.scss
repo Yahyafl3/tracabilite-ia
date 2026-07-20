@@ -3,12 +3,11 @@
  * Design system B2B : bleu / violet / blanc (tech + confiance)
  */
 
-// Angular Material (utilisé par les modules auth / dashboard existants)
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-
-@import 'primeicons/primeicons.css';
-
-@import 'app/styles/coreui-theme';
+@use 'app/styles/coreui-theme';
+@use 'app/styles/app-ui';
+@use 'app/styles/comparaison-ui';
+@use 'app/styles/ui-shared';
+@use 'app/features/decisions/decisions-shared';
 
 :root {
   --color-secondary: #7c3aed;
@@ -120,7 +119,8 @@
 /* ============================================================
    Thème sombre
    ============================================================ */
-[data-theme='dark'] {
+[data-theme='dark'],
+html.app-dark {
   --color-primary: #818cf8;
   --color-secondary: #a78bfa;
   --color-info: #60a5fa;
@@ -378,73 +378,8 @@ button {
   width: 100%;
 }
 
-/* ============================================================
-   Shell pages (dashboard, décisions, comparaison…)
-   ============================================================ */
-.shell-page {
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  min-height: 100%;
+.page {
   width: 100%;
-
-  @media (max-width: 768px) {
-    padding: 20px 16px;
-    gap: 20px;
-  }
-
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .page-header__left {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--brand-600);
-  }
-
-  .page-title {
-    font-size: clamp(1.5rem, 2.5vw, 1.85rem);
-    font-weight: 700;
-    color: var(--ink);
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
-  }
-
-  .page-subtitle {
-    font-size: 1.05rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .mat-mdc-form-field {
-    font-size: 1rem;
-  }
-
-  .mat-mdc-header-cell,
-  .mat-mdc-cell {
-    font-size: 0.95rem;
-  }
-
-  .mat-mdc-card-title {
-    font-size: 1.2rem;
-  }
 }
 
 /* ============================================================
@@ -496,11 +431,34 @@ button {
 }
 
 /* ============================================================
-   App UI — composants partagés
+   Dark mode — pages métier (contrastes lisibles)
    ============================================================ */
-@import 'app/styles/app-ui';
-@import 'app/styles/comparaison-ui';
-@import 'app/styles/coreui-layout';
-@import 'app/styles/coreui-components';
-@import 'app/styles/ui-shared';
-@import 'app/features/decisions/decisions-shared';
+html.app-dark {
+  .page-header h1,
+  .kpi-name,
+  .kpi-value,
+  .breakdown-agent__name {
+    color: #f8fafc;
+  }
+
+  .page-eyebrow,
+  .page-subtitle,
+  .muted,
+  .kpi-meta,
+  .kpi-label,
+  .kpi-score-label,
+  .empty-state p,
+  .empty-state h2,
+  .table-footer,
+  .field label {
+    color: #94a3b8;
+  }
+
+  .empty-state__icon {
+    color: #64748b;
+  }
+
+  .mono {
+    color: #cbd5e1;
+  }
+}
