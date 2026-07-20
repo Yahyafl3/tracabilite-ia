@@ -39,6 +39,8 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  /** UI-only: hide broken video and keep CSS gradient fallback. */
+  readonly videoFailed = signal(false);
   returnUrl = '/decisions';
 
   constructor() {
@@ -49,6 +51,10 @@ export class LoginComponent {
     });
 
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
+  }
+
+  onVideoError(): void {
+    this.videoFailed.set(true);
   }
 
   onSubmit(): void {

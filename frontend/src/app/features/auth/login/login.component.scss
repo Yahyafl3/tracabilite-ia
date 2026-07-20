@@ -1,32 +1,125 @@
 .login-page {
-  min-height: 100vh;
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
   display: grid;
   place-items: center;
+  isolation: isolate;
   padding: 1.5rem;
-  position: relative;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79, 70, 229, 0.14), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(14, 165, 233, 0.1), transparent 50%),
-    linear-gradient(160deg, #f8fafc 0%, #eef2ff 45%, #f1f5f9 100%);
+    radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.28), transparent 34%),
+    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.2), transparent 30%),
+    linear-gradient(135deg, #070b18, #111936 55%, #141b3d);
 }
 
-.login-page__ambient {
+.login-background-video {
   position: absolute;
   inset: 0;
+  z-index: -4;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.85) contrast(1.05);
+  transform: scale(1.01);
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+}
+
+.login-background-video.video-hidden {
+  display: none;
+}
+
+.login-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(7, 11, 24, 0.8),
+      rgba(20, 27, 61, 0.56) 45%,
+      rgba(30, 41, 89, 0.7)
+    );
+  pointer-events: none;
+}
+
+.login-video-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+}
+
+.login-background-effects {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.login-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.45;
+  animation: login-glow-drift 14s ease-in-out infinite alternate;
+}
+
+.login-glow-one {
+  width: 22rem;
+  height: 22rem;
+  top: -6rem;
+  left: -4rem;
+  background: rgba(79, 70, 229, 0.45);
+}
+
+.login-glow-two {
+  width: 18rem;
+  height: 18rem;
+  right: -3rem;
+  bottom: -5rem;
+  background: rgba(14, 165, 233, 0.35);
+  animation-delay: -4s;
+}
+
+@keyframes login-glow-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.5rem, 1rem, 0) scale(1.08);
+  }
+}
+
+.login-content {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 430px);
+  margin: 2rem auto;
 }
 
 :host ::ng-deep .login-card {
-  width: min(26rem, 100%);
+  width: 100%;
   position: relative;
   z-index: 1;
-  border-radius: 1rem;
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 24px 80px rgba(2, 6, 23, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+:host ::ng-deep .login-card .p-card-body {
+  padding: 1.5rem;
 }
 
 .login-back {
@@ -43,6 +136,12 @@
 .login-back:focus-visible {
   color: #4f46e5;
   outline: none;
+}
+
+.login-back:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }
 
 .login-head {
@@ -148,24 +247,67 @@
   font-size: 0.78rem;
 }
 
-:host ::ng-deep .w-full { width: 100%; }
-:host ::ng-deep .mb-3 { margin-bottom: 0.75rem; }
-:host ::ng-deep .p-password { width: 100%; }
+:host ::ng-deep .w-full {
+  width: 100%;
+}
 
-@media (max-width: 375px) {
+:host ::ng-deep .mb-3 {
+  margin-bottom: 0.75rem;
+}
+
+:host ::ng-deep .p-password {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
   .login-page {
+    place-items: center;
     padding: 1rem;
   }
 
+  .login-content {
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  :host ::ng-deep .login-card {
+    border-radius: 1rem;
+  }
+
+  .login-background-video {
+    object-position: 60% center;
+  }
+}
+
+@media (max-width: 375px) {
   .login-brand__text small {
     display: none;
   }
 }
 
-:host-context(html.app-dark) .login-page {
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79, 70, 229, 0.22), transparent 55%),
-    linear-gradient(160deg, #020617 0%, #0f172a 50%, #111827 100%);
+@media (prefers-reduced-motion: reduce) {
+  .login-background-video {
+    display: none;
+  }
+
+  .login-page {
+    background:
+      radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.28), transparent 34%),
+      linear-gradient(135deg, #070b18, #111936 55%, #141b3d);
+  }
+
+  .login-glow {
+    animation: none !important;
+  }
+}
+
+:host-context(html.app-dark) :host ::ng-deep .login-card,
+:host-context(html.app-dark) ::ng-deep .login-card {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 :host-context(html.app-dark) .login-brand__text strong,
@@ -177,6 +319,8 @@
 :host-context(html.app-dark) .login-brand__text small,
 :host-context(html.app-dark) .login-head p,
 :host-context(html.app-dark) .login-back,
-:host-context(html.app-dark) .remember label {
+:host-context(html.app-dark) .remember label,
+:host-context(html.app-dark) .login-footnote,
+:host-context(html.app-dark) .login-loading {
   color: #94a3b8;
 }
