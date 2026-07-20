@@ -23,10 +23,10 @@ export const routes: Routes = [
     ]
   },
   {
-    // All authenticated pages share the shell (sidebar + topbar)
+    // All authenticated pages share the Sakai-inspired layout shell
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/shell/shell.component').then(m => m.ShellComponent),
+    loadComponent: () => import('./layout/app-layout/app-layout.component').then(m => m.AppLayoutComponent),
     children: [
       {
         path: 'dashboard',

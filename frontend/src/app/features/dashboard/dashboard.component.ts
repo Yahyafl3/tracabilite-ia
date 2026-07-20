@@ -1,14 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { IconComponent } from '../../shared/icon.component';
-import {
-  PageHeaderComponent,
-  KpiCardComponent,
-  StatusBadgeComponent,
-  ErrorStateComponent,
-  LoadingSkeletonComponent,
-} from '../../shared/ui';
+import { Card } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { ProgressBar } from 'primeng/progressbar';
+import { Skeleton } from 'primeng/skeleton';
 import { DashboardRecentDecision, DashboardService } from '../../core/services/dashboard.service';
 import type { ComparaisonAgent } from '../../core/services/comparaison.service';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
@@ -20,12 +17,11 @@ import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
     CommonModule,
     DecimalPipe,
     RouterLink,
-    IconComponent,
-    PageHeaderComponent,
-    KpiCardComponent,
-    StatusBadgeComponent,
-    ErrorStateComponent,
-    LoadingSkeletonComponent,
+    Card,
+    TableModule,
+    Tag,
+    ProgressBar,
+    Skeleton,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -56,48 +52,48 @@ export class DashboardComponent {
       label: 'Total décisions',
       value: this.totalDecisions(),
       unit: '',
-      icon: 'file-text',
-      accent: 'indigo' as const,
+      icon: 'pi pi-file',
+      severity: 'info' as const,
       hint: `${this.totalDecisions()} enregistrées`,
     },
     {
       label: 'En attente',
       value: this.totalEnAttente(),
       unit: '',
-      icon: 'history',
-      accent: 'amber' as const,
+      icon: 'pi pi-clock',
+      severity: 'warn' as const,
       hint: 'À valider',
     },
     {
       label: 'Validées humainement',
       value: this.totalValideesHumainement(),
       unit: '',
-      icon: 'check-circle',
-      accent: 'green' as const,
+      icon: 'pi pi-check-circle',
+      severity: 'success' as const,
       hint: `${this.totalApprouvees()} approuvées + ${this.totalModifiees()} modifiées`,
     },
     {
       label: 'Rejetées',
       value: this.totalRejetees(),
       unit: '',
-      icon: 'shield-alert',
-      accent: 'danger' as const,
+      icon: 'pi pi-times-circle',
+      severity: 'danger' as const,
       hint: `${this.tauxValidation()}% taux de validation`,
     },
     {
       label: 'Agents configurés',
       value: this.agentsActifs(),
       unit: '',
-      icon: 'server',
-      accent: 'violet' as const,
+      icon: 'pi pi-server',
+      severity: 'secondary' as const,
       hint: this.agentsLabel(),
     },
     {
       label: 'Intégrité chaîne',
       value: this.hashChainIntact() ? 'Oui' : 'Non',
       unit: '',
-      icon: 'shield-check',
-      accent: this.hashChainIntact() ? 'green' as const : 'danger' as const,
+      icon: 'pi pi-verified',
+      severity: (this.hashChainIntact() ? 'success' : 'danger') as 'success' | 'danger',
       hint: 'SHA-256',
     },
   ]);
@@ -167,6 +163,19 @@ export class DashboardComponent {
     }[s];
   }
 
+  statutSeverity(
+    s: DashboardRecentDecision['statutValidation'],
+  ): 'success' | 'warn' | 'danger' | 'secondary' | 'info' {
+    return {
+      APPROUVEE: 'success',
+      MODIFIEE: 'warn',
+      REJETEE: 'danger',
+      EN_ATTENTE: 'secondary',
+      BROUILLON: 'info',
+    }[s] as 'success' | 'warn' | 'danger' | 'secondary' | 'info';
+  }
+
+  /** Conservé pour compatibilité des tests / appels éventuels. */
   statutClass(s: DashboardRecentDecision['statutValidation']): string {
     return {
       APPROUVEE: 'chip--approved',

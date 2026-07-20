@@ -1,0 +1,154 @@
+.layout-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--layout-topbar-height, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1rem 0 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(10px);
+}
+
+.layout-topbar__start,
+.layout-topbar__end {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.layout-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.layout-topbar__brand-icon {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 1rem;
+}
+
+.layout-topbar__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.layout-topbar__brand-text strong {
+  font-size: 0.95rem;
+}
+
+.layout-topbar__brand-text small {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.layout-topbar__action {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.layout-topbar__action:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+.layout-topbar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.layout-topbar__config {
+  position: relative;
+}
+
+.layout-topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid #e2e8f0;
+}
+
+.layout-topbar__avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.layout-topbar__user-meta {
+  display: none;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.layout-topbar__user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.layout-topbar__user-role {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+@media (min-width: 768px) {
+  .layout-topbar__user-meta {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .layout-topbar__brand-text small,
+  .layout-topbar__chip {
+    display: none;
+  }
+}
+
+:host-context(html.app-dark) .layout-topbar {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: #1e293b;
+}
+
+:host-context(html.app-dark) .layout-topbar__brand,
+:host-context(html.app-dark) .layout-topbar__user-name {
+  color: #f8fafc;
+}
+
+:host-context(html.app-dark) .layout-topbar__action:hover {
+  background: #1e293b;
+}

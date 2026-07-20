@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.layout-wrapper {
+  --layout-sidebar-width: 260px;
+  --layout-topbar-height: 64px;
+  --layout-sidebar-bg: #0f172a;
+  --layout-sidebar-fg: #e2e8f0;
+  --layout-sidebar-muted: #94a3b8;
+  --layout-accent: #4f46e5;
+  --layout-accent-soft: #eef2ff;
+  --layout-main-bg: #f8fafc;
+  --layout-card-radius: 12px;
+  --layout-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04);
+
+  min-height: 100vh;
+  background: var(--layout-main-bg);
+}
+
+.layout-main-container {
+  margin-left: var(--layout-sidebar-width);
+  padding-top: var(--layout-topbar-height);
+  min-height: 100vh;
+  transition: margin-left 0.2s ease;
+}
+
+.layout-static-inactive .layout-main-container,
+.layout-overlay .layout-main-container {
+  margin-left: 0;
+}
+
+.layout-main {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.layout-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+@media (max-width: 991px) {
+  .layout-main-container {
+    margin-left: 0;
+  }
+}
+
+:host-context(html.app-dark) .layout-wrapper {
+  --layout-main-bg: #0b1220;
+  --layout-sidebar-bg: #020617;
+}

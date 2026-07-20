@@ -1,0 +1,55 @@
+<div class="layout-topbar">
+  <div class="layout-topbar__start">
+    <button type="button" class="layout-topbar__action" (click)="layoutService.onMenuToggle()" aria-label="Menu">
+      <i class="pi pi-bars"></i>
+    </button>
+    <a routerLink="/dashboard" class="layout-topbar__brand">
+      <i class="pi pi-shield layout-topbar__brand-icon" aria-hidden="true"></i>
+      <span class="layout-topbar__brand-text">
+        <strong>Traçabilité IA</strong>
+        <small>Décisions assistées et auditables</small>
+      </span>
+    </a>
+  </div>
+
+  <div class="layout-topbar__end">
+    <span class="layout-topbar__chip" role="status" aria-label="Chaîne d'intégrité SHA-256">
+      <i class="pi pi-verified" aria-hidden="true"></i>
+      SHA-256
+    </span>
+
+    <button
+      type="button"
+      class="layout-topbar__action"
+      (click)="layoutService.toggleDarkMode()"
+      [attr.aria-label]="layoutService.isDarkTheme() ? 'Thème clair' : 'Thème sombre'"
+    >
+      <i [class]="layoutService.isDarkTheme() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+    </button>
+
+    <div class="layout-topbar__config">
+      <button
+        type="button"
+        class="layout-topbar__action"
+        (click)="layoutService.toggleConfigSidebar()"
+        aria-label="Personnaliser l'apparence"
+      >
+        <i class="pi pi-palette"></i>
+      </button>
+      @if (layoutService.layoutState().configSidebarVisible) {
+        <app-configurator />
+      }
+    </div>
+
+    <div class="layout-topbar__user">
+      <div class="layout-topbar__avatar" aria-hidden="true">{{ userInitials }}</div>
+      <div class="layout-topbar__user-meta">
+        <span class="layout-topbar__user-name">{{ userName }}</span>
+        <span class="layout-topbar__user-role">{{ userRoleLabel }}</span>
+      </div>
+      <button type="button" class="layout-topbar__action" (click)="logout()" aria-label="Déconnexion" title="Déconnexion">
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </div>
+  </div>
+</div>

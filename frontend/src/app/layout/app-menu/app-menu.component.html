@@ -1,0 +1,12 @@
+<ul class="layout-menu">
+  @for (section of model(); track section.label) {
+    <li class="layout-menu__section">
+      <div class="layout-menu__section-label">{{ section.label }}</div>
+      <ul>
+        @for (item of section.items ?? []; track item.label) {
+          <li app-menu-item [item]="item"></li>
+        }
+      </ul>
+    </li>
+  }
+</ul>
