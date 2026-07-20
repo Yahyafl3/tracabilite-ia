@@ -1,357 +1,357 @@
-<div class="shell-page">
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Comparaison']"
-    title="Comparaison des agents IA"
-    subtitle="Classement des agents IA par taux de succès API et décisions proposées.">
-    <span actions class="badge badge--neutral">
-      {{ agents().length }} agents actifs
-    </span>
-  </app-page-header>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Comparaison</p>
+      <h1>Comparaison des agents IA</h1>
+      <p class="page-subtitle">
+        Classement des agents IA par taux de succès API et décisions proposées (historique OpenRouter et nouvelles décisions Groq).
+      </p>
+    </div>
+    <p-tag severity="info" [value]="agents().length + ' agents'" />
+  </header>
 
   @if (loading()) {
-    <app-loading-skeleton [lines]="10" label="Chargement de la comparaison agents…" />
+    <p-card>
+      <div aria-label="Chargement de la comparaison agents">
+        <p-skeleton height="4rem" styleClass="mb-2" />
+        <p-skeleton height="12rem" styleClass="mb-2" />
+        <p-skeleton height="8rem" />
+      </div>
+    </p-card>
   } @else if (error(); as err) {
-    <app-error-state [message]="err" />
-  } @else if (agents().length === 0) {
-    <app-empty-state icon="users" message="Aucun agent configuré pour la comparaison." />
+    <p-card>
+      <p-message severity="error" [text]="err" styleClass="w-full" />
+    </p-card>
+  } @else if (agentsData().length === 0) {
+    <p-card>
+      <div class="empty-state" role="status">
+        <i class="pi pi-chart-bar empty-state__icon" aria-hidden="true"></i>
+        <h2>Aucun agent configuré</h2>
+        <p>Aucun agent n’est disponible pour la comparaison.</p>
+      </div>
+    </p-card>
   } @else {
-    <section class="kpi-row" aria-label="Indicateurs par agent">
-      @for (agent of agents(); track agent.systemeIaId ?? agent.nom; let i = $index) {
-        <div class="kpi-card" [class]="'kpi-card--' + (i + 1)">
-          <div class="kpi-card__rank">{{ rankIcon(agent.rang) }}</div>
-          <div class="kpi-card__body">
-            <p class="kpi-card__name">{{ agent.nom }}</p>
-            <p class="kpi-card__vendor">{{ agent.fournisseur }} · {{ agent.modele }}</p>
-            <div class="kpi-card__score-row">
-              <span class="kpi-card__score" [class]="successRateClass(agent.scorePourcentage)">
+    <p-card styleClass="filters-card">
+      <div class="filters">
+        <div class="field">
+          <label for="period">Période</label>
+          <p-datepicker
+            inputId="period"
+            selectionMode="range"
+            [ngModel]="periodRange()"
+            (ngModelChange)="periodRange.set($event)"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            placeholder="Plage de dates"
+            styleClass="w-full"
+            ariaLabel="Filtrer par période"
+          />
+        </div>
+        <div class="field">
+          <label for="provider">Provider</label>
+          <p-select
+            inputId="provider"
+            [options]="providerOptions()"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="providerFilter()"
+            (ngModelChange)="providerFilter.set($event)"
+            styleClass="w-full"
+            ariaLabel="Filtrer par provider"
+          />
+        </div>
+        <div class="field">
+          <label for="model">Modèle</label>
+          <p-select
+            inputId="model"
+            [options]="modelOptions()"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="modelFilter()"
+            (ngModelChange)="modelFilter.set($event)"
+            styleClass="w-full"
+            ariaLabel="Filtrer par modèle"
+          />
+        </div>
+        <div class="field field--action">
+          <p-button
+            label="Réinitialiser"
+            icon="pi pi-filter-slash"
+            [outlined]="true"
+            (onClick)="clearFilters()"
+            ariaLabel="Réinitialiser les filtres"
+          />
+        </div>
+      </div>
+      @if (periodFilterActive()) {
+        <p-message
+          severity="info"
+          text="Les indicateurs agents sont des agrégats globaux fournis par l’API. Aucun recalcul par période n’est effectué."
+          styleClass="w-full mt-3"
+        />
+      }
+    </p-card>
+
+    @if (agents().length === 0) {
+      <p-card>
+        <div class="empty-state" role="status">
+          <i class="pi pi-filter empty-state__icon" aria-hidden="true"></i>
+          <h2>Aucun résultat</h2>
+          <p>Aucun agent ne correspond aux filtres provider / modèle.</p>
+        </div>
+      </p-card>
+    } @else {
+      <section class="kpi-row" aria-label="Indicateurs par agent">
+        @for (agent of agents(); track agent.systemeIaId ?? agent.nom; let i = $index) {
+          <p-card styleClass="kpi-card">
+            <div class="kpi-head">
+              <p-tag [value]="'#' + rankIcon(agent.rang)" [severity]="i === 0 ? 'success' : 'secondary'" />
+              <p-tag
+                [value]="agent.fournisseur"
+                [severity]="providerSeverity(agent.fournisseur)"
+              />
+            </div>
+            <h2 class="kpi-name">{{ agent.nom }}</h2>
+            <p class="kpi-meta">{{ agent.modele }}</p>
+            <div class="kpi-score-row">
+              <span class="kpi-score" [class]="successRateClass(agent.scorePourcentage)">
                 {{ agent.scorePourcentage | number:'1.1-1' }}&thinsp;%
               </span>
-              <span class="kpi-card__score-label">Taux de succès API</span>
+              <span class="kpi-score-label">Taux de succès API</span>
             </div>
-            <div class="kpi-progress" role="progressbar"
-                 [attr.aria-valuenow]="agent.scorePourcentage"
-                 aria-valuemin="0" aria-valuemax="100"
-                 aria-label="Taux de succès API">
-              <div class="kpi-progress__fill" [style.width.%]="agent.scorePourcentage"></div>
-            </div>
+            <p-progressbar
+              [value]="agent.scorePourcentage"
+              [showValue]="false"
+              styleClass="kpi-progress"
+              [attr.aria-label]="'Taux de succès API ' + agent.nom"
+            />
             <div class="breakdown-pills">
-              <span class="pill pill--approved">
-                Appels API <strong>{{ agent.totalDecisions }}</strong>
-              </span>
-              <span class="pill pill--approved">
-                Accord APPROUVER <strong>{{ agent.approuvees }}</strong>
-              </span>
-              <span class="pill pill--modified">
-                REVIEW proposés <strong>{{ agent.modifiees }}</strong>
-              </span>
-              <span class="pill pill--rejected">
-                REJETER proposés <strong>{{ agent.rejetees }}</strong>
-              </span>
+              <p-tag severity="info" [value]="'Appels API ' + agent.totalDecisions" />
+              <p-tag severity="success" [value]="'Accord APPROUVER ' + agent.approuvees" />
+              <p-tag severity="warn" [value]="'REVIEW ' + agent.modifiees" />
+              <p-tag severity="danger" [value]="'REJETER ' + agent.rejetees" />
               @if (agent.enAttente > 0) {
-                <span class="pill pill--pending">
-                  Échecs / non succès <strong>{{ agent.enAttente }}</strong>
-                </span>
+                <p-tag severity="secondary" [value]="'Échecs ' + agent.enAttente" />
               }
             </div>
+          </p-card>
+        }
+      </section>
+
+      <div class="content-grid">
+        <p-card>
+          <ng-template #title>Taux de succès API (%)</ng-template>
+          <ng-template #subtitle>
+            Part d'appels API aboutissant à une réponse exploitable — visualisation SVG (sans recalcul)
+          </ng-template>
+
+          <div class="chart-scroll">
+            <svg
+              [attr.width]="svgWidth()"
+              [attr.height]="BAR_H + 72"
+              [attr.viewBox]="'0 0 ' + svgWidth() + ' ' + (BAR_H + 72)"
+              xmlns="http://www.w3.org/2000/svg"
+              class="chart-svg"
+              role="img"
+              aria-label="Graphique du taux de succès API par agent"
+            >
+              <defs>
+                <linearGradient id="grad0" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#4338ca" />
+                </linearGradient>
+                <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0d9488" />
+                  <stop offset="100%" stop-color="#0f766e" />
+                </linearGradient>
+                <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3b82f6" />
+                  <stop offset="100%" stop-color="#1d4ed8" />
+                </linearGradient>
+                <linearGradient id="grad3" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#64748b" />
+                  <stop offset="100%" stop-color="#334155" />
+                </linearGradient>
+              </defs>
+
+              @for (pct of [100, 75, 50, 25, 0]; track pct) {
+                <line
+                  x1="0"
+                  [attr.y1]="BAR_H - (pct / 100) * BAR_H"
+                  [attr.x2]="svgWidth()"
+                  [attr.y2]="BAR_H - (pct / 100) * BAR_H"
+                  stroke="#e2e8f0"
+                  stroke-width="1"
+                  stroke-dasharray="4 4"
+                />
+                <text
+                  x="-6"
+                  [attr.y]="BAR_H - (pct / 100) * BAR_H + 4"
+                  class="chart-axis-label"
+                  text-anchor="end"
+                >{{ pct }}%</text>
+              }
+
+              @for (bar of chartBars(); track bar.systemeIaId ?? bar.nom) {
+                <g [attr.transform]="'translate(' + (bar.x + 30) + ', 0)'">
+                  <rect
+                    [attr.x]="0"
+                    [attr.y]="BAR_H - bar.height"
+                    [attr.width]="BAR_W"
+                    [attr.height]="bar.height"
+                    [attr.fill]="bar.color"
+                    rx="6"
+                    ry="6"
+                  />
+                  <text
+                    [attr.x]="BAR_W / 2"
+                    [attr.y]="BAR_H - bar.height - 8"
+                    class="chart-bar-label"
+                    text-anchor="middle"
+                  >{{ bar.scorePourcentage | number:'1.0-1' }}%</text>
+                  <text
+                    [attr.x]="BAR_W / 2"
+                    [attr.y]="BAR_H + 20"
+                    class="chart-bar-name"
+                    text-anchor="middle"
+                  >{{ bar.nom }}</text>
+                  <text
+                    [attr.x]="BAR_W / 2"
+                    [attr.y]="BAR_H + 38"
+                    class="chart-bar-vendor"
+                    text-anchor="middle"
+                  >{{ bar.fournisseur }}</text>
+                </g>
+              }
+            </svg>
           </div>
-        </div>
-      }
-    </section>
 
-    <div class="content-grid">
-      <section class="card chart-card">
-        <div class="card__header">
-          <h2 class="card__title">
-            <app-icon name="activity" [size]="18" />
-            Taux de succès API (%)
-          </h2>
-          <span class="card__hint">Part d'appels API aboutissant à une réponse exploitable</span>
-        </div>
-
-        <div class="chart-scroll">
-          <svg
-            [attr.width]="svgWidth()"
-            [attr.height]="BAR_H + 72"
-            [attr.viewBox]="'0 0 ' + svgWidth() + ' ' + (BAR_H + 72)"
-            xmlns="http://www.w3.org/2000/svg"
-            class="chart-svg"
-            role="img"
-            aria-label="Graphique du taux de succès API par agent">
-            <defs>
-              <linearGradient id="grad0" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6366f1" />
-                <stop offset="100%" stop-color="#4338ca" />
-              </linearGradient>
-              <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#8b5cf6" />
-                <stop offset="100%" stop-color="#6d28d9" />
-              </linearGradient>
-              <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#3b82f6" />
-                <stop offset="100%" stop-color="#1d4ed8" />
-              </linearGradient>
-              <linearGradient id="grad3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#14b8a6" />
-                <stop offset="100%" stop-color="#0f766e" />
-              </linearGradient>
-            </defs>
-
-            @for (pct of [100, 75, 50, 25, 0]; track pct) {
-              <line
-                x1="0"
-                [attr.y1]="BAR_H - (pct / 100) * BAR_H"
-                [attr.x2]="svgWidth()"
-                [attr.y2]="BAR_H - (pct / 100) * BAR_H"
-                stroke="var(--border)"
-                stroke-width="1"
-                stroke-dasharray="4 4" />
-              <text
-                x="-6"
-                [attr.y]="BAR_H - (pct / 100) * BAR_H + 4"
-                class="chart-axis-label"
-                text-anchor="end">{{ pct }}%</text>
+          <div class="chart-legend" aria-label="Légende des agents">
+            @for (bar of chartBars(); track bar.systemeIaId ?? bar.nom; let i = $index) {
+              <span class="legend-item">
+                <span class="legend-dot" [attr.data-i]="i + 1"></span>
+                {{ bar.nom }} ({{ bar.fournisseur }})
+              </span>
             }
+          </div>
+        </p-card>
 
-            @for (bar of chartBars(); track bar.systemeIaId ?? bar.nom) {
-              <g [attr.transform]="'translate(' + (bar.x + 30) + ', 0)'">
-                <rect
-                  [attr.x]="0"
-                  [attr.y]="BAR_H - bar.height"
-                  [attr.width]="BAR_W"
-                  [attr.height]="bar.height"
-                  [attr.fill]="bar.color"
-                  rx="6" ry="6" />
-                <text
-                  [attr.x]="BAR_W / 2"
-                  [attr.y]="BAR_H - bar.height - 8"
-                  class="chart-bar-label"
-                  text-anchor="middle">{{ bar.scorePourcentage | number:'1.0-1' }}%</text>
-                <text
-                  [attr.x]="BAR_W / 2"
-                  [attr.y]="BAR_H + 20"
-                  class="chart-bar-name"
-                  text-anchor="middle">{{ bar.nom }}</text>
-                <text
-                  [attr.x]="BAR_W / 2"
-                  [attr.y]="BAR_H + 38"
-                  class="chart-bar-vendor"
-                  text-anchor="middle">{{ bar.fournisseur }}</text>
-              </g>
+        <p-card>
+          <ng-template #title>Répartition des décisions proposées</ng-template>
+          <ng-template #subtitle>Valeurs fournies par l’API — sans recalcul local</ng-template>
+
+          <div class="breakdown-list">
+            @for (agent of agents(); track agent.systemeIaId ?? agent.nom) {
+              <div class="breakdown-agent">
+                <div class="breakdown-agent__header">
+                  <span class="breakdown-agent__name">{{ agent.nom }}</span>
+                  <span class="muted">{{ agent.totalDecisions }} appels API</span>
+                </div>
+                <div class="stacked-bar" [attr.title]="agent.nom + ' — répartition'">
+                  @if (agent.approuvees > 0) {
+                    <div
+                      class="stacked-bar__seg stacked-bar__seg--approved"
+                      [style.flex]="agent.approuvees"
+                      [attr.title]="'Accord APPROUVER : ' + agent.approuvees"
+                    ></div>
+                  }
+                  @if (agent.modifiees > 0) {
+                    <div
+                      class="stacked-bar__seg stacked-bar__seg--modified"
+                      [style.flex]="agent.modifiees"
+                      [attr.title]="'REVIEW proposés : ' + agent.modifiees"
+                    ></div>
+                  }
+                  @if (agent.rejetees > 0) {
+                    <div
+                      class="stacked-bar__seg stacked-bar__seg--rejected"
+                      [style.flex]="agent.rejetees"
+                      [attr.title]="'REJETER proposés : ' + agent.rejetees"
+                    ></div>
+                  }
+                  @if (agent.enAttente > 0) {
+                    <div
+                      class="stacked-bar__seg stacked-bar__seg--pending"
+                      [style.flex]="agent.enAttente"
+                      [attr.title]="'Échecs / non succès : ' + agent.enAttente"
+                    ></div>
+                  }
+                </div>
+              </div>
             }
-          </svg>
-        </div>
+          </div>
 
-        <div class="chart-legend">
-          @for (bar of chartBars(); track bar.systemeIaId ?? bar.nom; let i = $index) {
-            <span class="legend-item">
-              <span class="legend-dot" [class]="'legend-dot--' + (i + 1)"></span>
-              {{ bar.nom }}
-            </span>
-          }
-        </div>
-      </section>
-
-      <section class="card breakdown-card">
-        <div class="card__header">
-          <h2 class="card__title">
-            <app-icon name="file-check" [size]="18" />
-            Répartition des décisions proposées
-          </h2>
-        </div>
-
-        <div class="breakdown-list">
-          @for (agent of agents(); track agent.systemeIaId ?? agent.nom) {
-            <div class="breakdown-agent">
-              <div class="breakdown-agent__header">
-                <span class="breakdown-agent__name">{{ agent.nom }}</span>
-                <span class="breakdown-agent__total">{{ agent.totalDecisions }} appels API</span>
-              </div>
-
-              <div class="stacked-bar" [attr.title]="agent.nom + ' — répartition'">
-                @if (agent.approuvees > 0) {
-                  <div class="stacked-bar__seg stacked-bar__seg--approved"
-                       [style.flex]="agent.approuvees"
-                       [attr.title]="'Accord APPROUVER : ' + agent.approuvees"></div>
-                }
-                @if (agent.modifiees > 0) {
-                  <div class="stacked-bar__seg stacked-bar__seg--modified"
-                       [style.flex]="agent.modifiees"
-                       [attr.title]="'REVIEW proposés : ' + agent.modifiees"></div>
-                }
-                @if (agent.rejetees > 0) {
-                  <div class="stacked-bar__seg stacked-bar__seg--rejected"
-                       [style.flex]="agent.rejetees"
-                       [attr.title]="'REJETER proposés : ' + agent.rejetees"></div>
-                }
-                @if (agent.enAttente > 0) {
-                  <div class="stacked-bar__seg stacked-bar__seg--pending"
-                       [style.flex]="agent.enAttente"
-                       [attr.title]="'Échecs / non succès : ' + agent.enAttente"></div>
-                }
-              </div>
-
-              <div class="breakdown-pills">
-                <span class="pill pill--approved">
-                  <span class="pill__dot"></span>
-                  Accord APPROUVER <strong>{{ agent.approuvees }}</strong>
-                </span>
-                <span class="pill pill--modified">
-                  <span class="pill__dot"></span>
-                  REVIEW proposés <strong>{{ agent.modifiees }}</strong>
-                </span>
-                <span class="pill pill--rejected">
-                  <span class="pill__dot"></span>
-                  REJETER proposés <strong>{{ agent.rejetees }}</strong>
-                </span>
-                @if (agent.enAttente > 0) {
-                  <span class="pill pill--pending">
-                    <span class="pill__dot"></span>
-                    Échecs / non succès <strong>{{ agent.enAttente }}</strong>
-                  </span>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="stacked-legend">
-          <span class="stacked-legend__item stacked-legend__item--approved">Accord APPROUVER</span>
-          <span class="stacked-legend__item stacked-legend__item--modified">REVIEW proposés</span>
-          <span class="stacked-legend__item stacked-legend__item--rejected">REJETER proposés</span>
-          <span class="stacked-legend__item stacked-legend__item--pending">Échecs / non succès</span>
-        </div>
-      </section>
-    </div>
-
-    <section class="card table-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <app-icon name="users" [size]="18" />
-          Classement détaillé
-        </h2>
-        <p class="card__hint">Cliquez sur un en-tête pour trier</p>
+          <div class="stacked-legend">
+            <span class="stacked-legend__item stacked-legend__item--approved">Accord APPROUVER</span>
+            <span class="stacked-legend__item stacked-legend__item--modified">REVIEW proposés</span>
+            <span class="stacked-legend__item stacked-legend__item--rejected">REJETER proposés</span>
+            <span class="stacked-legend__item stacked-legend__item--pending">Échecs / non succès</span>
+          </div>
+        </p-card>
       </div>
 
-      <div class="table-scroll">
-        <table class="ranking-table" aria-label="Classement des agents IA">
-          <thead>
-            <tr>
-              <th class="col-rank th-sortable"
-                  [class.th--active]="isSorted('rang')"
-                  (click)="sort('rang')" scope="col">
-                Rang
-                <app-icon [name]="isSorted('rang') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-agent th-sortable"
-                  [class.th--active]="isSorted('nom')"
-                  (click)="sort('nom')" scope="col">
-                Agent
-                <app-icon [name]="isSorted('nom') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-num th-sortable"
-                  [class.th--active]="isSorted('totalDecisions')"
-                  (click)="sort('totalDecisions')" scope="col">
-                Appels API
-                <app-icon [name]="isSorted('totalDecisions') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-num th-sortable"
-                  [class.th--active]="isSorted('approuvees')"
-                  (click)="sort('approuvees')" scope="col">
-                Accord APPROUVER
-                <app-icon [name]="isSorted('approuvees') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-num th-sortable"
-                  [class.th--active]="isSorted('modifiees')"
-                  (click)="sort('modifiees')" scope="col">
-                REVIEW proposés
-                <app-icon [name]="isSorted('modifiees') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-num th-sortable"
-                  [class.th--active]="isSorted('rejetees')"
-                  (click)="sort('rejetees')" scope="col">
-                REJETER proposés
-                <app-icon [name]="isSorted('rejetees') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-num th-sortable"
-                  [class.th--active]="isSorted('enAttente')"
-                  (click)="sort('enAttente')" scope="col">
-                Échecs / non succès
-                <app-icon [name]="isSorted('enAttente') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-score th-sortable"
-                  [class.th--active]="isSorted('scorePourcentage')"
-                  (click)="sort('scorePourcentage')" scope="col">
-                Taux de succès API
-                <app-icon [name]="isSorted('scorePourcentage') ? (sortDir() === 'asc' ? 'arrow-up' : 'arrow-right') : 'arrow-right'"
-                          [size]="12" class="sort-icon" />
-              </th>
-              <th class="col-bar" scope="col">Barre</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (agent of agents(); track agent.systemeIaId ?? agent.nom) {
-              <tr class="tr-agent" [class]="rankClass(agent.rang)">
-                <td class="col-rank td-rank">
-                  <span class="rank-badge" [class]="rankClass(agent.rang)">
-                    {{ rankIcon(agent.rang) }}
-                  </span>
+      <p-card>
+        <ng-template #title>Classement détaillé</ng-template>
+        <ng-template #subtitle>Cliquez sur un en-tête pour trier</ng-template>
+
+        <div class="table-scroll">
+          <p-table
+            [value]="agents()"
+            styleClass="p-datatable-sm"
+            [tableStyle]="{ 'min-width': '64rem' }"
+            ariaLabel="Classement des agents IA"
+          >
+            <ng-template #header>
+              <tr>
+                <th (click)="sort('rang')" class="th-sortable" [class.th--active]="isSorted('rang')">Rang</th>
+                <th (click)="sort('nom')" class="th-sortable" [class.th--active]="isSorted('nom')">Agent</th>
+                <th (click)="sort('totalDecisions')" class="th-sortable" [class.th--active]="isSorted('totalDecisions')">Appels API</th>
+                <th (click)="sort('approuvees')" class="th-sortable" [class.th--active]="isSorted('approuvees')">Accord APPROUVER</th>
+                <th (click)="sort('modifiees')" class="th-sortable" [class.th--active]="isSorted('modifiees')">REVIEW proposés</th>
+                <th (click)="sort('rejetees')" class="th-sortable" [class.th--active]="isSorted('rejetees')">REJETER proposés</th>
+                <th (click)="sort('enAttente')" class="th-sortable" [class.th--active]="isSorted('enAttente')">Échecs</th>
+                <th (click)="sort('scorePourcentage')" class="th-sortable" [class.th--active]="isSorted('scorePourcentage')">Taux de succès API</th>
+                <th>Barre</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-agent>
+              <tr [class]="rankClass(agent.rang)">
+                <td>
+                  <p-tag [value]="rankIcon(agent.rang)" [severity]="agent.rang === 1 ? 'success' : 'secondary'" />
                 </td>
-                <td class="col-agent">
+                <td>
                   <div class="agent-cell">
-                    <div class="agent-avatar" [class]="'agent-avatar--' + agent.rang">
-                      {{ agent.nom.charAt(0) }}
-                    </div>
-                    <div class="agent-info">
-                      <span class="agent-name">{{ agent.nom }}</span>
-                      <span class="agent-meta">{{ agent.fournisseur }} · {{ agent.modele }}</span>
-                    </div>
+                    <strong>{{ agent.nom }}</strong>
+                    <span class="muted">{{ agent.fournisseur }} · {{ agent.modele }}</span>
                   </div>
                 </td>
-                <td class="col-num td-num">{{ agent.totalDecisions }}</td>
-                <td class="col-num td-num">
-                  <span class="num-chip num-chip--approved">{{ agent.approuvees }}</span>
+                <td>{{ agent.totalDecisions }}</td>
+                <td><p-tag severity="success" [value]="'' + agent.approuvees" /></td>
+                <td><p-tag severity="warn" [value]="'' + agent.modifiees" /></td>
+                <td><p-tag severity="danger" [value]="'' + agent.rejetees" /></td>
+                <td><p-tag severity="secondary" [value]="'' + agent.enAttente" /></td>
+                <td>
+                  <p-tag
+                    [value]="(agent.scorePourcentage | number:'1.1-1') + ' %'"
+                    [severity]="scoreSeverity(agent.scorePourcentage)"
+                  />
                 </td>
-                <td class="col-num td-num">
-                  <span class="num-chip num-chip--modified">{{ agent.modifiees }}</span>
-                </td>
-                <td class="col-num td-num">
-                  <span class="num-chip num-chip--rejected">{{ agent.rejetees }}</span>
-                </td>
-                <td class="col-num td-num">
-                  <span class="num-chip num-chip--pending">{{ agent.enAttente }}</span>
-                </td>
-                <td class="col-score td-score">
-                  <span class="score-badge" [class]="successRateClass(agent.scorePourcentage)">
-                    {{ agent.scorePourcentage | number:'1.1-1' }}&thinsp;%
-                  </span>
-                </td>
-                <td class="col-bar">
-                  <div class="inline-bar">
-                    <div class="inline-bar__fill"
-                         [class]="successRateClass(agent.scorePourcentage)"
-                         [style.width.%]="agent.scorePourcentage"></div>
-                    <span class="inline-bar__pct">
-                      {{ agent.scorePourcentage | number:'1.0-0' }}%
-                    </span>
-                  </div>
+                <td>
+                  <p-progressbar
+                    [value]="agent.scorePourcentage"
+                    [showValue]="false"
+                    styleClass="inline-progress"
+                  />
                 </td>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </ng-template>
+          </p-table>
+        </div>
 
-      <footer class="table-footer">
-        <app-icon name="shield-check" [size]="14" />
-        Données issues des appels API agents — chaîne SHA-256 intègre
-      </footer>
-    </section>
+        <p class="table-footer muted">
+          Données issues des appels API agents — chaîne SHA-256 intègre. Providers historiques OpenRouter et nouvelles décisions Groq affichés sans modification.
+        </p>
+      </p-card>
+    }
   }
 </div>

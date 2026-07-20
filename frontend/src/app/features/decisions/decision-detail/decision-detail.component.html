@@ -244,32 +244,41 @@
           }
 
           @case ('validation') {
+            <p-confirmdialog />
+
             @if (validationSuccess()) {
-              <p class="success-banner">{{ validationSuccess() }}</p>
+              <p-message severity="success" [text]="validationSuccess()!" styleClass="w-full mb-3" />
             }
             @if (validationError()) {
-              <app-error-state [message]="validationError()!" />
+              <p-message severity="error" [text]="validationError()!" styleClass="w-full mb-3" />
             }
 
             @if (isPendingValidation()) {
-              <p class="pending-banner">Décision en attente de validation humaine</p>
+              <p-message
+                severity="warn"
+                text="Décision en attente de validation humaine"
+                styleClass="w-full mb-3"
+              />
             } @else if (humanFinalLabel(item)) {
-              <p class="final-banner">
-                Décision finale humaine : <strong>{{ humanFinalLabel(item) }}</strong>
-              </p>
+              <p-message
+                severity="info"
+                [text]="'Décision finale humaine : ' + humanFinalLabel(item)"
+                styleClass="w-full mb-3"
+              />
             }
 
             <div class="validation-block">
               <h3 class="section-title">Dossier consulté</h3>
               <p class="muted">
                 Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
+                La validation humaine porte toujours sur le dossier global, jamais sur un agent isolé.
               </p>
               <div class="summary-grid">
                 <div class="summary-item">
                   <span class="label">Décision ML</span>
-                  <app-status-badge
-                    [label]="mlDecision(item) || 'N/A'"
-                    [chipClass]="decisionChipClass(mlDecision(item))"
+                  <p-tag
+                    [value]="mlDecision(item) || 'N/A'"
+                    [severity]="decisionTagSeverity(mlDecision(item))"
                   />
                 </div>
                 <div class="summary-item">
@@ -298,11 +307,17 @@
                   <article class="agent-card">
                     <header class="agent-card__head">
                       <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
-                      <span class="status-chip chip--pending">{{ agentStatus(agent) }}</span>
+                      <p-tag [value]="agentStatus(agent)" severity="secondary" />
                     </header>
                     @if (agent) {
                       <p class="muted">{{ agent.modelId }}</p>
-                      <p>Décision : <strong>{{ agent.decisionProposee || '—' }}</strong></p>
+                      <p>
+                        Décision :
+                        <p-tag
+                          [value]="agent.decisionProposee || '—'"
+                          [severity]="decisionTagSeverity(agent.decisionProposee)"
+                        />
+                      </p>
                       <p>
                         Confiance déclarée :
                         <app-confidence-display
@@ -321,6 +336,7 @@
             </div>
 
             @if (canValidate()) {
+              <p-divider />
               <div class="validation-block validation-form">
                 <h3 class="section-title">Décision humaine</h3>
                 <p class="muted validation-note">
@@ -333,77 +349,95 @@
 
                 <label class="field-label" for="commentaire">Justification</label>
                 <textarea
+                  pTextarea
                   id="commentaire"
-                  class="field-input"
                   rows="4"
+                  class="w-full"
                   [formControl]="validationForm.controls.commentaire"
                   placeholder="Justification de la décision humaine…"
+                  aria-label="Justification de la décision humaine"
                 ></textarea>
 
-                <label class="validation-confirm">
-                  <input type="checkbox" [formControl]="validationForm.controls.confirmed" />
-                  <span>
+                <div class="validation-confirm">
+                  <p-checkbox
+                    inputId="confirmed"
+                    [binary]="true"
+                    [formControl]="validationForm.controls.confirmed"
+                    ariaLabel="Confirmer la consultation du dossier global"
+                  />
+                  <label for="confirmed">
                     Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
-                  </span>
-                </label>
+                  </label>
+                </div>
                 @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
                   <p class="error-inline">Veuillez confirmer avant d'enregistrer votre décision.</p>
                 }
 
                 <div class="validation-actions">
-                  <button
-                    type="button"
-                    class="btn-primary"
+                  <p-button
+                    label="Approuver (APPROUVER)"
+                    icon="pi pi-check"
+                    severity="success"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="approve()"
-                  >
-                    Approuver (APPROUVER)
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-danger"
+                    [loading]="validationLoading()"
+                    (onClick)="approve()"
+                    ariaLabel="Approuver la décision"
+                  />
+                  <p-button
+                    label="Rejeter (REJETER)"
+                    icon="pi pi-times"
+                    severity="danger"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="reject()"
-                  >
-                    Rejeter (REJETER)
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-secondary"
+                    [loading]="validationLoading()"
+                    (onClick)="reject()"
+                    ariaLabel="Rejeter la décision"
+                  />
+                  <p-button
+                    label="Demander revue (REVIEW)"
+                    icon="pi pi-eye"
+                    severity="warn"
+                    [outlined]="true"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="review()"
-                  >
-                    Demander revue (REVIEW)
-                  </button>
+                    [loading]="validationLoading()"
+                    (onClick)="review()"
+                    ariaLabel="Demander une revue"
+                  />
                 </div>
 
                 <div class="modify-block">
                   <h4 class="section-subtitle">Modifier la décision ML (MODIFIER)</h4>
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
-                  <select
-                    id="decisionHumaine"
-                    class="field-input"
+                  <p-select
+                    inputId="decisionHumaine"
+                    [options]="humanDecisionOptions"
+                    optionLabel="label"
+                    optionValue="value"
                     [formControl]="validationForm.controls.decisionHumaine"
-                  >
-                    <option value="APPROUVER">APPROUVER</option>
-                    <option value="REJETER">REJETER</option>
-                  </select>
-                  <button
-                    type="button"
-                    class="btn-secondary"
+                    styleClass="w-full"
+                    ariaLabel="Décision humaine finale"
+                  />
+                  <p-button
+                    label="Enregistrer la modification"
+                    icon="pi pi-save"
+                    [outlined]="true"
+                    styleClass="mt-2"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="modify()"
-                  >
-                    Enregistrer la modification
-                  </button>
+                    [loading]="validationLoading()"
+                    (onClick)="modify()"
+                    ariaLabel="Enregistrer la modification de décision"
+                  />
                 </div>
               </div>
             } @else if (!isPendingValidation()) {
+              <p-divider />
               <div class="validation-block validation-result">
                 <div class="summary-grid">
                   <div class="summary-item">
                     <span class="label">Décision humaine finale</span>
-                    <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+                    <p-tag
+                      [value]="humanFinalLabel(item) || '—'"
+                      [severity]="decisionTagSeverity(humanFinalLabel(item))"
+                    />
                   </div>
                   <div class="summary-item">
                     <span class="label">Validateur</span>
@@ -419,21 +453,32 @@
               <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
             }
 
+            <p-divider />
             <h3 class="section-title">Historique des validations</h3>
             <div class="validation-history">
               @for (action of item.validations ?? []; track action.validationActionId) {
                 <article class="history-item">
                   <div class="history-item__head">
                     <strong>{{ action.validateurNom }}</strong>
-                    <app-status-badge
-                      [label]="statutLabel(action.statutApres)"
-                      [chipClass]="statutChipClass(action.statutApres)"
+                    <p-tag
+                      [value]="statutLabel(action.statutApres)"
+                      [severity]="
+                        action.statutApres === 'APPROUVEE'
+                          ? 'success'
+                          : action.statutApres === 'REJETEE'
+                            ? 'danger'
+                            : 'secondary'
+                      "
                     />
                   </div>
                   <p class="muted">
                     {{ action.typeAction }} · {{ action.timestamp | date:'short' }}
                     @if (action.decisionHumaine) {
-                      · Décision humaine : <strong>{{ action.decisionHumaine }}</strong>
+                      · Décision humaine :
+                      <p-tag
+                        [value]="action.decisionHumaine"
+                        [severity]="decisionTagSeverity(action.decisionHumaine)"
+                      />
                     }
                   </p>
                   @if (action.commentaire) {

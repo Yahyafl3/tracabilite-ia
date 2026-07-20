@@ -1,72 +1,160 @@
-<div class="shell-page">
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Validation']"
-    title="Décisions en attente"
-    subtitle="File de validation pour les décisions ML nécessitant un contrôle humain."
-  >
-    <span class="count-badge">{{ totalElements() }} en attente</span>
-  </app-page-header>
+<div class="page">
+  <p-confirmdialog />
 
-  <section class="card table-card">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Validation</p>
+      <h1>Décisions en attente</h1>
+      <p class="page-subtitle">
+        File de validation pour les décisions ML nécessitant un contrôle humain sur le dossier global.
+      </p>
+    </div>
+    <p-tag severity="info" [value]="totalElements() + ' en attente'" />
+  </header>
+
+  <p-card>
     @if (loading()) {
-      <app-loading-skeleton [lines]="6" label="Chargement de la file de validation…" />
+      <div aria-label="Chargement de la file de validation">
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" />
+      </div>
     } @else if (error()) {
-      <app-error-state [message]="error()!" />
+      <p-message severity="error" [text]="error()!" styleClass="w-full" />
     } @else if (decisions().length === 0) {
-      <app-empty-state
-        icon="check-circle"
-        message="Aucune décision en attente de validation."
-      />
+      <div class="empty-state" role="status">
+        <i class="pi pi-check-circle empty-state__icon" aria-hidden="true"></i>
+        <h2>Aucune décision en attente</h2>
+        <p>La file de validation est vide pour le moment.</p>
+      </div>
     } @else {
-      <div class="card__header">
-        <h2 class="card__title">
-          <app-icon name="file-check" [size]="17" />
-          File de validation
-        </h2>
-        <span class="card__hint">{{ totalElements() }} en attente</span>
+      <div class="card-title-row">
+        <strong>File de validation</strong>
+        <span class="muted">{{ totalElements() }} en attente</span>
       </div>
 
       <div class="table-scroll">
-        <table class="decisions-table" aria-label="Décisions en attente de validation">
-          <thead>
+        <p-table
+          [value]="decisions()"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '56rem' }"
+          ariaLabel="Décisions en attente de validation"
+        >
+          <ng-template #header>
             <tr>
-              <th scope="col">Dossier</th>
-              <th scope="col">Décision ML</th>
-              <th scope="col">Confiance</th>
-              <th scope="col">Risque</th>
-              <th scope="col">Date</th>
-              <th scope="col">Actions</th>
+              <th>Dossier</th>
+              <th>Décision ML</th>
+              <th>Confiance</th>
+              <th>Risque</th>
+              <th>Consensus</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
-          </thead>
-          <tbody>
-            @for (row of decisions(); track row.decisionId) {
-              <tr>
-                <td class="td-prompt">
-                  <span class="prompt-text">{{ row.prompt }}</span>
-                  <span class="prompt-sub">{{ row.contexte }}</span>
-                </td>
-                <td>
-                  <app-status-badge
-                    [label]="decisionLabel(row.suggestedDecision) || 'N/A'"
-                    [chipClass]="decisionChipClass(row.suggestedDecision)"
-                  />
-                </td>
-                <td>{{ row.confidenceScore ?? '—' }}@if (row.confidenceScore != null) { %}</td>
-                <td>{{ row.riskLevel || '—' }}</td>
-                <td class="td-time">
-                  <span class="time-date">{{ row.timestamp | date:'dd MMM' }}</span>
-                  <span class="time-hour">{{ row.timestamp | date:'HH:mm' }}</span>
-                </td>
-                <td>
-                  <a class="btn-primary btn-primary--sm" [routerLink]="['/decisions', row.decisionId]">
-                    Valider
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+          </ng-template>
+          <ng-template #body let-row>
+            <tr>
+              <td>
+                <div class="dossier-cell">
+                  <strong>{{ row.prompt }}</strong>
+                  <span class="muted">{{ row.contexte }}</span>
+                </div>
+              </td>
+              <td>
+                <p-tag
+                  [value]="decisionLabel(row.suggestedDecision) || 'N/A'"
+                  [severity]="mlSeverity(row.suggestedDecision)"
+                />
+              </td>
+              <td>
+                <app-confidence-display [confidence]="row.confidenceScore" scale="percent" />
+              </td>
+              <td>
+                <p-tag [value]="row.riskLevel || '—'" [severity]="riskSeverity(row.riskLevel)" />
+              </td>
+              <td>{{ consensusLabel(row) }}</td>
+              <td>
+                <div class="td-time">
+                  <span>{{ row.timestamp | date:'dd MMM' }}</span>
+                  <span class="muted">{{ row.timestamp | date:'HH:mm' }}</span>
+                </div>
+              </td>
+              <td>
+                <p-button
+                  label="Valider"
+                  icon="pi pi-eye"
+                  size="small"
+                  [disabled]="navigating()"
+                  [loading]="navigating() && selected()?.decisionId === row.decisionId"
+                  (onClick)="openSummary(row)"
+                  [attr.aria-label]="'Ouvrir le résumé du dossier ' + row.decisionId"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
-  </section>
+  </p-card>
+
+  <p-dialog
+    header="Résumé avant validation"
+    [modal]="true"
+    [visible]="summaryVisible()"
+    (visibleChange)="!$event && closeSummary()"
+    [style]="{ width: 'min(36rem, 96vw)' }"
+    [draggable]="false"
+  >
+    @if (selected(); as row) {
+      <p class="summary-note">
+        La validation humaine porte sur le <strong>dossier global</strong> (ML, SHAP, agents IA,
+        consensus, sources, intégrité), jamais sur chaque agent individuellement.
+      </p>
+      <p-divider />
+      <dl class="summary-grid">
+        <div>
+          <dt>Demande</dt>
+          <dd>{{ row.prompt }}</dd>
+        </div>
+        <div>
+          <dt>Décision ML</dt>
+          <dd>
+            <p-tag
+              [value]="decisionLabel(row.suggestedDecision) || 'N/A'"
+              [severity]="mlSeverity(row.suggestedDecision)"
+            />
+          </dd>
+        </div>
+        <div>
+          <dt>Confiance ML</dt>
+          <dd>
+            <app-confidence-display [confidence]="row.confidenceScore" scale="percent" />
+          </dd>
+        </div>
+        <div>
+          <dt>Risque</dt>
+          <dd>
+            <p-tag [value]="row.riskLevel || '—'" [severity]="riskSeverity(row.riskLevel)" />
+          </dd>
+        </div>
+        <div>
+          <dt>Consensus</dt>
+          <dd>{{ consensusLabel(row) }}</dd>
+        </div>
+        <div>
+          <dt>Statut</dt>
+          <dd><p-tag severity="secondary" value="En attente" /></dd>
+        </div>
+      </dl>
+      <ng-template #footer>
+        <p-button label="Annuler" [text]="true" (onClick)="closeSummary()" [disabled]="navigating()" />
+        <p-button
+          label="Continuer vers le dossier"
+          icon="pi pi-arrow-right"
+          (onClick)="confirmOpenDossier()"
+          [disabled]="navigating()"
+          [loading]="navigating()"
+        />
+      </ng-template>
+    }
+  </p-dialog>
 </div>

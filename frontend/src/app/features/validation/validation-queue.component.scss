@@ -1,36 +1,113 @@
-.table-card {
-  overflow: hidden;
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.count-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.45rem 0.875rem;
-  border-radius: var(--radius-full);
-  background: var(--chip-modified-bg);
-  color: var(--chip-modified-fg);
-  border: 1px solid var(--chip-modified-border);
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.page-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  max-width: 42rem;
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.dossier-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-width: 18rem;
+}
+
+.td-time {
+  display: flex;
+  flex-direction: column;
   font-size: 0.82rem;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
-.btn-primary--sm {
-  padding: 8px 14px;
-  font-size: 0.82rem;
+.muted {
+  color: #94a3b8;
+  font-size: 0.8rem;
 }
 
-.td-prompt {
-  max-width: 320px;
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
 }
 
-.prompt-sub {
-  display: block;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 300px;
+.empty-state__icon {
+  font-size: 2rem;
+  color: #94a3b8;
+}
+
+.summary-note {
+  margin: 0;
+  color: #475569;
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.summary-grid dt {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-grid dd {
+  margin: 0;
+}
+
+:host ::ng-deep .w-full {
+  width: 100%;
+}
+
+:host ::ng-deep .mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .page-header,
+  .summary-grid {
+    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
 }

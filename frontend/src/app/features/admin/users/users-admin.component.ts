@@ -1,14 +1,19 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IconComponent } from '../../../shared/icon.component';
-import {
-  PageHeaderComponent,
-  StatusBadgeComponent,
-  EmptyStateComponent,
-  ErrorStateComponent,
-  LoadingSkeletonComponent,
-} from '../../../shared/ui';
+import { FormsModule } from '@angular/forms';
+import { Card } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { Button } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
+import { InputText } from 'primeng/inputtext';
+import { Select } from 'primeng/select';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Message } from 'primeng/message';
+import { Skeleton } from 'primeng/skeleton';
+import { ConfirmationService } from 'primeng/api';
+import { Password } from 'primeng/password';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   CreateManagedUserRequest,
@@ -19,9 +24,10 @@ import {
 } from '../../../core/services/user-admin.service';
 import { UserRole } from '../../../core/models/auth.models';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
-import { roleChipClass, roleLabel } from '../../../core/utils/label.util';
+import { roleLabel } from '../../../core/utils/label.util';
 
 type FormMode = 'create' | 'edit';
+type AccountFilter = 'all' | 'managed' | 'operator';
 
 @Component({
   selector: 'app-users-admin',
@@ -29,22 +35,41 @@ type FormMode = 'create' | 'edit';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IconComponent,
-    PageHeaderComponent,
-    StatusBadgeComponent,
-    EmptyStateComponent,
-    ErrorStateComponent,
-    LoadingSkeletonComponent,
+    FormsModule,
+    Card,
+    TableModule,
+    Tag,
+    Button,
+    Dialog,
+    InputText,
+    Select,
+    ConfirmDialog,
+    Message,
+    Skeleton,
+    Password,
   ],
+  providers: [ConfirmationService],
   templateUrl: './users-admin.component.html',
   styleUrl: './users-admin.component.scss',
 })
 export class UsersAdminComponent {
   private readonly userAdminService = inject(UserAdminService);
   private readonly authService = inject(AuthService);
+  private readonly confirmation = inject(ConfirmationService);
   private readonly fb = inject(FormBuilder);
 
   readonly roles = MANAGED_USER_ROLES;
+  readonly roleOptions = this.roles.map((role) => ({ label: roleLabel(role), value: role }));
+  readonly roleFilterOptions = [
+    { label: 'Tous les rôles', value: null as UserRole | null },
+    ...this.roleOptions,
+  ];
+  readonly accountFilterOptions = [
+    { label: 'Tous les comptes', value: 'all' as AccountFilter },
+    { label: 'Gérés (actifs admin)', value: 'managed' as AccountFilter },
+    { label: 'Opérateurs (non gérés)', value: 'operator' as AccountFilter },
+  ];
+
   readonly users = signal<ManagedUser[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -53,6 +78,28 @@ export class UsersAdminComponent {
   readonly formOpen = signal(false);
   readonly formMode = signal<FormMode>('create');
   readonly editingUserId = signal<string | null>(null);
+
+  readonly search = signal('');
+  readonly roleFilter = signal<UserRole | null>(null);
+  readonly accountFilter = signal<AccountFilter>('all');
+
+  readonly filteredUsers = computed(() => {
+    const query = this.search().trim().toLowerCase();
+    const role = this.roleFilter();
+    const account = this.accountFilter();
+
+    return this.users().filter((user) => {
+      if (role && user.role !== role) return false;
+      if (account === 'managed' && !this.isManaged(user)) return false;
+      if (account === 'operator' && this.isManaged(user)) return false;
+      if (!query) return true;
+      return (
+        user.nom.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        roleLabel(user.role).toLowerCase().includes(query)
+      );
+    });
+  });
 
   readonly form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
@@ -162,7 +209,7 @@ export class UsersAdminComponent {
     });
   }
 
-  deleteUser(user: ManagedUser): void {
+  confirmDelete(user: ManagedUser): void {
     if (!this.isManaged(user)) {
       this.error.set('Seuls les comptes Administrateur, Validateur et Auditeur sont supprimables ici.');
       return;
@@ -171,10 +218,20 @@ export class UsersAdminComponent {
       this.error.set('Impossible de supprimer votre propre compte.');
       return;
     }
-    if (!confirm(`Supprimer le compte ${user.email} ?`)) {
-      return;
-    }
 
+    this.confirmation.confirm({
+      header: 'Supprimer l’utilisateur',
+      message: `Supprimer le compte ${user.email} ? Cette action est définitive.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => this.deleteUser(user),
+    });
+  }
+
+  deleteUser(user: ManagedUser): void {
     this.error.set(null);
     this.success.set(null);
     this.userAdminService.delete(user.id).subscribe({
@@ -193,7 +250,13 @@ export class UsersAdminComponent {
   }
 
   roleLabel = roleLabel;
-  roleChipClass = roleChipClass;
+
+  roleSeverity(role: UserRole): 'danger' | 'warn' | 'info' | 'secondary' {
+    if (role === UserRole.ADMINISTRATEUR) return 'danger';
+    if (role === UserRole.VALIDATEUR) return 'warn';
+    if (role === UserRole.AUDITEUR) return 'info';
+    return 'secondary';
+  }
 
   userInitial(user: ManagedUser): string {
     return user.nom?.charAt(0)?.toUpperCase() ?? user.email?.charAt(0)?.toUpperCase() ?? 'U';

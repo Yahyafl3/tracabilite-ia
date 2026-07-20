@@ -175,6 +175,31 @@ describe('DecisionDetailComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('La décision humaine n\'efface pas les résultats IA');
+    expect(compiled.textContent).toContain('dossier global');
+    expect(compiled.textContent).not.toContain('Consensus OpenRouter');
+  });
+
+  it('disables validation buttons while submit is in progress', () => {
+    fixture.componentInstance.setTab('validation');
+    fixture.componentInstance.validationForm.patchValue({ confirmed: true });
+    fixture.componentInstance.validationLoading.set(true);
+    fixture.detectChanges();
+
+    const buttons = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ) as HTMLButtonElement[];
+    const actionButtons = buttons.filter((btn) =>
+      /Approuver|Rejeter|revue|modification/i.test(btn.textContent ?? ''),
+    );
+    expect(actionButtons.length).toBeGreaterThan(0);
+    expect(actionButtons.every((btn) => btn.disabled)).toBe(true);
+  });
+
+  it('keeps ConfidenceDisplayComponent for ML confidence on validation tab', () => {
+    fixture.componentInstance.setTab('validation');
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-confidence-display')).toBeTruthy();
   });
 
   it('shows validated human decision status when approved', () => {
