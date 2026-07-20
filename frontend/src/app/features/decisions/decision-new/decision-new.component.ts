@@ -3,19 +3,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IconComponent } from '../../../shared/icon.component';
+import { Card } from 'primeng/card';
+import { Textarea } from 'primeng/textarea';
+import { InputNumber } from 'primeng/inputnumber';
+import { Select } from 'primeng/select';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Divider } from 'primeng/divider';
+import { Checkbox } from 'primeng/checkbox';
+import { Tag } from 'primeng/tag';
 import {
   AgentResponseCardComponent,
   ConsensusCardComponent,
-  EmptyStateComponent,
-  LoadingSkeletonComponent,
-  PageHeaderComponent,
 } from '../../../shared/ui';
 import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels';
 import { DecisionService } from '../../../core/services/decision.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
-import { decisionChipClass, riskChipClass } from '../../../core/utils/chip-class.util';
-import { riskLabel } from '../../../core/utils/label.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
 import {
   buildAnalyzePayload,
@@ -35,10 +39,16 @@ import {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    IconComponent,
-    PageHeaderComponent,
-    LoadingSkeletonComponent,
-    EmptyStateComponent,
+    Card,
+    Textarea,
+    InputNumber,
+    Select,
+    Button,
+    Message,
+    ProgressSpinner,
+    Divider,
+    Checkbox,
+    Tag,
     ConsensusCardComponent,
     AgentResponseCardComponent,
   ],
@@ -51,13 +61,15 @@ export class DecisionNewComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly sectors = SECTORS;
+  readonly sectors = SECTORS.map((sector) => ({ label: sector, value: sector }));
   readonly schemaInfo = ML_SCHEMA_INFO;
   readonly multiAgentLabels = MULTI_AGENT_UI_LABELS;
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly result = signal<DecisionResponse | null>(null);
   readonly activeFields = signal<SectorFieldConfig[]>(sectorFields.SERVICES);
+  readonly showValidationSummary = signal(false);
+  readonly validationErrors = signal<string[]>([]);
 
   readonly form: FormGroup = this.fb.group({
     sector: ['SERVICES' as Sector, Validators.required],
@@ -67,17 +79,22 @@ export class DecisionNewComponent implements OnInit {
 
   ngOnInit(): void {
     this.rebuildMlControls(this.form.get('sector')!.value as Sector);
-    this.form.get('sector')!.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.form
+      .get('sector')!
+      .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((sector) => this.rebuildMlControls(sector as Sector));
   }
 
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showValidationSummary.set(true);
+      this.validationErrors.set(this.collectValidationErrors());
       return;
     }
 
+    this.showValidationSummary.set(false);
+    this.validationErrors.set([]);
     this.loading.set(true);
     this.error.set(null);
     this.result.set(null);
@@ -104,9 +121,22 @@ export class DecisionNewComponent implements OnInit {
     }
   }
 
-  decisionChipClass = decisionChipClass;
-  riskChipClass = riskChipClass;
-  riskLabel = riskLabel;
+  goBack(): void {
+    void this.router.navigate(['/decisions']);
+  }
+
+  mlSeverity(decision: string | undefined): 'success' | 'danger' | 'secondary' {
+    if (decision === 'APPROUVER') return 'success';
+    if (decision === 'REJETER') return 'danger';
+    return 'secondary';
+  }
+
+  riskSeverity(risk: string | undefined): 'success' | 'warn' | 'danger' | 'secondary' {
+    if (risk === 'LOW') return 'success';
+    if (risk === 'MEDIUM') return 'warn';
+    if (risk === 'HIGH') return 'danger';
+    return 'secondary';
+  }
 
   private rebuildMlControls(sector: Sector): void {
     for (const key of ML_FEATURE_KEYS) {
@@ -124,5 +154,23 @@ export class DecisionNewComponent implements OnInit {
     }
 
     this.activeFields.set(fields);
+  }
+
+  private collectValidationErrors(): string[] {
+    const messages: string[] = [];
+    for (const [key, control] of Object.entries(this.form.controls)) {
+      if (!control.invalid) continue;
+      if (key === 'sector') {
+        messages.push('Le secteur est obligatoire.');
+        continue;
+      }
+      if (key === 'description') {
+        messages.push('La description est invalide.');
+        continue;
+      }
+      const field = this.activeFields().find((f) => f.key === key);
+      messages.push(`${field?.label ?? key} est invalide ou hors bornes.`);
+    }
+    return messages;
   }
 }

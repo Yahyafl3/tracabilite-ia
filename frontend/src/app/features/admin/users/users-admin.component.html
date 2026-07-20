@@ -10,53 +10,6 @@
     </button>
   </app-page-header>
 
-  <section class="card groq-status-card" aria-label="État Groq">
-    <div class="card__header">
-      <h2 class="card__title">
-        <app-icon name="server" [size]="17" />
-        Agents Groq
-      </h2>
-      <button class="btn-secondary btn-secondary--sm" type="button" (click)="loadGroqStatus()" [disabled]="groqLoading()">
-        Actualiser
-      </button>
-    </div>
-    <div class="card__body">
-      @if (groqLoading()) {
-        <app-loading-skeleton [lines]="3" label="Chargement statut Groq…" />
-      } @else if (groqError(); as err) {
-        <app-error-state [message]="err" />
-      } @else if (groqStatus(); as status) {
-        <dl class="groq-meta">
-          <div>
-            <dt>État</dt>
-            <dd>{{ status.configured ? (status.reachable ? 'Configuré & joignable' : 'Configuré (hors ligne)') : 'Non configuré' }}</dd>
-          </div>
-          <div>
-            <dt>Réponses réussies</dt>
-            <dd>{{ status.successfulResponses ?? 0 }}</dd>
-          </div>
-          @if (status.lastError) {
-            <div class="groq-meta__full">
-              <dt>Dernière erreur</dt>
-              <dd class="groq-meta__error">{{ status.lastError }}</dd>
-            </div>
-          }
-        </dl>
-        <ul class="groq-models" aria-label="Modèles Groq configurés">
-          @for (model of status.models; track model.agent) {
-            <li>
-              <strong>{{ model.displayName || model.agent }}</strong>
-              <code>{{ model.modelId }}</code>
-              <span [class]="model.available ? 'chip--approved' : 'chip--pending'" class="status-chip">
-                {{ model.available ? 'Disponible' : 'Indisponible' }}
-              </span>
-            </li>
-          }
-        </ul>
-      }
-    </div>
-  </section>
-
   @if (success()) {
     <p class="success-banner" role="status">{{ success() }}</p>
   }

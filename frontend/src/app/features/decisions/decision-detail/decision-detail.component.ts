@@ -4,9 +4,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { Card } from 'primeng/card';
+import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
+import { Tag } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
+import { Skeleton } from 'primeng/skeleton';
+import { Message } from 'primeng/message';
 import { IconComponent } from '../../../shared/icon.component';
 import {
-  PageHeaderComponent,
   StatusBadgeComponent,
   RiskBadgeComponent,
   EmptyStateComponent,
@@ -68,8 +73,17 @@ type DetailTab =
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    Card,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel,
+    Tag,
+    TableModule,
+    Skeleton,
+    Message,
     IconComponent,
-    PageHeaderComponent,
     StatusBadgeComponent,
     RiskBadgeComponent,
     EmptyStateComponent,
@@ -181,7 +195,7 @@ export class DecisionDetailComponent {
 
   readonly tabs: Array<{ id: DetailTab; label: string }> = [
     { id: 'resume', label: 'Résumé' },
-    { id: 'prediction', label: 'Prédiction ML' },
+    { id: 'prediction', label: 'ML' },
     { id: 'shap', label: 'SHAP' },
     { id: 'agents', label: 'Agents IA' },
     { id: 'validation', label: 'Validation humaine' },
@@ -300,13 +314,17 @@ export class DecisionDetailComponent {
     return `decision-tabpanel-${tab}`;
   }
 
-  setTab(tab: DetailTab): void {
-    this.activeTab.set(tab);
-    if (tab === 'integrity') {
-      if (this.canAudit()) {
-        this.loadIntegrityAudit();
-      }
+  setTab(tab: DetailTab | string | number | undefined): void {
+    if (tab == null) return;
+    const next = String(tab) as DetailTab;
+    this.activeTab.set(next);
+    if (next === 'integrity' && this.canAudit()) {
+      this.loadIntegrityAudit();
     }
+  }
+
+  onTabsValueChange(value: string | number | undefined): void {
+    this.setTab(value);
   }
 
   onTabKeydown(event: KeyboardEvent, index: number): void {

@@ -15,6 +15,18 @@ import type { DecisionResponse } from '../../../core/models/decision.models';
 describe('DecisionDetailComponent', () => {
   let fixture: ComponentFixture<DecisionDetailComponent>;
 
+  beforeAll(() => {
+    class ResizeObserverMock {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      constructor(_callback?: ResizeObserverCallback) {}
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+    (globalThis as unknown as { ResizeObserver: typeof ResizeObserverMock }).ResizeObserver =
+      ResizeObserverMock;
+  });
+
   const mockDecision: DecisionResponse = {
     decisionId: 'dec-1',
     prompt: 'Demande de crédit test',
@@ -112,9 +124,18 @@ describe('DecisionDetailComponent', () => {
     fixture.detectChanges();
   });
 
-  it('defines eight accessible detail tabs including integrity', () => {
+  it('defines eight detail tabs with PrimeNG labels', () => {
     expect(fixture.componentInstance.tabs).toHaveLength(8);
-    expect(fixture.componentInstance.tabs.map((tab) => tab.id)).toContain('integrity');
+    expect(fixture.componentInstance.tabs.map((tab) => tab.label)).toEqual([
+      'Résumé',
+      'ML',
+      'SHAP',
+      'Agents IA',
+      'Validation humaine',
+      'Historique',
+      'Sources',
+      'Intégrité',
+    ]);
   });
 
   it('labels agents tab as Agents IA (generic, not OpenRouter)', () => {

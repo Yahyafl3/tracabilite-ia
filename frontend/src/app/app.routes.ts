@@ -61,6 +61,11 @@ export const routes: Routes = [
         path: 'admin/users',
         canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
         loadComponent: () => import('./features/admin/users/users-admin.component').then(m => m.UsersAdminComponent)
+      },
+      {
+        path: 'admin/groq',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
+        loadComponent: () => import('./features/admin/groq/groq-admin.component').then(m => m.GroqAdminComponent)
       }
     ]
   },

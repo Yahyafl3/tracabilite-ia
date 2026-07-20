@@ -1,152 +1,152 @@
-<div class="shell-page">
-
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Décisions']"
-    title="Décisions"
-    subtitle="Liste paginée des décisions analysées et enregistrées."
-  >
-    <a class="btn-primary" routerLink="/decisions/new">
-      <app-icon name="file-check" [size]="16" />
-      Nouvelle décision
-    </a>
-  </app-page-header>
-
-  <section class="card table-card">
-    <div class="card__header">
-      <h2 class="card__title">
-        <app-icon name="history" [size]="17" />
-        Toutes les décisions
-      </h2>
-      <span class="card__hint">{{ totalElements() }} au total</span>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Décisions</p>
+      <h1>Décisions</h1>
+      <p class="page-subtitle">Liste paginée des décisions analysées et enregistrées.</p>
     </div>
+    <p-button
+      label="Nouvelle décision"
+      icon="pi pi-plus"
+      (onClick)="goToNew()"
+      ariaLabel="Créer une nouvelle décision"
+    />
+  </header>
 
-    <form [formGroup]="filters" class="ui-toolbar" (ngSubmit)="applyFilters()">
+  <p-card>
+    <ng-template #header>
+      <div class="card-title-row">
+        <span>Toutes les décisions</span>
+        <span class="muted">{{ totalElements() }} au total</span>
+      </div>
+    </ng-template>
+
+    <form class="toolbar" [formGroup]="filters" (ngSubmit)="applyFilters()">
       <div class="field">
         <label for="search">Recherche</label>
-        <input id="search" formControlName="search" placeholder="Prompt, contexte, décision..." />
+        <input
+          pInputText
+          id="search"
+          formControlName="search"
+          placeholder="Prompt, contexte, décision…"
+          class="w-full"
+          aria-label="Rechercher une décision"
+        />
       </div>
 
       <div class="field">
         <label for="statut">Statut</label>
-        <select id="statut" formControlName="statut">
-          <option value="">Tous</option>
-          @for (statut of statuts; track statut) {
-            <option [value]="statut">{{ statutLabel(statut) }}</option>
-          }
-        </select>
+        <p-select
+          inputId="statut"
+          formControlName="statut"
+          [options]="statutOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Tous"
+          styleClass="w-full"
+          ariaLabel="Filtrer par statut"
+        />
       </div>
 
-      <button class="btn-secondary" type="submit">
-        <app-icon name="scan" [size]="15" />
-        Filtrer
-      </button>
+      <p-button type="submit" label="Filtrer" icon="pi pi-filter" [outlined]="true" />
     </form>
 
     @if (loading()) {
-      <app-loading-skeleton [lines]="6" label="Chargement des décisions…" />
+      <div class="state-block" aria-label="Chargement des décisions">
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" />
+      </div>
     } @else if (error()) {
-      <app-error-state [message]="error()!" />
+      <p-message severity="error" [text]="error()!" styleClass="w-full" />
     } @else if (decisions().length === 0) {
-      <app-empty-state
-        icon="file-text"
-        message="Aucune décision ne correspond à vos critères."
-      />
+      <div class="empty-state" role="status">
+        <i class="pi pi-inbox empty-state__icon" aria-hidden="true"></i>
+        <h2>Aucune décision trouvée</h2>
+        <p>Aucune décision ne correspond à vos critères de recherche ou de filtre.</p>
+        <p-button label="Nouvelle décision" icon="pi pi-plus" (onClick)="goToNew()" />
+      </div>
     } @else {
       <div class="table-scroll">
-        <table class="decisions-table" aria-label="Liste des décisions">
-          <thead>
+        <p-table
+          [value]="decisions()"
+          [sortMode]="'single'"
+          styleClass="p-datatable-sm p-datatable-striped"
+          [tableStyle]="{ 'min-width': '72rem' }"
+          ariaLabel="Liste des décisions"
+        >
+          <ng-template #header>
             <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Référence</th>
-              <th scope="col">Demande</th>
-              <th scope="col">Décision ML</th>
-              <th scope="col">Consensus</th>
-              <th scope="col">Décision humaine</th>
-              <th scope="col" class="col-hide-sm">Confiance</th>
-              <th scope="col" class="col-hide-sm">Risque</th>
-              <th scope="col">Statut</th>
-              <th scope="col">Actions</th>
+              <th pSortableColumn="timestamp">Date <p-sortIcon field="timestamp" /></th>
+              <th>Référence</th>
+              <th>Demande</th>
+              <th>Décision ML</th>
+              <th>Consensus</th>
+              <th>Décision humaine</th>
+              <th>Confiance</th>
+              <th>Risque</th>
+              <th pSortableColumn="statutValidation">Statut <p-sortIcon field="statutValidation" /></th>
+              <th>Actions</th>
             </tr>
-          </thead>
-          <tbody>
-            @for (row of decisions(); track row.decisionId) {
-              <tr>
-                <td class="td-time">
-                  <span class="time-date">{{ formatDate(row.timestamp) }}</span>
-                  <span class="time-hour">{{ formatTime(row.timestamp) }}</span>
-                </td>
-                <td><span class="ref-code">{{ reference(row) }}</span></td>
-                <td class="td-prompt">
-                  <span class="prompt-text">{{ row.prompt }}</span>
-                </td>
-                <td>
-                  <app-status-badge
-                    [label]="mlDecisionLabel(row) || 'N/A'"
-                    [chipClass]="decisionChipClass(mlDecisionLabel(row))"
-                  />
-                </td>
-                <td>{{ consensusText(row) }}</td>
-                <td>{{ humanFinal(row) || '—' }}</td>
-                <td class="col-hide-sm">
-                  <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="percent" />
-                </td>
-                <td class="col-hide-sm">
-                  <app-risk-badge [riskLevel]="riskLevel(row)" />
-                </td>
-                <td>
-                  <app-status-badge
-                    [label]="statutLabel(row.statutValidation)"
-                    [chipClass]="statutChipClass(row.statutValidation)"
-                  />
-                </td>
-                <td>
-                  <a class="btn-link" [routerLink]="['/decisions', row.decisionId]">
-                    Détail
-                    <app-icon name="arrow-right" [size]="13" />
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+          </ng-template>
+          <ng-template #body let-row>
+            <tr>
+              <td>
+                <div class="td-time">
+                  <span>{{ formatDate(row.timestamp) }}</span>
+                  <span class="muted">{{ formatTime(row.timestamp) }}</span>
+                </div>
+              </td>
+              <td><code class="ref-code">{{ reference(row) }}</code></td>
+              <td class="td-prompt">{{ row.prompt }}</td>
+              <td>
+                <p-tag
+                  [value]="mlDecisionLabel(row) || 'N/A'"
+                  [severity]="mlSeverity(mlDecisionLabel(row))"
+                />
+              </td>
+              <td>{{ consensusText(row) }}</td>
+              <td>{{ humanFinal(row) || '—' }}</td>
+              <td>
+                <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="percent" />
+              </td>
+              <td>
+                <app-risk-badge [riskLevel]="riskLevel(row)" />
+              </td>
+              <td>
+                <p-tag
+                  [value]="statutLabel(row.statutValidation)"
+                  [severity]="statutSeverity(row.statutValidation)"
+                />
+              </td>
+              <td>
+                <p-button
+                  icon="pi pi-ellipsis-v"
+                  [rounded]="true"
+                  [text]="true"
+                  (onClick)="openRowMenu($event, row)"
+                  [attr.aria-label]="'Actions pour ' + reference(row)"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
 
-      <footer class="ui-pagination-bar">
-        <div class="ui-pagination-bar__group">
-          <label class="ui-pagination-bar__label" for="page-size">Par page</label>
-          <select
-            id="page-size"
-            class="ui-pagination-bar__select"
-            [value]="size()"
-            (change)="onPageSizeChange($event)"
-          >
-            @for (opt of pageSizeOptions; track opt) {
-              <option [value]="opt">{{ opt }}</option>
-            }
-          </select>
-          <span class="ui-pagination-bar__info">{{ rangeStart() }}–{{ rangeEnd() }} sur {{ totalElements() }}</span>
-        </div>
-        <div class="ui-pagination-bar__group">
-          <button
-            class="ui-pagination-bar__btn"
-            type="button"
-            (click)="prevPage()"
-            [disabled]="page() === 0"
-          >
-            <app-icon name="arrow-left" [size]="14" />
-            Précédent
-          </button>
-          <button
-            class="ui-pagination-bar__btn"
-            type="button"
-            (click)="nextPage()"
-            [disabled]="page() >= totalPages() - 1"
-          >
-            Suivant
-            <app-icon name="arrow-right" [size]="14" />
-          </button>
-        </div>
-      </footer>
+      <p-menu #rowMenu [popup]="true" [model]="rowMenuItems()" />
+
+      <div class="pagination-row">
+        <span class="muted">{{ rangeStart() }}–{{ rangeEnd() }} sur {{ totalElements() }}</span>
+        <p-paginator
+          [rows]="size()"
+          [first]="page() * size()"
+          [totalRecords]="totalElements()"
+          [rowsPerPageOptions]="pageSizeOptions"
+          (onPageChange)="onPageChange($event)"
+          [showCurrentPageReport]="false"
+        />
+      </div>
     }
-  </section>
+  </p-card>
 </div>

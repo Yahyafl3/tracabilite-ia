@@ -1,230 +1,252 @@
-<div class="shell-page">
-  <a routerLink="/decisions" class="back-link">
-    <app-icon name="arrow-left" [size]="15" />
-    Retour aux décisions
-  </a>
+<div class="page">
+  <p-button
+    label="Retour aux décisions"
+    icon="pi pi-arrow-left"
+    [text]="true"
+    (onClick)="goBack()"
+    ariaLabel="Retour à la liste des décisions"
+  />
 
-  <app-page-header
-    [breadcrumbs]="['Décisions', 'Nouvelle analyse']"
-    title="Nouvelle décision"
-    subtitle="Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents IA." />
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Décisions / Nouvelle analyse</p>
+      <h1>Nouvelle décision</h1>
+      <p class="page-subtitle">
+        Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents IA.
+      </p>
+    </div>
+  </header>
 
   <div class="layout">
-    <section class="card form-card">
-      <div class="card__header">
-        <div>
-          <h2 class="card__title">
-            <app-icon name="file-text" [size]="17" />
-            Données métier
-          </h2>
-          <p class="card__subtitle">Features envoyées au ml-service (schéma {{ schemaInfo.schemaType }})</p>
+    <p-card styleClass="form-card">
+      <ng-template #header>
+        <div class="card-head">
+          <strong>Données métier</strong>
+          <span class="muted">Features envoyées au ml-service (schéma {{ schemaInfo.schemaType }})</span>
         </div>
-      </div>
+      </ng-template>
 
-      <div class="card__body">
-        <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-          <div class="field field--full">
-            <label for="sector">Secteur</label>
-            <select id="sector" formControlName="sector">
-              @for (sector of sectors; track sector) {
-                <option [value]="sector">{{ sector }}</option>
-              }
-            </select>
-            <p class="field-hint">{{ schemaInfo.sectorHint }}</p>
-            <p class="field-note">{{ schemaInfo.description }}</p>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid" novalidate>
+        <div class="field field--full">
+          <label for="sector">Secteur</label>
+          <p-select
+            inputId="sector"
+            formControlName="sector"
+            [options]="sectors"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            ariaLabel="Secteur d'activité"
+          />
+          <p class="field-hint">{{ schemaInfo.sectorHint }}</p>
+          <p class="field-note">{{ schemaInfo.description }}</p>
+        </div>
+
+        @for (field of activeFields(); track field.key) {
+          <div class="field">
+            <label [for]="field.key">{{ field.label }}</label>
+            <p-inputNumber
+              [inputId]="field.key"
+              [formControlName]="field.key"
+              [min]="field.min"
+              [max]="field.max ?? undefined"
+              [step]="field.step"
+              [minFractionDigits]="field.step < 1 ? 2 : 0"
+              [maxFractionDigits]="field.step < 1 ? 2 : 0"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+            <p class="field-hint">{{ field.help }}</p>
           </div>
-
-          @for (field of activeFields(); track field.key) {
-            <div class="field">
-              <label [for]="field.key">{{ field.label }}</label>
-              <input
-                [id]="field.key"
-                type="number"
-                [step]="field.step"
-                [formControlName]="field.key" />
-              <p class="field-hint">{{ field.help }}</p>
-            </div>
-          }
-
-          <div class="field field--full">
-            <label for="description">Description</label>
-            <textarea id="description" rows="2" formControlName="description"></textarea>
-          </div>
-
-          <label class="checkbox field--full">
-            <input type="checkbox" formControlName="includeOpenRouter" />
-            <span>Consulter les 3 agents IA (consensus informatif, n'affecte pas le ML/SHAP)</span>
-          </label>
-
-          <div class="form-actions field--full">
-            <button class="btn-primary" type="submit" [disabled]="loading()">
-              @if (loading()) {
-                <span class="spinner spinner--sm" aria-hidden="true"></span>
-                Analyse en cours…
-              } @else {
-                <app-icon name="scan" [size]="16" />
-                Analyser la décision
-              }
-            </button>
-          </div>
-        </form>
-
-        @if (error()) {
-          <p class="state-banner state-banner--error">{{ error() }}</p>
         }
-      </div>
-    </section>
 
-    <div class="results-column">
+        <div class="field field--full">
+          <label for="description">Description</label>
+          <textarea
+            pTextarea
+            id="description"
+            formControlName="description"
+            rows="3"
+            class="w-full"
+            aria-label="Description de la demande"
+          ></textarea>
+        </div>
+
+        <div class="field field--full checkbox-row">
+          <p-checkbox
+            formControlName="includeOpenRouter"
+            [binary]="true"
+            inputId="includeOpenRouter"
+          />
+          <label for="includeOpenRouter">
+            Consulter les 3 agents IA (consensus informatif, n'affecte pas le ML/SHAP)
+          </label>
+        </div>
+
+        @if (showValidationSummary() && validationErrors().length > 0) {
+          <div class="field field--full" role="alert">
+              <ul class="validation-list">
+                @for (msg of validationErrors(); track msg) {
+                  <li>{{ msg }}</li>
+                }
+              </ul>
+          </div>
+        }
+
+        <div class="form-actions field--full">
+          <p-button
+            type="submit"
+            label="Analyser la décision"
+            icon="pi pi-search"
+            [disabled]="loading()"
+            [loading]="loading()"
+            ariaLabel="Lancer l'analyse de la décision"
+          />
+        </div>
+      </form>
+
+      @if (error()) {
+        <p-message severity="error" [text]="error()!" styleClass="w-full mt-3" />
+      }
+    </p-card>
+
+    <aside class="side-column">
+      <p-card header="Résumé du dossier">
+        <ul class="side-list">
+          <li><span>Secteur</span><strong>{{ form.get('sector')?.value }}</strong></li>
+          <li><span>Champs ML</span><strong>{{ activeFields().length }} features</strong></li>
+          <li>
+            <span>Agents IA</span>
+            <strong>{{ form.get('includeOpenRouter')?.value ? 'Activés' : 'Désactivés' }}</strong>
+          </li>
+        </ul>
+      </p-card>
+
+      <p-card header="Statut système">
+        @if (loading()) {
+          <div class="loading-box" role="status" aria-live="polite">
+            <p-progressSpinner strokeWidth="4" [style]="{ width: '42px', height: '42px' }" />
+            <p>Analyse ML et agents en cours…</p>
+          </div>
+        } @else if (result()) {
+          <p-tag severity="success" value="Analyse terminée" icon="pi pi-check" />
+        } @else {
+          <p class="muted">En attente de soumission.</p>
+        }
+      </p-card>
+
+      <p-card header="Informations agents">
+        <p class="muted">
+          Les agents IA fournissent un consensus informatif. Ils n'altèrent pas le score ML ni les
+          facteurs SHAP.
+        </p>
+      </p-card>
+
       @if (loading()) {
-        <section class="card result-card">
-          <div class="card__header">
-            <h2 class="card__title">
-              <app-icon name="scale" [size]="17" />
-              Résultat de l'analyse
-            </h2>
+        <p-card header="Résultat de l'analyse">
+          <div class="loading-box">
+            <p-progressSpinner strokeWidth="4" [style]="{ width: '42px', height: '42px' }" />
+            <p>Calcul en cours…</p>
           </div>
-          <div class="card__body">
-            <app-loading-skeleton [lines]="8" label="Analyse ML et agents en cours…" />
-          </div>
-        </section>
+        </p-card>
       } @else if (result(); as analysis) {
-        <section class="card result-card">
-          <div class="card__header">
+        <p-card>
+          <ng-template #header>
+            <div class="card-head">
+              <strong>Prédiction ML</strong>
+              <span class="muted">Source : {{ analysis.explanationSource }}</span>
+            </div>
+          </ng-template>
+          <div class="result-summary">
             <div>
-              <h2 class="card__title">
-                <app-icon name="check-circle" [size]="17" />
-                Prédiction ML
-              </h2>
-              <p class="card__subtitle">Source explicabilité : {{ analysis.explanationSource }}</p>
+              <span class="label">Décision ML</span>
+              <p-tag
+                [value]="analysis.suggestedDecision || 'N/A'"
+                [severity]="mlSeverity(analysis.suggestedDecision)"
+              />
+            </div>
+            <div>
+              <span class="label">Confiance</span>
+              <strong>{{ analysis.confidenceScore | number:'1.0-2' }} %</strong>
+            </div>
+            <div>
+              <span class="label">Risque</span>
+              <p-tag
+                [value]="analysis.riskLevel || '—'"
+                [severity]="riskSeverity(analysis.riskLevel)"
+              />
             </div>
           </div>
-          <div class="card__body">
-            <div class="result-summary">
-              <div class="summary-item">
-                <span class="label">Décision ML</span>
-                <span class="status-chip" [class]="decisionChipClass(analysis.suggestedDecision)">
-                  {{ analysis.suggestedDecision }}
-                </span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Confiance</span>
-                <span class="value">{{ analysis.confidenceScore | number:'1.0-2' }}%</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Risque</span>
-                <span class="status-chip" [class]="riskChipClass(analysis.riskLevel)">
-                  {{ riskLabel(analysis.riskLevel) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
+        </p-card>
 
         @if (analysis.consensus) {
           @if (analysis.consensus.note?.includes('Quota OpenRouter') || analysis.consensus.note?.includes('GROQ_API_KEY')) {
-            <p class="state-banner state-banner--warning">
-              Agents LLM indisponibles. L'analyse ML reste disponible.
-            </p>
+            <p-message
+              severity="warn"
+              text="Agents LLM indisponibles. L'analyse ML reste disponible."
+              styleClass="w-full"
+            />
           }
-          <section class="card">
-            <div class="card__header">
-              <h2 class="card__title">
-                <app-icon name="users" [size]="17" />
-                {{ multiAgentLabels.consensus }}
-              </h2>
-            </div>
-            <div class="card__body">
-              <app-consensus-card [consensus]="analysis.consensus" />
-            </div>
-          </section>
+          <p-card [header]="multiAgentLabels.consensus">
+            <app-consensus-card [consensus]="analysis.consensus" />
+          </p-card>
         }
 
         @if ((analysis.agentResponses?.length ?? 0) > 0) {
-          <section class="card">
-            <div class="card__header">
-              <h2 class="card__title">
-                <app-icon name="message-square" [size]="17" />
-                {{ multiAgentLabels.agentResponses }}
-              </h2>
-            </div>
-            <div class="card__body agent-grid">
+          <p-card [header]="multiAgentLabels.agentResponses">
+            <div class="agent-grid">
               @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
                 <app-agent-response-card [agent]="agent" />
               }
             </div>
-          </section>
+          </p-card>
         }
 
         @if (analysis.resumeConsensus) {
-          <section class="card">
-            <div class="card__header">
-              <h2 class="card__title">{{ multiAgentLabels.synthesis }}</h2>
-            </div>
-            <div class="card__body">
-              <p class="value value--text">{{ analysis.resumeConsensus }}</p>
-            </div>
-          </section>
+          <p-card [header]="multiAgentLabels.synthesis">
+            <p>{{ analysis.resumeConsensus }}</p>
+          </p-card>
         }
 
-        <section class="card">
-          <div class="card__header">
-            <h2 class="card__title">
-              <app-icon name="lightbulb" [size]="17" />
-              Facteurs explicatifs ({{ analysis.explanationSource }})
-            </h2>
-          </div>
-          <div class="card__body">
-            <p class="tech-note">
-              Classe expliquée : <strong>APPROUVER</strong>.
-              contribution % = |SHAP| / Σ|SHAP| × 100.
-              Les signes sont relatifs au profil moyen d'entraînement.
-            </p>
-            <div class="factors">
-              @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
-                <div class="factor-row">
-                  <div class="factor-meta">
-                    <span class="rank">#{{ factor.rank }}</span>
-                    <span class="name">{{ factor.name }}</span>
-                    <span class="impact"
-                          [class.positive]="factor.impact === 'POSITIVE'"
-                          [class.negative]="factor.impact === 'NEGATIVE'">
-                      {{ factor.impactLabel || factor.impact }}
-                    </span>
-                  </div>
-                  <div class="factor-bar">
-                    <div class="fill" [style.width.%]="factor.contributionPercent"></div>
-                  </div>
-                  <div class="factor-values">
-                    <span>valeur: {{ factor.value }}</span>
-                    <span>contribution: {{ factor.contributionPercent | number:'1.0-2' }}%</span>
-                    <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
-                  </div>
+        <p-card [header]="'Facteurs explicatifs (' + (analysis.explanationSource || 'SHAP') + ')'">
+          <p class="tech-note">
+            Classe expliquée : <strong>APPROUVER</strong>. contribution % = |SHAP| / Σ|SHAP| × 100.
+          </p>
+          <div class="factors">
+            @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
+              <div class="factor-row">
+                <div class="factor-meta">
+                  <span class="rank">#{{ factor.rank }}</span>
+                  <span>{{ factor.name }}</span>
+                  <p-tag
+                    [value]="factor.impactLabel || factor.impact"
+                    [severity]="factor.impact === 'POSITIVE' ? 'success' : 'danger'"
+                  />
                 </div>
-              }
-            </div>
-
-            <button class="btn-secondary result-action" type="button" (click)="openDetail()">
-              <app-icon name="eye" [size]="15" />
-              Voir le détail enregistré
-            </button>
+                <div class="factor-values">
+                  <span>valeur: {{ factor.value }}</span>
+                  <span>contribution: {{ factor.contributionPercent | number:'1.0-2' }}%</span>
+                  <span>SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
+                </div>
+              </div>
+            }
           </div>
-        </section>
+          <p-divider />
+          <p-button
+            label="Voir le détail enregistré"
+            icon="pi pi-eye"
+            [outlined]="true"
+            (onClick)="openDetail()"
+          />
+        </p-card>
       } @else {
-        <section class="card result-card result-card--placeholder">
-          <div class="card__header">
-            <h2 class="card__title">
-              <app-icon name="scale" [size]="17" />
-              Résultat de l'analyse
-            </h2>
-          </div>
-          <div class="card__body">
-            <app-empty-state
-              icon="lightbulb"
-              message="Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et les facteurs SHAP." />
-          </div>
-        </section>
+        <p-card header="Résultat de l'analyse">
+          <p class="muted">
+            Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et
+            les facteurs SHAP.
+          </p>
+        </p-card>
       }
-    </div>
+    </aside>
   </div>
 </div>
