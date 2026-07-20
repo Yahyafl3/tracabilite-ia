@@ -3,7 +3,7 @@
   <app-page-header
     [breadcrumbs]="['Accueil', 'Tableau de bord']"
     title="Tableau de bord"
-    subtitle="Vue d'ensemble des décisions, agents OpenRouter et intégrité de la chaîne de traçabilité."
+    subtitle="Vue d'ensemble des décisions, agents IA et intégrité de la chaîne de traçabilité."
   >
     @if (generatedAt()) {
       <span class="date-chip">
@@ -82,7 +82,7 @@
         <div class="card__header">
           <h2 class="card__title">
             <app-icon name="bar-chart" [size]="17" />
-            Performance OpenRouter
+            Performance agents
           </h2>
           <a routerLink="/comparaison" class="card__link">
             Voir détails <app-icon name="arrow-right" [size]="13" />

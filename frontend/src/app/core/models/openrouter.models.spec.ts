@@ -83,7 +83,15 @@ describe('consensus display', () => {
   });
 
   it('formats declared confidence as percentage', () => {
-    expect(formatDeclaredConfidence(0.42)).toBe('42.0 %');
+    expect(formatDeclaredConfidence(0.8)).toBe('80 %');
+    expect(formatDeclaredConfidence(0.9216)).toBe('92,16 %');
+  });
+
+  it('shows Valeur invalide for out-of-range declared confidence', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(formatDeclaredConfidence(1.2)).toBe('Valeur invalide');
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('shows fallback message and actual model display name', () => {

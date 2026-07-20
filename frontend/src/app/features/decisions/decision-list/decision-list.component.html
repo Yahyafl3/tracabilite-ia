@@ -88,7 +88,7 @@
                 <td>{{ consensusText(row) }}</td>
                 <td>{{ humanFinal(row) || '—' }}</td>
                 <td class="col-hide-sm">
-                  <app-confidence-display [confidence]="mlConfidenceValue(row)" />
+                  <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="percent" />
                 </td>
                 <td class="col-hide-sm">
                   <app-risk-badge [riskLevel]="riskLevel(row)" />

@@ -87,7 +87,7 @@ export class ComparaisonComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger la comparaison OpenRouter.'));
+        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger la comparaison agents.'));
         this.loading.set(false);
       },
     });

@@ -9,6 +9,8 @@ import com.pfa.tracabilite_ia.enumeration.DecisionHistoryAction;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
 import com.pfa.tracabilite_ia.exception.UnauthorizedActionException;
+import com.pfa.tracabilite_ia.groq.GroqAgentRegistryService;
+import com.pfa.tracabilite_ia.groq.GroqMultiAgentService;
 import com.pfa.tracabilite_ia.mapper.DecisionMapper;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
 import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
@@ -27,11 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class OpenRouterAgentRetryService {
 
-    private static final String RETRY_HISTORY_NOTE = "Relance agent OpenRouter";
+    private static final String RETRY_HISTORY_NOTE_GROQ = "Relance agent Groq";
+    private static final String RETRY_HISTORY_NOTE_OR = "Relance agent OpenRouter";
 
     private final DecisionRepository decisionRepository;
     private final ReponseAgentIARepository reponseAgentIARepository;
-    private final OpenRouterMultiAgentService multiAgentService;
+    private final OpenRouterMultiAgentService openRouterMultiAgentService;
+    private final GroqMultiAgentService groqMultiAgentService;
     private final OpenRouterModelsCacheService modelsCacheService;
     private final OpenRouterPropertiesBridge propertiesBridge;
     private final OpenRouterConsensusService consensusService;
@@ -45,7 +49,8 @@ public class OpenRouterAgentRetryService {
 
     public OpenRouterAgentRetryService(DecisionRepository decisionRepository,
                                        ReponseAgentIARepository reponseAgentIARepository,
-                                       OpenRouterMultiAgentService multiAgentService,
+                                       OpenRouterMultiAgentService openRouterMultiAgentService,
+                                       GroqMultiAgentService groqMultiAgentService,
                                        OpenRouterModelsCacheService modelsCacheService,
                                        OpenRouterPropertiesBridge propertiesBridge,
                                        OpenRouterConsensusService consensusService,
@@ -57,7 +62,8 @@ public class OpenRouterAgentRetryService {
                                        ObjectMapper objectMapper) {
         this.decisionRepository = decisionRepository;
         this.reponseAgentIARepository = reponseAgentIARepository;
-        this.multiAgentService = multiAgentService;
+        this.openRouterMultiAgentService = openRouterMultiAgentService;
+        this.groqMultiAgentService = groqMultiAgentService;
         this.modelsCacheService = modelsCacheService;
         this.propertiesBridge = propertiesBridge;
         this.consensusService = consensusService;
@@ -72,7 +78,7 @@ public class OpenRouterAgentRetryService {
     @Transactional
     public DecisionResponse retryFailedAgents(UUID decisionId, Utilisateur user) {
         if (retryLocks.putIfAbsent(decisionId, Boolean.TRUE) != null) {
-            throw new UnauthorizedActionException("Une relance OpenRouter est deja en cours pour cette decision.");
+            throw new UnauthorizedActionException("Une relance agents est deja en cours pour cette decision.");
         }
 
         try {
@@ -82,25 +88,35 @@ public class OpenRouterAgentRetryService {
             List<ReponseAgentIA> existing = reponseAgentIARepository
                     .findByDecisionDecisionIdOrderByAgentKeyAsc(decisionId);
 
+            boolean useGroq = existing.stream()
+                    .anyMatch(a -> GroqAgentRegistryService.PROVIDER.equalsIgnoreCase(a.getProvider()));
+
             List<ReponseAgentIA> retryable = existing.stream()
-                    .filter(OpenRouterMultiAgentService::isRetryableFailure)
+                    .filter(agent -> useGroq
+                            ? GroqMultiAgentService.isRetryableFailure(agent)
+                            : OpenRouterMultiAgentService.isRetryableFailure(agent))
                     .toList();
 
             if (retryable.isEmpty()) {
-                throw new UnauthorizedActionException("Aucun agent OpenRouter eligible a la relance.");
+                throw new UnauthorizedActionException("Aucun agent eligible a la relance.");
             }
 
-            if (!keyStatusService.hasQuotaForAgents(retryable.size())) {
+            if (!useGroq && !keyStatusService.hasQuotaForAgents(retryable.size())) {
                 throw new UnauthorizedActionException(
                         "Quota OpenRouter insuffisant. L'analyse ML reste disponible.");
             }
 
-            modelsCacheService.refresh();
+            if (!useGroq) {
+                modelsCacheService.refresh();
+            }
+
             StatutDecisionEnum status = decision.getStatutValidation();
+            String note = useGroq ? RETRY_HISTORY_NOTE_GROQ : RETRY_HISTORY_NOTE_OR;
 
             decisionHistoryService.record(decision, DecisionHistoryAction.OPENROUTER_ANALYSIS_STARTED,
-                    status, status, user.getId(), user.getEmail(), null, RETRY_HISTORY_NOTE,
-                    Map.of("agents", retryable.stream().map(ReponseAgentIA::getAgentKey).toList(), "retry", true));
+                    status, status, user.getId(), user.getEmail(), null, note,
+                    Map.of("agents", retryable.stream().map(ReponseAgentIA::getAgentKey).toList(),
+                            "retry", true, "provider", useGroq ? "GROQ" : "OPENROUTER"));
 
             for (int index = 0; index < retryable.size(); index++) {
                 if (index > 0) {
@@ -110,9 +126,13 @@ public class OpenRouterAgentRetryService {
                 Map<String, Object> previousAttempt = snapshotAgent(current);
                 decisionHistoryService.record(decision, DecisionHistoryAction.AGENT_RESPONSE_FAILED,
                         status, status, user.getId(), user.getEmail(), null,
-                        RETRY_HISTORY_NOTE + " " + current.getAgentKey(),
+                        note + " " + current.getAgentKey(),
                         Map.of("previousAttempt", previousAttempt));
-                multiAgentService.retryAgentResponse(decision, current, user);
+                if (useGroq) {
+                    groqMultiAgentService.retryAgentResponse(decision, current, user);
+                } else {
+                    openRouterMultiAgentService.retryAgentResponse(decision, current, user);
+                }
             }
 
             List<ReponseAgentIA> allResponses = reponseAgentIARepository
@@ -184,14 +204,20 @@ public class OpenRouterAgentRetryService {
 
     @org.springframework.stereotype.Component
     public static class OpenRouterPropertiesBridge {
-        private final com.pfa.tracabilite_ia.config.OpenRouterProperties properties;
+        private final com.pfa.tracabilite_ia.config.OpenRouterProperties openRouterProperties;
+        private final com.pfa.tracabilite_ia.config.GroqProperties groqProperties;
 
-        public OpenRouterPropertiesBridge(com.pfa.tracabilite_ia.config.OpenRouterProperties properties) {
-            this.properties = properties;
+        public OpenRouterPropertiesBridge(com.pfa.tracabilite_ia.config.OpenRouterProperties openRouterProperties,
+                                          com.pfa.tracabilite_ia.config.GroqProperties groqProperties) {
+            this.openRouterProperties = openRouterProperties;
+            this.groqProperties = groqProperties;
         }
 
         public int agentDelayMs() {
-            return properties.getAgentDelayMs();
+            if (groqProperties.isConfigured()) {
+                return groqProperties.getAgentDelayMs();
+            }
+            return openRouterProperties.getAgentDelayMs();
         }
     }
 }

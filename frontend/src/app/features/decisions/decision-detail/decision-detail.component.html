@@ -94,7 +94,7 @@
               </div>
               <div class="summary-item">
                 <span class="label">Confiance ML</span>
-                <app-confidence-display [confidence]="mlConfidence(item)" />
+                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
               </div>
               <div class="summary-item">
                 <span class="label">Risque</span>
@@ -135,7 +135,7 @@
               <div class="ml-prediction-card__row">
                 <span class="label">Confiance</span>
                 <div class="ml-prediction-card__confidence">
-                  <app-confidence-display [confidence]="mlConfidence(item)" />
+                  <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
                   <div
                     class="confidence-progress"
                     role="progressbar"
@@ -248,7 +248,7 @@
               @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
                 <app-agent-response-card [agent]="agent" />
               } @empty {
-                <app-empty-state icon="bar-chart" message="Aucune réponse agent OpenRouter enregistrée." />
+                <app-empty-state icon="bar-chart" message="Aucune réponse agent enregistrée." />
               }
             </div>
           }
@@ -284,7 +284,7 @@
                 </div>
                 <div class="summary-item">
                   <span class="label">Confiance ML</span>
-                  <app-confidence-display [confidence]="mlConfidence(item)" />
+                  <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
                 </div>
                 <div class="summary-item">
                   <span class="label">Risque ML</span>

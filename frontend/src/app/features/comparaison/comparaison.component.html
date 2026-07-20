@@ -2,18 +2,18 @@
   <app-page-header
     [breadcrumbs]="['Accueil', 'Comparaison']"
     title="Comparaison des agents IA"
-    subtitle="Classement des agents OpenRouter par taux de succès des appels API et répartition des décisions proposées.">
+    subtitle="Classement des agents IA par taux de succès API et décisions proposées.">
     <span actions class="badge badge--neutral">
       {{ agents().length }} agents actifs
     </span>
   </app-page-header>
 
   @if (loading()) {
-    <app-loading-skeleton [lines]="10" label="Chargement de la comparaison OpenRouter…" />
+    <app-loading-skeleton [lines]="10" label="Chargement de la comparaison agents…" />
   } @else if (error(); as err) {
     <app-error-state [message]="err" />
   } @else if (agents().length === 0) {
-    <app-empty-state icon="users" message="Aucun agent OpenRouter configuré pour la comparaison." />
+    <app-empty-state icon="users" message="Aucun agent configuré pour la comparaison." />
   } @else {
     <section class="kpi-row" aria-label="Indicateurs par agent">
       @for (agent of agents(); track agent.systemeIaId ?? agent.nom; let i = $index) {
@@ -350,7 +350,7 @@
 
       <footer class="table-footer">
         <app-icon name="shield-check" [size]="14" />
-        Données issues des appels API OpenRouter — chaîne SHA-256 intègre
+        Données issues des appels API agents — chaîne SHA-256 intègre
       </footer>
     </section>
   }

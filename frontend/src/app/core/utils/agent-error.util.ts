@@ -12,7 +12,7 @@ type AgentErrorKey =
 
 const AGENT_ERROR_MAP: Record<AgentErrorKey, AgentErrorDisplay> = {
   RATE_LIMITED: {
-    userMessage: 'Quota OpenRouter atteint. Réessayez dans quelques instants.',
+    userMessage: 'Quota API temporairement atteint. Réessayez dans quelques instants.',
     technicalLine: 'RATE_LIMITED',
   },
   MODEL_UNAVAILABLE: {
@@ -28,7 +28,7 @@ const AGENT_ERROR_MAP: Record<AgentErrorKey, AgentErrorDisplay> = {
     technicalLine: 'INVALID_RESPONSE',
   },
   FAILURE: {
-    userMessage: 'Échec de la consultation de l\'agent OpenRouter.',
+    userMessage: 'Échec de la consultation de l\'agent LLM.',
     technicalLine: 'FAILURE',
   },
 };

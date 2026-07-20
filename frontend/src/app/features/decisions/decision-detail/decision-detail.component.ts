@@ -183,7 +183,7 @@ export class DecisionDetailComponent {
     { id: 'resume', label: 'Résumé' },
     { id: 'prediction', label: 'Prédiction ML' },
     { id: 'shap', label: 'SHAP' },
-    { id: 'agents', label: 'Agents OpenRouter' },
+    { id: 'agents', label: 'Agents IA' },
     { id: 'validation', label: 'Validation humaine' },
     { id: 'history', label: 'Historique' },
     { id: 'sources', label: 'Sources' },
@@ -424,7 +424,7 @@ export class DecisionDetailComponent {
       next: (response) => {
         this.decision.set(response);
         this.retryLoading.set(false);
-        this.validationSuccess.set('Agents OpenRouter relancés avec succès.');
+        this.validationSuccess.set('Agents IA relancés avec succès.');
       },
       error: (err) => {
         this.retryError.set(resolveHttpErrorMessage(err, 'Impossible de relancer les agents.'));

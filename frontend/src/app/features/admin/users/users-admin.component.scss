@@ -146,3 +146,61 @@
     justify-content: center;
   }
 }
+
+.groq-status-card {
+  margin-bottom: var(--space-5);
+}
+
+.groq-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.groq-meta dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.groq-meta dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.groq-meta__full {
+  grid-column: 1 / -1;
+}
+
+.groq-meta__error {
+  color: var(--color-danger);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.groq-models {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.groq-models li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+}
+
+.groq-models code {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

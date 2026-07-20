@@ -117,7 +117,11 @@ describe('DecisionDetailComponent', () => {
     expect(fixture.componentInstance.tabs.map((tab) => tab.id)).toContain('integrity');
   });
 
-  it('renders OpenRouter agents tab with success and error agents', () => {
+  it('labels agents tab as Agents IA (generic, not OpenRouter)', () => {
+    expect(fixture.componentInstance.tabs.find((tab) => tab.id === 'agents')?.label).toBe('Agents IA');
+  });
+
+  it('renders agents tab with success and error agents', () => {
     fixture.componentInstance.setTab('agents');
     fixture.detectChanges();
 
@@ -126,6 +130,16 @@ describe('DecisionDetailComponent', () => {
     expect(cards.length).toBe(2);
     expect(compiled.textContent).toContain('SUCCESS');
     expect(compiled.textContent).toContain('TIMEOUT');
+  });
+
+  it('displays declared agent confidence 0.82 as 82 %', () => {
+    fixture.componentInstance.setTab('agents');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const text = (compiled.textContent ?? '').replace(/\u00a0/g, ' ');
+    expect(text).toMatch(/82\s*%/);
+    expect(text).not.toMatch(/0\.82\s*%/);
   });
 
   it('blocks validation submit until confirmation is checked', () => {

@@ -18,6 +18,7 @@ import {
   UserAdminService,
 } from '../../../core/services/user-admin.service';
 import { UserRole } from '../../../core/models/auth.models';
+import { GroqAdminService, type GroqAdminStatus } from '../../../core/services/groq-admin.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { roleChipClass, roleLabel } from '../../../core/utils/label.util';
 
@@ -41,6 +42,7 @@ type FormMode = 'create' | 'edit';
 })
 export class UsersAdminComponent {
   private readonly userAdminService = inject(UserAdminService);
+  private readonly groqAdminService = inject(GroqAdminService);
   private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
@@ -53,6 +55,9 @@ export class UsersAdminComponent {
   readonly formOpen = signal(false);
   readonly formMode = signal<FormMode>('create');
   readonly editingUserId = signal<string | null>(null);
+  readonly groqStatus = signal<GroqAdminStatus | null>(null);
+  readonly groqLoading = signal(true);
+  readonly groqError = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
@@ -63,6 +68,22 @@ export class UsersAdminComponent {
 
   constructor() {
     this.loadUsers();
+    this.loadGroqStatus();
+  }
+
+  loadGroqStatus(): void {
+    this.groqLoading.set(true);
+    this.groqError.set(null);
+    this.groqAdminService.getStatus().subscribe({
+      next: (status) => {
+        this.groqStatus.set(status);
+        this.groqLoading.set(false);
+      },
+      error: (err) => {
+        this.groqError.set(resolveHttpErrorMessage(err, 'Impossible de charger le statut Groq.'));
+        this.groqLoading.set(false);
+      },
+    });
   }
 
   loadUsers(): void {

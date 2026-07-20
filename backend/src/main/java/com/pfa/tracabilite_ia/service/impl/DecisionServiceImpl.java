@@ -32,8 +32,8 @@ import com.pfa.tracabilite_ia.mapper.DecisionMapper;
 
 import com.pfa.tracabilite_ia.mapper.ValidationMapper;
 
+import com.pfa.tracabilite_ia.groq.GroqMultiAgentService;
 import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRetryService;
-import com.pfa.tracabilite_ia.openrouter.OpenRouterMultiAgentService;
 
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
 
@@ -87,7 +87,7 @@ public class DecisionServiceImpl implements DecisionService {
 
     private final MLDecisionService mlDecisionService;
 
-    private final OpenRouterMultiAgentService openRouterMultiAgentService;
+    private final GroqMultiAgentService groqMultiAgentService;
 
     private final OpenRouterAgentRetryService openRouterAgentRetryService;
 
@@ -119,7 +119,7 @@ public class DecisionServiceImpl implements DecisionService {
 
                                  MLDecisionService mlDecisionService,
 
-                                 OpenRouterMultiAgentService openRouterMultiAgentService,
+                                 GroqMultiAgentService groqMultiAgentService,
 
                                  OpenRouterAgentRetryService openRouterAgentRetryService,
 
@@ -149,7 +149,7 @@ public class DecisionServiceImpl implements DecisionService {
 
         this.mlDecisionService = mlDecisionService;
 
-        this.openRouterMultiAgentService = openRouterMultiAgentService;
+        this.groqMultiAgentService = groqMultiAgentService;
 
         this.openRouterAgentRetryService = openRouterAgentRetryService;
 
@@ -400,14 +400,14 @@ public class DecisionServiceImpl implements DecisionService {
 
 
 
-            var bundle = openRouterMultiAgentService.analyzeDecisionAgents(
+            var bundle = groqMultiAgentService.analyzeDecisionAgents(
 
                     decision,
 
                     buildOpenRouterPrompt(request, prediction),
 
                     """
-                    Analyse complementaire OpenRouter uniquement. Ne pas inventer de poids SHAP ni remplacer la prediction ML.
+                    Analyse complementaire Groq uniquement. Ne pas inventer de poids SHAP ni remplacer la prediction ML.
                     La confiance ML fournie est une donnee de contexte. Ne la recopiez pas automatiquement comme votre propre confiance.
                     Retournez votre propre niveau de confiance uniquement si vous pouvez le justifier.
                     """,
@@ -420,7 +420,7 @@ public class DecisionServiceImpl implements DecisionService {
 
         } catch (Exception ex) {
 
-            log.warn("OpenRouter indisponible pour la decision {}: {}", decision.getDecisionId(), ex.getMessage());
+            log.warn("Groq indisponible pour la decision {}: {}", decision.getDecisionId(), ex.getMessage());
 
             decision.setResumeConsensus(null);
 

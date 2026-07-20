@@ -48,6 +48,15 @@ services:
       OPENROUTER_HTTP_REFERER: ${OPENROUTER_HTTP_REFERER:-http://localhost}
       OPENROUTER_APP_TITLE: ${OPENROUTER_APP_TITLE:-Tracabilite-IA}
       OPENROUTER_AGENT_DELAY_MS: ${OPENROUTER_AGENT_DELAY_MS:-3000}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_BASE_URL: ${GROQ_BASE_URL:-https://api.groq.com/openai/v1}
+      GROQ_MODEL_1: ${GROQ_MODEL_1:-llama-3.3-70b-versatile}
+      GROQ_MODEL_2: ${GROQ_MODEL_2:-openai/gpt-oss-120b}
+      GROQ_MODEL_3: ${GROQ_MODEL_3:-openai/gpt-oss-20b}
+      GROQ_CONNECT_TIMEOUT_MS: ${GROQ_CONNECT_TIMEOUT_MS:-10000}
+      GROQ_READ_TIMEOUT_MS: ${GROQ_READ_TIMEOUT_MS:-120000}
+      GROQ_MAX_RETRIES: ${GROQ_MAX_RETRIES:-2}
+      GROQ_AGENT_DELAY_MS: ${GROQ_AGENT_DELAY_MS:-1000}
     depends_on:
       postgres:
         condition: service_healthy

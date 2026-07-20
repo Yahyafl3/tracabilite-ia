@@ -7,7 +7,7 @@
   <app-page-header
     [breadcrumbs]="['Décisions', 'Nouvelle analyse']"
     title="Nouvelle décision"
-    subtitle="Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents OpenRouter." />
+    subtitle="Analysez une demande de crédit via le modèle ML et, optionnellement, les 3 agents IA." />
 
   <div class="layout">
     <section class="card form-card">
@@ -53,7 +53,7 @@
 
           <label class="checkbox field--full">
             <input type="checkbox" formControlName="includeOpenRouter" />
-            <span>Consulter les 3 agents OpenRouter (consensus informatif, n'affecte pas le ML/SHAP)</span>
+            <span>Consulter les 3 agents IA (consensus informatif, n'affecte pas le ML/SHAP)</span>
           </label>
 
           <div class="form-actions field--full">
@@ -122,16 +122,16 @@
         </section>
 
         @if (analysis.consensus) {
-          @if (analysis.consensus.note?.includes('Quota OpenRouter')) {
+          @if (analysis.consensus.note?.includes('Quota OpenRouter') || analysis.consensus.note?.includes('GROQ_API_KEY')) {
             <p class="state-banner state-banner--warning">
-              Quota OpenRouter insuffisant. L'analyse ML reste disponible.
+              Agents LLM indisponibles. L'analyse ML reste disponible.
             </p>
           }
           <section class="card">
             <div class="card__header">
               <h2 class="card__title">
                 <app-icon name="users" [size]="17" />
-                Consensus OpenRouter (informatif)
+                {{ multiAgentLabels.consensus }}
               </h2>
             </div>
             <div class="card__body">
@@ -145,7 +145,7 @@
             <div class="card__header">
               <h2 class="card__title">
                 <app-icon name="message-square" [size]="17" />
-                Réponses des agents OpenRouter
+                {{ multiAgentLabels.agentResponses }}
               </h2>
             </div>
             <div class="card__body agent-grid">
@@ -159,7 +159,7 @@
         @if (analysis.resumeConsensus) {
           <section class="card">
             <div class="card__header">
-              <h2 class="card__title">Synthèse agents OpenRouter</h2>
+              <h2 class="card__title">{{ multiAgentLabels.synthesis }}</h2>
             </div>
             <div class="card__body">
               <p class="value value--text">{{ analysis.resumeConsensus }}</p>

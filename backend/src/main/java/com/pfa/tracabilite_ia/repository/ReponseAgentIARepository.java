@@ -19,6 +19,8 @@ public interface ReponseAgentIARepository extends JpaRepository<ReponseAgentIA, 
 
     long countByAgentKeyAndStatut(String agentKey, StatutReponseAgentEnum statut);
 
+    long countByProviderAndStatut(String provider, StatutReponseAgentEnum statut);
+
     @Query("""
             SELECT COUNT(r) FROM ReponseAgentIA r
             WHERE r.agentKey = :agentKey

@@ -4,7 +4,7 @@ describe('resolveAgentError', () => {
   it('maps RATE_LIMITED code to user message', () => {
     const result = resolveAgentError('FAILURE', 'OPENROUTER_RATE_LIMITED');
 
-    expect(result?.userMessage).toContain('Quota OpenRouter');
+    expect(result?.userMessage).toContain('Quota API');
     expect(result?.technicalLine).toBe('OPENROUTER_RATE_LIMITED');
   });
 

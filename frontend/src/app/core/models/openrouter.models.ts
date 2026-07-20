@@ -83,7 +83,16 @@ export function formatDeclaredConfidence(confidence?: number | null): string {
   if (confidence == null) {
     return 'Non fournie';
   }
-  return `${(confidence * 100).toFixed(1)} %`;
+  if (confidence < 0 || confidence > 1) {
+    console.warn('[formatDeclaredConfidence] Valeur hors [0,1]:', confidence);
+    return 'Valeur invalide';
+  }
+  const percent = confidence * 100;
+  const formatted = percent.toLocaleString('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  return `${formatted} %`;
 }
 
 export function agentByKey(agents: AgentResponse[] | undefined, agentKey: string): AgentResponse | undefined {

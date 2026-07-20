@@ -11,6 +11,7 @@ import {
   LoadingSkeletonComponent,
   PageHeaderComponent,
 } from '../../../shared/ui';
+import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels';
 import { DecisionService } from '../../../core/services/decision.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { decisionChipClass, riskChipClass } from '../../../core/utils/chip-class.util';
@@ -52,6 +53,7 @@ export class DecisionNewComponent implements OnInit {
 
   readonly sectors = SECTORS;
   readonly schemaInfo = ML_SCHEMA_INFO;
+  readonly multiAgentLabels = MULTI_AGENT_UI_LABELS;
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly result = signal<DecisionResponse | null>(null);
