@@ -17,18 +17,18 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .page-header h1 {
   margin: 0;
   font-size: 1.55rem;
-  color: #0f172a;
+  color: var(--ink);
 }
 
 .page-subtitle {
   margin: 0.35rem 0 0;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .card-title-row {
@@ -37,6 +37,7 @@
   align-items: center;
   padding: 1rem 1.25rem 0;
   font-weight: 600;
+  color: var(--ink);
 }
 
 .toolbar {
@@ -56,7 +57,7 @@
 .field label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--ink-soft);
 }
 
 .table-scroll {
@@ -68,6 +69,7 @@
   display: flex;
   flex-direction: column;
   font-size: 0.82rem;
+  color: var(--ink-soft);
 }
 
 .td-prompt {
@@ -75,17 +77,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--ink-soft);
 }
 
 .ref-code {
   font-size: 0.78rem;
-  background: #f1f5f9;
+  background: var(--bg-mute);
+  color: var(--ink-soft);
   padding: 0.15rem 0.4rem;
   border-radius: 0.35rem;
 }
 
 .muted {
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -105,17 +109,18 @@
 
 .empty-state__icon {
   font-size: 2rem;
-  color: #94a3b8;
+  color: var(--muted-soft);
 }
 
 .empty-state h2 {
   margin: 0.75rem 0 0.35rem;
   font-size: 1.1rem;
+  color: var(--ink);
 }
 
 .empty-state p {
   margin: 0 0 1rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 :host ::ng-deep .w-full {
