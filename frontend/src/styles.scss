@@ -482,53 +482,69 @@ html.app-dark {
 }
 
 /* ============================================================
-   PrimeNG Dark Mode — Moderne et cohérent
+   PrimeNG Dark Mode — Tables avec meilleure lisibilité
    ============================================================ */
 html.app-dark {
-  // Tables — subtle borders
+  // Tables — couleurs plus claires et contrastées
   .p-datatable {
-    .p-datatable-header,
-    .p-datatable-thead > tr > th {
-      background: var(--surface);
-      border-color: var(--surface-2);
-      color: var(--ink);
+    background: #1f2330 !important;
+
+    .p-datatable-header {
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #f9fafb !important;
       font-weight: 600;
     }
 
+    .p-datatable-thead > tr > th {
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #f9fafb !important;
+      font-weight: 600;
+      padding: 1rem 0.75rem !important;
+    }
+
     .p-datatable-tbody > tr {
-      background: var(--surface);
-      color: var(--ink-soft);
-      border-color: var(--surface-2);
+      background: #22252f !important;
+      color: #d1d5db !important;
+      border-color: #3d4451 !important;
 
       &:nth-child(even) {
-        background: var(--surface);
+        background: #262936 !important;
       }
 
       &:hover {
-        background: var(--surface-2) !important;
+        background: #2d3139 !important;
       }
 
       &.p-highlight {
-        background: var(--brand-tint) !important;
-        color: var(--ink);
+        background: rgba(129, 140, 248, 0.15) !important;
+        color: #f9fafb !important;
       }
     }
 
     .p-datatable-tbody > tr > td {
-      border-color: var(--surface-2);
+      border-color: #3d4451 !important;
+      padding: 1rem 0.75rem !important;
+      color: #d1d5db !important;
     }
 
     .p-datatable-footer {
-      background: var(--surface);
-      border-color: var(--surface-2);
-      color: var(--muted);
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #9ca3af !important;
+    }
+
+    // Ensure table wrapper has proper background
+    .p-datatable-wrapper {
+      background: #1f2330 !important;
     }
   }
 
-  // Cards — cleaner look
+  // Cards — lighter background
   .p-card {
-    background: var(--surface);
-    border: 1px solid var(--surface-2);
+    background: #1f2330 !important;
+    border: 1px solid #3d4451 !important;
     color: var(--ink);
     box-shadow: none;
 
@@ -542,11 +558,16 @@ html.app-dark {
 
     .p-card-content {
       color: var(--ink-soft);
+      background: #1f2330 !important;
     }
 
     .p-card-header {
-      background: var(--surface);
-      border-bottom-color: var(--surface-2);
+      background: #1f2330 !important;
+      border-bottom-color: #3d4451 !important;
+    }
+
+    .p-card-body {
+      background: #1f2330 !important;
     }
   }
 

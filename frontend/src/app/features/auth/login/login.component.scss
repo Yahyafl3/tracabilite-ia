@@ -1,252 +1,462 @@
 .login-page {
-  position: relative;
   min-height: 100dvh;
   width: 100%;
+  background: #fafbfc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.login-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100dvh;
+}
+
+/* ============================================================
+   Left Side — Branding & Features
+   ============================================================ */
+.login-side {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #fff;
   overflow: hidden;
+}
+
+.login-side__content {
+  position: relative;
+  z-index: 2;
+  max-width: 480px;
+  width: 100%;
+}
+
+.login-side__brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+  margin-bottom: 3rem;
+}
+
+.brand-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
   display: grid;
   place-items: center;
-  isolation: isolate;
-  padding: 1.5rem;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.28), transparent 34%),
-    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.2), transparent 30%),
-    linear-gradient(135deg, #070b18, #111936 55%, #141b3d);
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  font-size: 1.5rem;
+  border: 1px solid rgba(129, 140, 248, 0.2);
 }
 
-.login-background-video {
+.brand-text strong {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.brand-text small {
+  display: block;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.login-side__hero {
+  margin-bottom: 2.5rem;
+}
+
+.login-side__hero h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+  color: #fff;
+}
+
+.login-side__hero p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.login-side__features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feature-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.feature-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  font-size: 1.125rem;
+}
+
+.feature-content h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 0.25rem;
+}
+
+.feature-content p {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.login-side__footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.login-side__footer p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.login-side__bg {
   position: absolute;
   inset: 0;
-  z-index: -4;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(0.85) contrast(1.05);
-  transform: scale(1.01);
-  pointer-events: none;
-}
-
-.login-background-video.video-hidden {
-  display: none;
-}
-
-.login-video-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: -3;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(7, 11, 24, 0.8),
-      rgba(20, 27, 61, 0.56) 45%,
-      rgba(30, 41, 89, 0.7)
-    );
-  pointer-events: none;
-}
-
-.login-video-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 36px 36px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
-}
-
-.login-background-effects {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
 
-.login-glow {
+.bg-glow {
   position: absolute;
   border-radius: 999px;
-  filter: blur(48px);
-  opacity: 0.45;
-  animation: login-glow-drift 14s ease-in-out infinite alternate;
+  filter: blur(80px);
+  opacity: 0.3;
 }
 
-.login-glow-one {
-  width: 22rem;
-  height: 22rem;
-  top: -6rem;
-  left: -4rem;
-  background: rgba(79, 70, 229, 0.45);
+.bg-glow-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  background: rgba(99, 102, 241, 0.4);
+  animation: float 15s ease-in-out infinite;
 }
 
-.login-glow-two {
-  width: 18rem;
-  height: 18rem;
-  right: -3rem;
-  bottom: -5rem;
-  background: rgba(14, 165, 233, 0.35);
-  animation-delay: -4s;
+.bg-glow-2 {
+  width: 350px;
+  height: 350px;
+  bottom: -80px;
+  right: -80px;
+  background: rgba(14, 165, 233, 0.3);
+  animation: float 18s ease-in-out infinite reverse;
 }
 
-@keyframes login-glow-drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(1.5rem, 1rem, 0) scale(1.08);
-  }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, 20px) scale(1.05); }
 }
 
-.login-content {
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+}
+
+/* ============================================================
+   Right Side — Login Form
+   ============================================================ */
+.login-main {
   position: relative;
-  z-index: 1;
-  width: min(100% - 2rem, 430px);
-  margin: 2rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #fafbfc;
 }
 
-:host ::ng-deep .login-card {
+.login-main__content {
   width: 100%;
-  position: relative;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 1.25rem;
-  box-shadow:
-    0 24px 80px rgba(2, 6, 23, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-:host ::ng-deep .login-card .p-card-body {
-  padding: 1.5rem;
+  max-width: 420px;
 }
 
 .login-back {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem;
   color: #64748b;
   text-decoration: none;
   font-size: 0.875rem;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
-.login-back:hover,
-.login-back:focus-visible {
+.login-back:hover {
   color: #4f46e5;
-  outline: none;
 }
 
-.login-back:focus-visible {
-  outline: 2px solid #4f46e5;
-  outline-offset: 2px;
-  border-radius: 0.25rem;
+.login-header {
+  margin-bottom: 2rem;
 }
 
-.login-head {
-  margin-bottom: 1.25rem;
-}
-
-.login-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  text-decoration: none;
-  color: inherit;
-  margin-bottom: 1.25rem;
-}
-
-.login-brand__mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.85rem;
-  display: grid;
-  place-items: center;
-  background: #eef2ff;
-  color: #4f46e5;
-  font-size: 1.2rem;
-}
-
-.login-brand__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.login-brand__text strong {
-  font-size: 1.15rem;
+.login-header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
   color: #0f172a;
+  margin: 0 0 0.5rem;
 }
 
-.login-brand__text small {
+.login-header p {
+  font-size: 1rem;
   color: #64748b;
-  font-size: 0.78rem;
-}
-
-.login-head h1 {
   margin: 0;
-  font-size: 1.55rem;
-  color: #0f172a;
-}
-
-.login-head p {
-  margin: 0.35rem 0 0;
-  color: #64748b;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
+  gap: 1.25rem;
 }
 
-.field {
+.form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
 
-.field label {
-  font-size: 0.85rem;
+.form-field label {
+  font-size: 0.875rem;
   font-weight: 600;
   color: #334155;
 }
 
-.field__msg {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #dc2626;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.remember {
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  z-index: 2;
+  color: #94a3b8;
+  font-size: 0.9375rem;
+  pointer-events: none;
+}
+
+:host ::ng-deep .input-with-icon {
+  padding-left: 2.75rem !important;
+}
+
+:host ::ng-deep .form-field .p-inputtext,
+:host ::ng-deep .password-field .p-password-input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  background: #fff;
+  transition: all 0.2s;
+}
+
+:host ::ng-deep .form-field .p-inputtext:hover,
+:host ::ng-deep .password-field .p-password-input:hover {
+  border-color: #cbd5e1;
+}
+
+:host ::ng-deep .form-field .p-inputtext:focus,
+:host ::ng-deep .password-field .p-password-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  outline: none;
+}
+
+:host ::ng-deep .form-field--error .p-inputtext,
+:host ::ng-deep .form-field--error .p-password-input {
+  border-color: #ef4444;
+}
+
+:host ::ng-deep .form-field--error .p-inputtext:focus,
+:host ::ng-deep .form-field--error .p-password-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-field__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.form-extras {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.remember-me {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.remember label {
+.remember-me label {
   font-size: 0.875rem;
   color: #475569;
   cursor: pointer;
+  font-weight: 500;
+}
+
+.forgot-link {
+  font-size: 0.875rem;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  color: #4f46e5;
+}
+
+:host ::ng-deep .login-submit {
+  width: 100%;
+  height: 2.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  transition: all 0.2s;
+}
+
+:host ::ng-deep .login-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+:host ::ng-deep .login-submit:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .login-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   color: #64748b;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
+  padding: 0.5rem;
 }
 
-.login-footnote {
-  margin: 1.25rem 0 0;
+.login-divider {
+  position: relative;
   text-align: center;
-  color: #94a3b8;
-  font-size: 0.78rem;
+  margin: 1.5rem 0;
 }
 
+.login-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.login-divider span {
+  position: relative;
+  display: inline-block;
+  padding: 0 1rem;
+  background: #fafbfc;
+  color: #94a3b8;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.login-social {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.social-btn:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.social-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-help {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.login-help a {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-help a:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* ============================================================
+   PrimeNG Overrides
+   ============================================================ */
 :host ::ng-deep .w-full {
   width: 100%;
 }
@@ -255,72 +465,100 @@
   margin-bottom: 0.75rem;
 }
 
-:host ::ng-deep .p-password {
+:host ::ng-deep .password-field {
   width: 100%;
 }
 
-@media (max-width: 640px) {
-  .login-page {
-    place-items: center;
-    padding: 1rem;
+:host ::ng-deep .password-field .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .password-field .p-password-input {
+  width: 100%;
+}
+
+/* ============================================================
+   Dark Mode
+   ============================================================ */
+:host-context(html.app-dark) .login-main {
+  background: #0f111a;
+}
+
+:host-context(html.app-dark) .login-header h1 {
+  color: #f9fafb;
+}
+
+:host-context(html.app-dark) .login-header p,
+:host-context(html.app-dark) .login-back,
+:host-context(html.app-dark) .remember-me label,
+:host-context(html.app-dark) .login-help {
+  color: #9ca3af;
+}
+
+:host-context(html.app-dark) .form-field label {
+  color: #e5e7eb;
+}
+
+:host-context(html.app-dark) :host ::ng-deep .p-inputtext,
+:host-context(html.app-dark) :host ::ng-deep .p-password-input,
+:host-context(html.app-dark) .social-btn {
+  background: #1a1d29;
+  border-color: #2d3139;
+  color: #e5e7eb;
+}
+
+:host-context(html.app-dark) :host ::ng-deep .p-inputtext:hover,
+:host-context(html.app-dark) :host ::ng-deep .p-password-input:hover,
+:host-context(html.app-dark) .social-btn:hover:not(:disabled) {
+  border-color: #3d4451;
+  background: #22252f;
+}
+
+:host-context(html.app-dark) .login-divider::before {
+  background: #2d3139;
+}
+
+:host-context(html.app-dark) .login-divider span {
+  background: #0f111a;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .login-split {
+    grid-template-columns: 1fr;
   }
 
-  .login-content {
-    width: 100%;
-    margin: 1rem 0;
+  .login-side {
+    display: none;
   }
 
-  :host ::ng-deep .login-card {
-    border-radius: 1rem;
-  }
-
-  .login-background-video {
-    object-position: 60% center;
+  .login-main {
+    min-height: 100dvh;
   }
 }
 
-@media (max-width: 375px) {
-  .login-brand__text small {
-    display: none;
+@media (max-width: 640px) {
+  .login-main {
+    padding: 1.5rem;
+  }
+
+  .login-main__content {
+    max-width: 100%;
+  }
+
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-social {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .login-background-video {
-    display: none;
-  }
-
-  .login-page {
-    background:
-      radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.28), transparent 34%),
-      linear-gradient(135deg, #070b18, #111936 55%, #141b3d);
-  }
-
-  .login-glow {
+  .bg-glow {
     animation: none !important;
   }
-}
-
-:host-context(html.app-dark) :host ::ng-deep .login-card,
-:host-context(html.app-dark) ::ng-deep .login-card {
-  background: rgba(15, 23, 42, 0.88);
-  border-color: rgba(148, 163, 184, 0.25);
-  box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-:host-context(html.app-dark) .login-brand__text strong,
-:host-context(html.app-dark) .login-head h1,
-:host-context(html.app-dark) .field label {
-  color: #f1f5f9;
-}
-
-:host-context(html.app-dark) .login-brand__text small,
-:host-context(html.app-dark) .login-head p,
-:host-context(html.app-dark) .login-back,
-:host-context(html.app-dark) .remember label,
-:host-context(html.app-dark) .login-footnote,
-:host-context(html.app-dark) .login-loading {
-  color: #94a3b8;
 }

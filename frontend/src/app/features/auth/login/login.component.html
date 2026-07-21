@@ -1,122 +1,179 @@
 <div class="login-page">
-  <video
-    #backgroundVideo
-    class="login-background-video"
-    [class.video-hidden]="videoFailed()"
-    [attr.autoplay]="true"
-    [muted]="true"
-    [loop]="true"
-    [attr.playsinline]="true"
-    preload="metadata"
-    poster="/images/login-background.jpg"
-    aria-hidden="true"
-    (error)="onVideoError()"
-  >
-    <source src="/assets/videos/ai-traceability-bg.mp4" type="video/mp4" />
-    <source src="/assets/videos/ai-traceability-bg.webm" type="video/webm" />
-  </video>
-
-  <div class="login-video-overlay" aria-hidden="true"></div>
-
-  <div class="login-background-effects" aria-hidden="true">
-    <div class="login-glow login-glow-one"></div>
-    <div class="login-glow login-glow-two"></div>
-  </div>
-
-  <main class="login-content">
-    <p-card styleClass="login-card">
-      <a routerLink="/" class="login-back">
-        <i class="pi pi-arrow-left" aria-hidden="true"></i>
-        Retour au site
-      </a>
-
-      <header class="login-head">
-        <a routerLink="/" class="login-brand" aria-label="Traçabilité IA — accueil">
-          <span class="login-brand__mark" aria-hidden="true">
+  <div class="login-split">
+    <!-- Left side - Branding & Info -->
+    <aside class="login-side">
+      <div class="login-side__content">
+        <a routerLink="/" class="login-side__brand" aria-label="Traçabilité IA — accueil">
+          <div class="brand-icon">
             <i class="pi pi-shield"></i>
-          </span>
-          <span class="login-brand__text">
+          </div>
+          <div class="brand-text">
             <strong>Traçabilité IA</strong>
             <small>Décisions assistées et auditables</small>
-          </span>
-        </a>
-        <h1>Connexion</h1>
-        <p>Accédez à votre espace sécurisé.</p>
-      </header>
-
-      @if (errorMessage()) {
-        <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-3" role="alert" />
-      }
-
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
-        <div class="field" [class.field--error]="hasError('email')">
-          <label for="email">Adresse email</label>
-          <input
-            pInputText
-            id="email"
-            type="email"
-            formControlName="email"
-            class="w-full"
-            placeholder="vous@entreprise.com"
-            autocomplete="email"
-            [attr.aria-invalid]="hasError('email')"
-            [attr.aria-describedby]="hasError('email') ? 'email-error' : null"
-          />
-          @if (hasError('email')) {
-            <p id="email-error" class="field__msg">{{ getErrorMessage('email') }}</p>
-          }
-        </div>
-
-        <div class="field" [class.field--error]="hasError('password')">
-          <label for="password">Mot de passe</label>
-          <p-password
-            inputId="password"
-            formControlName="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            styleClass="w-full"
-            inputStyleClass="w-full"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            [attr.aria-invalid]="hasError('password')"
-            [attr.aria-describedby]="hasError('password') ? 'password-error' : null"
-          />
-          @if (hasError('password')) {
-            <p id="password-error" class="field__msg">{{ getErrorMessage('password') }}</p>
-          }
-        </div>
-
-        <div class="remember">
-          <p-checkbox
-            inputId="rememberMe"
-            formControlName="rememberMe"
-            [binary]="true"
-            ariaLabel="Se souvenir de moi"
-          />
-          <label for="rememberMe">Se souvenir de moi</label>
-        </div>
-
-        <p-button
-          type="submit"
-          label="Se connecter"
-          icon="pi pi-sign-in"
-          styleClass="w-full"
-          [disabled]="isLoading()"
-          [loading]="isLoading()"
-          ariaLabel="Se connecter"
-        />
-
-        @if (isLoading()) {
-          <div class="login-loading" aria-live="polite">
-            <p-progressspinner strokeWidth="4" [style]="{ width: '2rem', height: '2rem' }" />
-            <span>Connexion en cours…</span>
           </div>
-        }
-      </form>
+        </a>
 
-      <p class="login-footnote">
-        © {{ 2026 }} Traçabilité IA
-      </p>
-    </p-card>
-  </main>
+        <div class="login-side__hero">
+          <h2>Plateforme de traçabilité IA de confiance</h2>
+          <p>
+            Auditez, tracez et validez chaque décision d'intelligence artificielle.
+            Conformité RGPD et AI Act européen.
+          </p>
+        </div>
+
+        <div class="login-side__features">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Traçabilité complète</h3>
+              <p>Audit trail immuable de chaque décision IA</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-shield"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Conformité garantie</h3>
+              <p>RGPD, AI Act et standards de sécurité</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-users"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Validation humaine</h3>
+              <p>Workflow de revue et d'approbation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-side__footer">
+          <p>© 2026 Traçabilité IA. Tous droits réservés.</p>
+        </div>
+      </div>
+
+      <div class="login-side__bg" aria-hidden="true">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        <div class="bg-pattern"></div>
+      </div>
+    </aside>
+
+    <!-- Right side - Login Form -->
+    <main class="login-main">
+      <div class="login-main__content">
+        <a routerLink="/" class="login-back">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Retour au site
+        </a>
+
+        <div class="login-header">
+          <h1>Connexion</h1>
+          <p>Accédez à votre espace sécurisé</p>
+        </div>
+
+        @if (errorMessage()) {
+          <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-3" role="alert" />
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+          <div class="form-field" [class.form-field--error]="hasError('email')">
+            <label for="email">Adresse email</label>
+            <div class="input-wrapper">
+              <i class="pi pi-envelope input-icon"></i>
+              <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                class="input-with-icon"
+                placeholder="vous@entreprise.com"
+                autocomplete="email"
+                [attr.aria-invalid]="hasError('email')"
+                [attr.aria-describedby]="hasError('email') ? 'email-error' : null"
+              />
+            </div>
+            @if (hasError('email')) {
+              <p id="email-error" class="form-field__error">{{ getErrorMessage('email') }}</p>
+            }
+          </div>
+
+          <div class="form-field" [class.form-field--error]="hasError('password')">
+            <label for="password">Mot de passe</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <p-password
+                inputId="password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                styleClass="w-full password-field"
+                inputStyleClass="input-with-icon"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                [attr.aria-invalid]="hasError('password')"
+                [attr.aria-describedby]="hasError('password') ? 'password-error' : null"
+              />
+            </div>
+            @if (hasError('password')) {
+              <p id="password-error" class="form-field__error">{{ getErrorMessage('password') }}</p>
+            }
+          </div>
+
+          <div class="form-extras">
+            <div class="remember-me">
+              <p-checkbox
+                inputId="rememberMe"
+                formControlName="rememberMe"
+                [binary]="true"
+                ariaLabel="Se souvenir de moi"
+              />
+              <label for="rememberMe">Se souvenir de moi</label>
+            </div>
+            <a href="#" class="forgot-link" (click)="$event.preventDefault()">Mot de passe oublié ?</a>
+          </div>
+
+          <p-button
+            type="submit"
+            label="Se connecter"
+            icon="pi pi-sign-in"
+            styleClass="login-submit"
+            [disabled]="isLoading()"
+            [loading]="isLoading()"
+            ariaLabel="Se connecter"
+          />
+
+          @if (isLoading()) {
+            <div class="login-loading" aria-live="polite">
+              <p-progressSpinner strokeWidth="4" [style]="{ width: '2rem', height: '2rem' }" />
+              <span>Connexion en cours…</span>
+            </div>
+          }
+        </form>
+
+        <div class="login-divider">
+          <span>Ou continuer avec</span>
+        </div>
+
+        <div class="login-social">
+          <button type="button" class="social-btn" disabled>
+            <i class="pi pi-microsoft"></i>
+            Microsoft
+          </button>
+          <button type="button" class="social-btn" disabled>
+            <i class="pi pi-google"></i>
+            Google
+          </button>
+        </div>
+
+        <p class="login-help">
+          Besoin d'aide ? <a href="mailto:support@tracabilite.ia">Contactez le support</a>
+        </p>
+      </div>
+    </main>
+  </div>
 </div>
