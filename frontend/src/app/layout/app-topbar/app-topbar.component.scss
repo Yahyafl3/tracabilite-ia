@@ -13,6 +13,7 @@
   background: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid #e2e8f0;
   backdrop-filter: blur(10px);
+  transition: padding-left 0.2s ease;
 }
 
 .layout-topbar__start,
