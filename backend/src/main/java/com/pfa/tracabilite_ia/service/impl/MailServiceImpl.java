@@ -39,6 +39,12 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
+        String maskedTo = maskEmail(toEmail);
+        log.info("Password reset email send attempt to={}", maskedTo);
+        if (fromAddress == null || fromAddress.isBlank()) {
+            log.error("Password reset email aborted: sender not configured");
+            throw new IllegalStateException("Impossible d'envoyer l'email de réinitialisation.");
+        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -47,9 +53,10 @@ public class MailServiceImpl implements MailService {
             helper.setSubject("Réinitialisation de votre mot de passe — Traçabilité IA");
             helper.setText(buildPasswordResetHtml(resetLink), true);
             mailSender.send(message);
-            log.info("Password reset email dispatched");
+            log.info("Password reset email sent successfully to={}", maskedTo);
         } catch (MessagingException | MailException ex) {
-            log.error("Failed to send password reset email: {} - {}",
+            log.error("Failed to send password reset email to={} errorType={} detail={}",
+                    maskedTo,
                     ex.getClass().getSimpleName(),
                     safeMailError(ex));
             throw new IllegalStateException("Impossible d'envoyer l'email de réinitialisation.");
@@ -87,6 +94,20 @@ public class MailServiceImpl implements MailService {
         }
         return msg.replaceAll("(?i)(password|passwd|secret|token)\\s*[=:].*", "$1=***")
                 .replaceAll("[\\w.+-]+@[\\w.-]+", "[redacted]");
+    }
+
+    /** Mask email for logs: y***@gmail.com */
+    static String maskEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return "[empty]";
+        }
+        String trimmed = email.trim();
+        int at = trimmed.indexOf('@');
+        if (at <= 0 || at == trimmed.length() - 1) {
+            return "***";
+        }
+        char first = trimmed.charAt(0);
+        return first + "***@" + trimmed.substring(at + 1);
     }
 
     private String buildPasswordResetHtml(String resetLink) {
