@@ -2,16 +2,16 @@
   <div class="container">
     <div class="section-head" appReveal>
       <span class="eyebrow">Comment ça marche</span>
-      <h2 class="section-title">Opérationnel en 4 étapes</h2>
+      <h2 class="section-title">Du dossier métier à la validation finale</h2>
       <p class="section-subtitle">
-        De la connexion de vos modèles à la génération de rapports d'audit, la
-        traçabilité s'installe sans friction dans votre stack existante.
+        Un parcours clair, de la saisie des données jusqu'à la décision humaine
+        enregistrée dans le dossier auditable.
       </p>
     </div>
 
     <ol class="steps">
       @for (step of steps; track step.number; let i = $index) {
-        <li class="step" appReveal [revealDelay]="i * 110">
+        <li class="step" appReveal [revealDelay]="i * 90">
           <div class="step__head">
             <span class="step__icon">
               <app-icon [name]="step.icon" [size]="26" />
@@ -23,5 +23,14 @@
         </li>
       }
     </ol>
+
+    <aside class="how-note" appReveal [revealDelay]="200" role="note">
+      <app-icon name="shield-check" [size]="22" />
+      <p>
+        La validation humaine porte sur le <strong>dossier global</strong>, et non
+        sur chaque agent séparément. Les agents IA fournissent des recommandations
+        complémentaires ; la décision finale reste humaine.
+      </p>
+    </aside>
   </div>
 </section>

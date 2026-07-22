@@ -1,12 +1,14 @@
-<section id="contact" class="section cta">
+<section id="cta" class="section cta">
   <div class="container">
     <div class="cta__card" appReveal>
       <div class="cta__intro">
-        <span class="eyebrow eyebrow--light">Contact</span>
-        <h2 class="cta__title">Passez à une IA traçable et conforme</h2>
+        <span class="eyebrow eyebrow--light">Passer à l'action</span>
+        <h2 class="cta__title">
+          Découvrez une approche responsable de la décision assistée par IA
+        </h2>
         <p class="cta__subtitle">
-          Demandez une démonstration et découvrez comment rendre chaque décision
-          de votre IA auditable en quelques semaines.
+          Accédez à la plateforme pour créer, analyser, expliquer et auditer un
+          dossier de décision.
         </p>
         <ul class="cta__highlights">
           @for (item of highlights; track item) {
@@ -18,59 +20,20 @@
         </ul>
       </div>
 
-      <div class="cta__form-wrap">
-        @if (submitted()) {
-          <div class="cta__success" role="status">
-            <span class="cta__success-icon">
-              <app-icon name="check" [size]="30" />
-            </span>
-            <h3>Demande envoyée&nbsp;!</h3>
-            <p>Merci, notre équipe vous recontacte sous 24 h ouvrées.</p>
-          </div>
-        } @else {
-          <form class="cta__form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-            <div class="field">
-              <label for="name">Nom complet</label>
-              <input id="name" type="text" formControlName="name" placeholder="Jean Dupont"
-                [class.is-invalid]="invalid('name')" />
-              @if (invalid('name')) { <span class="error">Votre nom est requis.</span> }
-            </div>
-
-            <div class="field">
-              <label for="email">Email professionnel</label>
-              <input id="email" type="email" formControlName="email" placeholder="jean.dupont@entreprise.com"
-                [class.is-invalid]="invalid('email')" />
-              @if (invalid('email')) { <span class="error">Email professionnel valide requis.</span> }
-            </div>
-
-            <div class="field">
-              <label for="company">Entreprise</label>
-              <input id="company" type="text" formControlName="company" placeholder="Nom de votre organisation"
-                [class.is-invalid]="invalid('company')" />
-              @if (invalid('company')) { <span class="error">Le nom de l'entreprise est requis.</span> }
-            </div>
-
-            <div class="field">
-              <label for="role">Fonction <span class="optional">(optionnel)</span></label>
-              <input id="role" type="text" formControlName="role" placeholder="DSI, Responsable conformité…" />
-            </div>
-
-            <div class="field">
-              <label for="message">Votre besoin <span class="optional">(optionnel)</span></label>
-              <textarea id="message" rows="3" formControlName="message"
-                placeholder="Décrivez brièvement votre contexte IA et vos enjeux de conformité."></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-lg btn-block">
-              Demander une démo
-              <app-icon name="arrow-right" [size]="18" />
-            </button>
-            <p class="cta__legal">
-              En soumettant ce formulaire, vous acceptez notre politique de
-              confidentialité. Vos données ne sont jamais revendues.
-            </p>
-          </form>
-        }
+      <div class="cta__actions-panel">
+        <h3 class="cta__actions-title">Commencer maintenant</h3>
+        <p class="cta__actions-text">
+          Connectez-vous avec votre compte pour ouvrir l'application.
+        </p>
+        <div class="cta__buttons">
+          <a routerLink="/auth/login" class="btn btn-primary btn-lg btn-block">
+            Se connecter
+            <app-icon name="arrow-right" [size]="18" />
+          </a>
+          <a routerLink="/auth/login" class="btn btn-secondary btn-lg btn-block">
+            Ouvrir l'application
+          </a>
+        </div>
       </div>
     </div>
   </div>

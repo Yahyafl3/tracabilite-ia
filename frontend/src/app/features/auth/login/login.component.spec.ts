@@ -27,35 +27,22 @@ describe('LoginComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders fullscreen background video with muted autoplay loop', () => {
-    const video = (fixture.nativeElement as HTMLElement).querySelector(
-      'video.login-background-video',
-    ) as HTMLVideoElement;
-    expect(video).toBeTruthy();
-    expect(video.hasAttribute('autoplay')).toBe(true);
-    expect(video.muted || video.hasAttribute('muted')).toBe(true);
-    expect(video.loop || video.hasAttribute('loop')).toBe(true);
-    expect(video.hasAttribute('playsinline')).toBe(true);
-    expect(video.getAttribute('aria-hidden')).toBe('true');
-
-    const sources = Array.from(video.querySelectorAll('source')).map((s) => s.getAttribute('src'));
-    expect(sources).toContain('/assets/videos/ai-traceability-bg.mp4');
-    expect(sources).toContain('/assets/videos/ai-traceability-bg.webm');
-
-    expect((fixture.nativeElement as HTMLElement).querySelector('.login-video-overlay')).toBeTruthy();
-    expect((fixture.nativeElement as HTMLElement).querySelector('form.login-form')).toBeTruthy();
+  it('renders the split-screen login layout with form', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.login-page')).toBeTruthy();
+    expect(el.querySelector('.login-split')).toBeTruthy();
+    expect(el.querySelector('.login-side')).toBeTruthy();
+    expect(el.querySelector('.login-main')).toBeTruthy();
+    expect(el.querySelector('form.login-form')).toBeTruthy();
+    expect(el.querySelector('video.login-background-video')).toBeNull();
   });
 
-  it('hides video without crashing when playback fails', () => {
+  it('keeps login form usable when videoFailed is set', () => {
     expect(fixture.componentInstance.videoFailed()).toBe(false);
     fixture.componentInstance.onVideoError();
     fixture.detectChanges();
 
     expect(fixture.componentInstance.videoFailed()).toBe(true);
-    const video = (fixture.nativeElement as HTMLElement).querySelector(
-      'video.login-background-video',
-    ) as HTMLVideoElement;
-    expect(video.classList.contains('video-hidden')).toBe(true);
     expect((fixture.nativeElement as HTMLElement).querySelector('form.login-form')).toBeTruthy();
   });
 

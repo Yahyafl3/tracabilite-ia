@@ -18,34 +18,24 @@ interface Badge {
 export class SecurityComponent {
   readonly badges: Badge[] = [
     {
-      icon: 'lock',
-      title: 'Chiffrement AES-256 / TLS 1.3',
-      description: 'Données protégées au repos et en transit.',
-    },
-    {
-      icon: 'shield-check',
-      title: 'Conformité RGPD',
-      description: 'Minimisation, droit à l\'explication, registres.',
-    },
-    {
-      icon: 'server',
-      title: 'Hébergement souverain (UE)',
-      description: 'Infrastructure sécurisée hébergée en Europe.',
-    },
-    {
       icon: 'key',
-      title: 'Contrôle d\'accès (RBAC + JWT)',
-      description: 'Authentification forte et rôles granulaires.',
+      title: 'Authentification JWT',
+      description: 'Accès protégé à l’application et aux API.',
     },
     {
-      icon: 'check-circle',
-      title: 'ISO 27001 & SOC 2',
-      description: 'Standards de sécurité reconnus mondialement.',
+      icon: 'users',
+      title: 'Gestion des rôles',
+      description: 'Utilisateur, validateur, auditeur et administrateur.',
     },
     {
       icon: 'history',
-      title: 'Journalisation inaltérable',
-      description: 'Chaînage cryptographique de chaque événement.',
+      title: 'Historique des événements',
+      description: 'Chaque étape du dossier est horodatée et consultable.',
+    },
+    {
+      icon: 'lock',
+      title: 'Chaînage SHA-256',
+      description: 'Empreintes d’intégrité pour détecter les modifications.',
     },
   ];
 }

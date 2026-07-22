@@ -20,31 +20,38 @@ export class HowItWorksComponent {
   readonly steps: Step[] = [
     {
       number: '01',
-      icon: 'link',
-      title: 'Connectez vos modèles',
+      icon: 'file-text',
+      title: 'Saisie du dossier',
       description:
-        "Intégrez vos systèmes IA via notre API REST ou nos SDK. Compatible TensorFlow, PyTorch, scikit-learn et les plateformes cloud.",
+        "L'utilisateur saisit le contexte, la demande et les données métier.",
     },
     {
       number: '02',
       icon: 'scan',
-      title: 'Capturez chaque décision',
+      title: 'Analyse ML et SHAP',
       description:
-        "Chaque prédiction est enregistrée automatiquement : entrées, sorties, contexte et métadonnées, sans modifier votre pipeline existant.",
+        'Le service ML génère une prédiction et explique les facteurs associés.',
     },
     {
       number: '03',
-      icon: 'bar-chart',
-      title: 'Analysez & scorez',
+      icon: 'activity',
+      title: 'Consultation multi-agents',
       description:
-        "La plateforme calcule les scores d'explicabilité, détecte les dérives et évalue le niveau de risque réglementaire de chaque décision.",
+        'Trois agents Groq analysent le même dossier et proposent leurs recommandations.',
     },
     {
       number: '04',
-      icon: 'file-check',
-      title: "Générez vos audits",
+      icon: 'link',
+      title: 'Consensus et traçabilité',
       description:
-        "Produisez à la demande des rapports d'audit complets et conformes, exportables pour vos contrôles internes et externes.",
+        'Le système calcule le consensus, enregistre les sources et génère les hashes.',
+    },
+    {
+      number: '05',
+      icon: 'file-check',
+      title: 'Validation humaine',
+      description:
+        'Le validateur consulte toutes les informations et prend la décision finale.',
     },
   ];
 }

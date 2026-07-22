@@ -19,21 +19,21 @@ export class ProblemComponent {
   readonly problems: ProblemItem[] = [
     {
       icon: 'eye-off',
-      title: 'Des décisions IA opaques',
+      title: 'Manque de transparence',
       description:
-        "Vos modèles produisent des résultats sans justification lisible. Impossible d'expliquer à un client, un régulateur ou un juge pourquoi une décision a été prise.",
-    },
-    {
-      icon: 'shield-alert',
-      title: 'Un risque de non-conformité',
-      description:
-        "AI Act, RGPD, sectoriels… les obligations se multiplient. Sans traçabilité, chaque décision automatisée devient une exposition juridique et financière.",
+        'Les utilisateurs ne savent pas toujours pourquoi un modèle propose une décision.',
     },
     {
       icon: 'history',
-      title: "L'absence d'audit trail",
+      title: "Difficulté d'audit",
       description:
-        "Aucune preuve fiable de qui a décidé quoi, quand et sur quelles données. Reconstituer l'historique lors d'un contrôle devient un cauchemar coûteux.",
+        "Sans historique et sans intégrité, il devient difficile de reconstruire le dossier d'une décision.",
+    },
+    {
+      icon: 'users',
+      title: 'Responsabilité humaine',
+      description:
+        "L'intelligence artificielle doit assister la décision sans remplacer le contrôle humain.",
     },
   ];
 }

@@ -12,17 +12,17 @@ import { HeroComponent } from './components/hero/hero.component';
 import { ProblemComponent } from './components/problem/problem.component';
 import { FeaturesComponent } from './components/features/features.component';
 import { HowItWorksComponent } from './components/how-it-works/how-it-works.component';
+import { TechnologiesComponent } from './components/technologies/technologies.component';
 import { SecurityComponent } from './components/security/security.component';
-import { TestimonialsComponent } from './components/testimonials/testimonials.component';
-import { PricingComponent } from './components/pricing/pricing.component';
+import { UseCaseComponent } from './components/use-case/use-case.component';
+import { HumanValidationComponent } from './components/human-validation/human-validation.component';
 import { CtaComponent } from './components/cta/cta.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { IconComponent } from '../../shared/icon.component';
 import { ScrollService } from '../../shared/scroll.service';
 
 /**
- * Landing Page — composant conteneur.
- * Assemble les sections réutilisables de la page d'accueil B2B « Traçabilité IA ».
+ * Landing Page — présentation réelle de Traçabilité IA.
  */
 @Component({
   selector: 'app-landing',
@@ -33,9 +33,10 @@ import { ScrollService } from '../../shared/scroll.service';
     ProblemComponent,
     FeaturesComponent,
     HowItWorksComponent,
+    TechnologiesComponent,
     SecurityComponent,
-    TestimonialsComponent,
-    PricingComponent,
+    UseCaseComponent,
+    HumanValidationComponent,
     CtaComponent,
     FooterComponent,
     IconComponent,

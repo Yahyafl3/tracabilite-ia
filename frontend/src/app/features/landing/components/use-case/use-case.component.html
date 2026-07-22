@@ -1,0 +1,29 @@
+<section id="cas-usage" class="section">
+  <div class="container">
+    <div class="section-head" appReveal>
+      <span class="eyebrow">Cas d'usage</span>
+      <h2 class="section-title">Cas d'usage principal : analyse de demandes de crédit</h2>
+      <p class="section-subtitle">
+        L'application analyse les informations financières d'une demande de crédit,
+        génère une prédiction ML, explique les facteurs SHAP, consulte les agents Groq,
+        calcule un consensus puis transmet le dossier à un validateur humain.
+      </p>
+    </div>
+
+    <div class="use-case-grid">
+      @for (card of cards; track card.title; let i = $index) {
+        <article class="use-case-card" appReveal [revealDelay]="i * 100">
+          <span class="use-case-card__icon">
+            <app-icon [name]="card.icon" [size]="26" />
+          </span>
+          <h3 class="use-case-card__title">{{ card.title }}</h3>
+          <p class="use-case-card__text">{{ card.description }}</p>
+        </article>
+      }
+    </div>
+
+    <p class="use-case-disclaimer" appReveal [revealDelay]="180" role="note">
+      Le système est un outil d'aide à la décision et ne remplace pas la décision humaine.
+    </p>
+  </div>
+</section>

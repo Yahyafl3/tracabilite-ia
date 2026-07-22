@@ -1,0 +1,29 @@
+<section id="validation-humaine" class="section section--soft">
+  <div class="container">
+    <div class="section-head" appReveal>
+      <span class="eyebrow">Validation humaine</span>
+      <h2 class="section-title">L'humain reste responsable de la décision finale</h2>
+      <p class="section-subtitle">
+        Le validateur consulte la prédiction ML, les facteurs SHAP, les réponses des
+        agents, le consensus, les sources et l'intégrité du dossier avant d'enregistrer
+        une décision finale.
+      </p>
+    </div>
+
+    <div class="validation-grid">
+      @for (action of actions; track action.title; let i = $index) {
+        <article class="validation-card" appReveal [revealDelay]="i * 80">
+          <span class="validation-card__icon">
+            <app-icon [name]="action.icon" [size]="24" />
+          </span>
+          <h3 class="validation-card__title">{{ action.title }}</h3>
+          <p class="validation-card__text">{{ action.description }}</p>
+        </article>
+      }
+    </div>
+
+    <p class="validation-note" appReveal [revealDelay]="160" role="note">
+      Groq et le modèle ML assistent l'analyse ; ils ne prennent jamais la décision finale.
+    </p>
+  </div>
+</section>

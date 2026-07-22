@@ -8,7 +8,7 @@
 
 .cta__card {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.2fr 0.9fr;
   gap: 48px;
   padding: 56px;
   border-radius: var(--radius-lg);
@@ -34,7 +34,7 @@
   color: rgba(255, 255, 255, 0.85);
   font-size: 1.06rem;
   line-height: 1.7;
-  max-width: 420px;
+  max-width: 460px;
 }
 
 .cta__highlights {
@@ -55,109 +55,44 @@
   }
 }
 
-/* Formulaire */
-.cta__form-wrap {
+.cta__actions-panel {
   background: var(--surface);
   border-radius: var(--radius);
   padding: 30px;
   color: var(--ink);
   box-shadow: var(--shadow-md);
-}
-
-.cta__form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  justify-content: center;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  label {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-
-  .optional {
-    font-weight: 400;
-    color: var(--muted-soft);
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 0.96rem;
-    color: var(--ink);
-    background: var(--bg-soft);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-
-    &::placeholder {
-      color: var(--muted-soft);
-    }
-
-    &:focus {
-      outline: none;
-      background: var(--surface);
-      border-color: var(--brand-500);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
-    }
-
-    &.is-invalid {
-      border-color: var(--danger);
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
-    }
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 84px;
-  }
+.cta__actions-title {
+  font-size: 1.3rem;
+  margin: 0;
 }
 
-.error {
-  font-size: 0.8rem;
-  color: var(--danger);
-}
-
-.cta__legal {
-  font-size: 0.78rem;
+.cta__actions-text {
+  margin: 0;
   color: var(--muted);
-  line-height: 1.5;
-  text-align: center;
+  line-height: 1.6;
 }
 
-.cta__success {
+.cta__buttons {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding: 40px 12px;
+  gap: 12px;
+  margin-top: 8px;
 
-  &-icon {
-    display: grid;
-    place-items: center;
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--success);
-    margin-bottom: 8px;
+  .btn {
+    text-decoration: none;
+    justify-content: center;
   }
 
-  h3 {
-    font-size: 1.4rem;
-  }
-
-  p {
-    color: var(--muted);
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
   }
 }
 

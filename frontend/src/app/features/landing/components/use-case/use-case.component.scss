@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+
+.use-case-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.use-case-card {
+  padding: 28px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--grad-brand);
+    color: #fff;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    font-size: 1.18rem;
+    margin-bottom: 10px;
+  }
+
+  &__text {
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 0.96rem;
+  }
+}
+
+.use-case-disclaimer {
+  margin: 28px auto 0;
+  max-width: 720px;
+  text-align: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .use-case-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -34,11 +34,12 @@ export class NavbarComponent {
   readonly menuOpen = signal(false);
 
   readonly links: NavLink[] = [
+    { label: 'Accueil', target: 'accueil' },
     { label: 'Fonctionnalités', target: 'fonctionnalites' },
-    { label: 'Comment ça marche', target: 'fonctionnement' },
+    { label: 'Fonctionnement', target: 'fonctionnement' },
+    { label: 'Technologies', target: 'technologies' },
     { label: 'Sécurité', target: 'securite' },
-    { label: 'Tarifs', target: 'tarifs' },
-    { label: 'Contact', target: 'contact' },
+    { label: 'Cas d\'usage', target: 'cas-usage' },
   ];
 
   @HostListener('window:scroll')

@@ -1,16 +1,16 @@
 import { Component, inject } from '@angular/core';
-import { IconComponent } from '../../../../shared/icon.component';
+import { RouterLink } from '@angular/router';
 import { ScrollService } from '../../../../shared/scroll.service';
 
 interface FooterColumn {
   title: string;
-  links: { label: string; target?: string; href?: string }[];
+  links: { label: string; target?: string; route?: string }[];
 }
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [IconComponent],
+  imports: [RouterLink],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss',
 })
@@ -24,47 +24,29 @@ export class FooterComponent {
       title: 'Produit',
       links: [
         { label: 'Fonctionnalités', target: 'fonctionnalites' },
-        { label: 'Comment ça marche', target: 'fonctionnement' },
+        { label: 'Fonctionnement', target: 'fonctionnement' },
         { label: 'Sécurité', target: 'securite' },
-        { label: 'Tarifs', target: 'tarifs' },
-      ],
-    },
-    {
-      title: 'Ressources',
-      links: [
-        { label: 'Documentation', target: 'fonctionnement' },
         { label: 'Cas d\'usage', target: 'cas-usage' },
-        { label: 'Conformité AI Act', target: 'securite' },
-        { label: 'Statut de service', href: '#' },
       ],
     },
     {
-      title: 'Entreprise',
+      title: 'Application',
       links: [
-        { label: 'À propos', href: '#' },
-        { label: 'Contact', target: 'contact' },
-        { label: 'Carrières', href: '#' },
-        { label: 'Blog', href: '#' },
+        { label: 'Se connecter', route: '/auth/login' },
+        { label: 'Tableau de bord', route: '/dashboard' },
+      ],
+    },
+    {
+      title: 'Projet',
+      links: [
+        { label: 'Technologies', target: 'technologies' },
+        { label: 'Architecture', target: 'technologies' },
+        { label: 'À propos du projet', target: 'probleme' },
       ],
     },
   ];
 
-  readonly legalLinks = [
-    'Mentions légales',
-    'Politique de confidentialité',
-    'CGU',
-    'Cookies',
-  ];
-
-  readonly socials = [
-    { icon: 'linkedin', label: 'LinkedIn' },
-    { icon: 'twitter', label: 'X (Twitter)' },
-    { icon: 'github', label: 'GitHub' },
-  ];
-
-  navigate(link: { target?: string; href?: string }): void {
-    if (link.target) {
-      this.scroll.scrollTo(link.target);
-    }
+  navigate(target: string): void {
+    this.scroll.scrollTo(target);
   }
 }

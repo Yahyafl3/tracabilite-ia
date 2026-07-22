@@ -1,0 +1,30 @@
+<section id="technologies" class="section section--soft">
+  <div class="container">
+    <div class="section-head" appReveal>
+      <span class="eyebrow">Technologies</span>
+      <h2 class="section-title">Une architecture moderne et modulaire</h2>
+      <p class="section-subtitle">
+        Stack réellement utilisée dans le projet, du frontend jusqu'au service ML
+        et aux agents IA.
+      </p>
+    </div>
+
+    <div class="tech-grid">
+      @for (group of groups; track group.title; let i = $index) {
+        <article class="tech-card" appReveal [revealDelay]="(i % 3) * 80">
+          <div class="tech-card__head">
+            <span class="tech-card__icon">
+              <app-icon name="server" [size]="22" />
+            </span>
+            <h3 class="tech-card__title">{{ group.title }}</h3>
+          </div>
+          <ul class="tech-card__list">
+            @for (item of group.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+      }
+    </div>
+  </div>
+</section>

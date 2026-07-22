@@ -1,6 +1,11 @@
 <header class="navbar" [class.navbar--scrolled]="scrolled()">
   <div class="container navbar__inner">
-    <a class="brand" href="#accueil" (click)="scrollTo('accueil'); $event.preventDefault()">
+    <a
+      class="brand"
+      href="#accueil"
+      (click)="scrollTo('accueil'); $event.preventDefault()"
+      aria-label="Traçabilité IA — Accueil"
+    >
       <app-logo class="brand__mark" [size]="38" />
       <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
     </a>
@@ -21,14 +26,14 @@
       >
         Se connecter
       </a>
-      <button
-        type="button"
+      <a
         class="btn btn-primary nav-links__cta"
-        (click)="scrollTo('contact')"
+        routerLink="/auth/login"
+        (click)="menuOpen.set(false)"
       >
-        Demander une démo
+        Accéder à l'application
         <app-icon name="arrow-right" [size]="18" />
-      </button>
+      </a>
     </nav>
 
     <div class="nav-actions">
@@ -47,7 +52,7 @@
         class="nav-toggle"
         (click)="toggleMenu()"
         [attr.aria-expanded]="menuOpen()"
-        aria-label="Ouvrir le menu"
+        [attr.aria-label]="menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
       >
         <app-icon [name]="menuOpen() ? 'close' : 'menu'" [size]="26" />
       </button>
