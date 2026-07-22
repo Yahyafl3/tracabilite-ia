@@ -56,6 +56,7 @@ export class AppMenuComponent {
         items: [
           { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: '/admin/users' },
           { label: 'Agents Groq', icon: 'pi pi-server', routerLink: '/admin/groq' },
+          { label: 'Support', icon: 'pi pi-envelope', routerLink: '/admin/support' },
         ],
       });
     }

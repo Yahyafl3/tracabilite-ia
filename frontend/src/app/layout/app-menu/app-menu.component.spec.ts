@@ -40,6 +40,7 @@ describe('AppMenuComponent', () => {
     expect(labels).toContain('Audit');
     expect(labels).toContain('Utilisateurs');
     expect(labels).toContain('Agents Groq');
+    expect(labels).toContain('Support');
     expect(labels).not.toContain('Consensus OpenRouter');
   });
 
@@ -53,5 +54,6 @@ describe('AppMenuComponent', () => {
     expect(labels).toContain('Validation humaine');
     expect(labels).not.toContain('Utilisateurs');
     expect(labels).not.toContain('Agents Groq');
+    expect(labels).not.toContain('Support');
   });
 });
