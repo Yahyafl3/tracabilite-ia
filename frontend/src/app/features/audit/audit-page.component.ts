@@ -14,12 +14,14 @@ import { Dialog } from 'primeng/dialog';
 import { Button } from 'primeng/button';
 import { Skeleton } from 'primeng/skeleton';
 import { Message } from 'primeng/message';
+import { AuditStatisticsComponent } from './components/audit-statistics.component';
 import {
   AuditService,
   AuditDecisionResponse,
   AuditIntegritySummaryResponse,
   AuditRecentItemResponse,
 } from '../../core/services/audit.service';
+import { ExportService } from '../../core/services/export.service';
 import { StatutDecisionEnum } from '../../core/models/decision.models';
 import { statutLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
@@ -55,6 +57,7 @@ interface AuditTimelineEvent {
     Skeleton,
     Message,
     CopyHashComponent,
+    AuditStatisticsComponent,
   ],
   templateUrl: './audit-page.component.html',
   styleUrl: './audit-page.component.scss',
@@ -62,6 +65,7 @@ interface AuditTimelineEvent {
 export class AuditPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auditService = inject(AuditService);
+  private readonly exportService = inject(ExportService);
   private readonly router = inject(Router);
 
   readonly statuts = Object.values(StatutDecisionEnum);
@@ -86,21 +90,28 @@ export class AuditPageComponent {
     search: this.fb.nonNullable.control(''),
     statut: this.fb.nonNullable.control('' as StatutDecisionEnum | ''),
     period: this.fb.control<Date[] | null>(null),
+    integrityFilter: this.fb.nonNullable.control('all' as 'all' | 'valid' | 'invalid'),
+    promptSearch: this.fb.nonNullable.control(''),
   });
 
   readonly appliedFilters = signal<{
     search: string;
     statut: StatutDecisionEnum | '';
     period: Date[] | null;
+    integrityFilter: 'all' | 'valid' | 'invalid';
+    promptSearch: string;
   }>({
     search: '',
     statut: '',
     period: null,
+    integrityFilter: 'all',
+    promptSearch: '',
   });
 
   readonly filteredItems = computed(() => {
-    const { search, statut, period } = this.appliedFilters();
+    const { search, statut, period, integrityFilter, promptSearch } = this.appliedFilters();
     const query = search.trim().toLowerCase();
+    const promptQuery = promptSearch.trim().toLowerCase();
     const from = period?.[0] ? new Date(period[0]) : null;
     const to = period?.[1] ? new Date(period[1]) : null;
     if (from) from.setHours(0, 0, 0, 0);
@@ -111,6 +122,15 @@ export class AuditPageComponent {
         return false;
       }
       if (query && !item.decisionId.toLowerCase().includes(query)) {
+        return false;
+      }
+      if (promptQuery && !item.prompt.toLowerCase().includes(promptQuery)) {
+        return false;
+      }
+      if (integrityFilter === 'valid' && !item.integrityValid) {
+        return false;
+      }
+      if (integrityFilter === 'invalid' && item.integrityValid) {
         return false;
       }
       if (from || to) {
@@ -204,7 +224,31 @@ export class AuditPageComponent {
       search: raw.search ?? '',
       statut: raw.statut ?? '',
       period: raw.period ?? null,
+      integrityFilter: raw.integrityFilter ?? 'all',
+      promptSearch: raw.promptSearch ?? '',
     });
+  }
+
+  resetFilters(): void {
+    this.filters.reset({
+      search: '',
+      statut: '',
+      period: null,
+      integrityFilter: 'all',
+      promptSearch: '',
+    });
+    this.applyFilters();
+  }
+
+  get hasActiveFilters(): boolean {
+    const filters = this.appliedFilters();
+    return !!(
+      filters.search ||
+      filters.statut ||
+      filters.period ||
+      filters.integrityFilter !== 'all' ||
+      filters.promptSearch
+    );
   }
 
   openDetail(row: AuditRecentItemResponse): void {
@@ -286,5 +330,23 @@ export class AuditPageComponent {
 
   shortUuid(id: string): string {
     return id.length > 12 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+  }
+
+  exportCSV(): void {
+    const items = this.filteredItems();
+    const filters = this.appliedFilters();
+    this.exportService.exportAuditCSV(items, filters);
+  }
+
+  async exportPDF(): Promise<void> {
+    const items = this.filteredItems();
+    const summary = this.integrity();
+    const filters = this.appliedFilters();
+    
+    if (!summary) {
+      return;
+    }
+
+    await this.exportService.exportAuditPDF(items, summary, filters);
   }
 }

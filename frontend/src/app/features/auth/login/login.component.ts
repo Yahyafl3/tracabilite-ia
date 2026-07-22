@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
@@ -10,7 +9,7 @@ import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Checkbox } from 'primeng/checkbox';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginCredentials } from '../../../core/models/auth.models';
+import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +18,6 @@ import { LoginCredentials } from '../../../core/models/auth.models';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    Card,
     InputText,
     Password,
     Button,
@@ -69,8 +67,15 @@ export class LoginComponent {
     const credentials: LoginCredentials = this.loginForm.value;
 
     this.authService.login(credentials).subscribe({
-      next: () => {
-        void this.router.navigate([this.returnUrl]);
+      next: (response) => {
+        // Role-based redirect: Auditeur goes directly to /audit
+        const role = response.user?.role;
+        let defaultUrl = '/decisions';
+        if (role === UserRole.AUDITEUR) {
+          defaultUrl = '/audit';
+        }
+        const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        void this.router.navigate([target]);
       },
       error: (error) => {
         this.isLoading.set(false);

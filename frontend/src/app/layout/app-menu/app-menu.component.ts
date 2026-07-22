@@ -16,9 +16,22 @@ export class AppMenuComponent {
 
   readonly model = computed<AppMenuItem[]>(() => {
     const role = this.authService.currentUser?.role;
-    const canValidate = role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
     const isAdmin = role === UserRole.ADMINISTRATEUR;
-    const isAuditor = role === UserRole.AUDITEUR || isAdmin;
+    const isAuditeur = role === UserRole.AUDITEUR;
+    const canValidate = role === UserRole.VALIDATEUR || isAdmin;
+    const canDecide = role === UserRole.UTILISATEUR || canValidate || isAdmin;
+
+    // Auditeur only sees the Audit section
+    if (isAuditeur) {
+      return [
+        {
+          label: 'Audit',
+          items: [
+            { label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' },
+          ],
+        },
+      ];
+    }
 
     const items: AppMenuItem[] = [
       {
@@ -44,7 +57,7 @@ export class AppMenuComponent {
       icon: 'pi pi-chart-bar',
       routerLink: '/comparaison',
     });
-    if (isAuditor) {
+    if (isAdmin) {
       analysisItems.push({ label: 'Audit', icon: 'pi pi-shield', routerLink: '/audit' });
     }
 

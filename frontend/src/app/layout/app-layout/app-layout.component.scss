@@ -62,6 +62,9 @@
 
 :host-context(html.app-dark) .layout-wrapper {
   --layout-main-bg: #0f111a;
-  --layout-sidebar-bg: #14161f;
+  --layout-sidebar-bg: #13151f;
+  --layout-sidebar-fg: #e2e8f0;
+  --layout-sidebar-muted: #64748b;
+  --layout-accent: #818cf8;
   --layout-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
