@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
@@ -19,7 +18,6 @@ import { LoginCredentials } from '../../../core/models/auth.models';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    Card,
     InputText,
     Password,
     Button,

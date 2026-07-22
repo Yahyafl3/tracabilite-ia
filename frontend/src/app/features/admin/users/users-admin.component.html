@@ -146,18 +146,16 @@
                       (onClick)="openEditForm(user)"
                       [attr.aria-label]="'Modifier ' + user.email"
                     />
-                    <p-button
-                      icon="pi pi-trash"
-                      severity="danger"
-                      [rounded]="true"
-                      [text]="true"
-                      [disabled]="isCurrentUser(user)"
-                      (onClick)="confirmDelete(user)"
-                      [attr.aria-label]="'Supprimer ' + user.email"
-                    />
-                  } @else {
-                    <span class="muted">Compte opérateur</span>
                   }
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [rounded]="true"
+                    [text]="true"
+                    [disabled]="isCurrentUser(user)"
+                    (onClick)="confirmDelete(user)"
+                    [attr.aria-label]="'Supprimer ' + user.email"
+                  />
                 </div>
               </td>
             </tr>
@@ -210,6 +208,9 @@
           optionLabel="label"
           optionValue="value"
           styleClass="w-full"
+          appendTo="body"
+          [scrollHeight]="'12rem'"
+          placeholder="Choisir un rôle"
           ariaLabel="Rôle utilisateur"
         />
       </div>

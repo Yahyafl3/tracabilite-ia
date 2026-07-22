@@ -377,67 +377,9 @@
   padding: 0.5rem;
 }
 
-.login-divider {
-  position: relative;
-  text-align: center;
-  margin: 1.5rem 0;
-}
-
-.login-divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e2e8f0;
-}
-
-.login-divider span {
-  position: relative;
-  display: inline-block;
-  padding: 0 1rem;
-  background: #fafbfc;
-  color: #94a3b8;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
-
-.login-social {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.social-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 2.5rem;
-  padding: 0 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  background: #fff;
-  color: #475569;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.social-btn:hover:not(:disabled) {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-}
-
-.social-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .login-help {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 0.25rem;
   text-align: center;
   font-size: 0.875rem;
   color: #64748b;
@@ -500,26 +442,16 @@
 }
 
 :host-context(html.app-dark) :host ::ng-deep .p-inputtext,
-:host-context(html.app-dark) :host ::ng-deep .p-password-input,
-:host-context(html.app-dark) .social-btn {
+:host-context(html.app-dark) :host ::ng-deep .p-password-input {
   background: #1a1d29;
   border-color: #2d3139;
   color: #e5e7eb;
 }
 
 :host-context(html.app-dark) :host ::ng-deep .p-inputtext:hover,
-:host-context(html.app-dark) :host ::ng-deep .p-password-input:hover,
-:host-context(html.app-dark) .social-btn:hover:not(:disabled) {
+:host-context(html.app-dark) :host ::ng-deep .p-password-input:hover {
   border-color: #3d4451;
   background: #22252f;
-}
-
-:host-context(html.app-dark) .login-divider::before {
-  background: #2d3139;
-}
-
-:host-context(html.app-dark) .login-divider span {
-  background: #0f111a;
 }
 
 /* ============================================================
@@ -550,10 +482,6 @@
 
   .login-header h1 {
     font-size: 1.5rem;
-  }
-
-  .login-social {
-    grid-template-columns: 1fr;
   }
 }
 

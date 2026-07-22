@@ -1,0 +1,97 @@
+@startuml sequence-validation-humaine
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #F8FAFC
+skinparam noteBorderColor #94A3B8
+
+title Séquence — Validation humaine d'une décision
+
+actor "Validateur" as Validator
+participant "Frontend Angular" as FE
+participant "Backend Spring Boot" as BE
+database "PostgreSQL" as DB
+
+Validator -> FE : Ouvrir la file de validation
+FE -> BE : GET /api/validation/pending\n(JWT)
+activate BE
+BE -> BE : Vérifier rôle\n(VALIDATOR / ADMIN)
+BE -> DB : SELECT Decision\nWHERE statut = EN_ATTENTE
+activate DB
+DB --> BE : Liste des décisions
+deactivate DB
+BE --> FE : DecisionPageResponse
+deactivate BE
+FE --> Validator : Afficher la file EN_ATTENTE
+
+Validator -> FE : Ouvrir une décision
+FE -> BE : GET /api/decisions/{id}/validation\n(JWT)
+activate BE
+BE -> BE : Vérifier rôle validateur
+BE -> DB : Charger Decision +\nML, SHAP, agents, sources,\nhistorique, validations
+activate DB
+DB --> BE : Dossier complet
+deactivate DB
+BE --> FE : DecisionResponse\n(+ métadonnées validation)
+deactivate BE
+FE --> Validator : Afficher le dossier\n(ML, SHAP, agents, consensus)
+
+Validator -> FE : Choisir une action humaine\n(+ commentaire optionnel)
+
+alt Approuver
+  FE -> BE : POST /api/decisions/{id}/approve\n(ValidationRequest)
+else Rejeter
+  FE -> BE : POST /api/decisions/{id}/reject\n(ValidationRequest)
+else Modifier (décision humaine requise)
+  FE -> BE : POST /api/decisions/{id}/modify\n(decisionHumaine + commentaire)
+else Review (reste EN_ATTENTE)
+  FE -> BE : POST /api/decisions/{id}/review\n(ValidationRequest)
+end
+
+activate BE
+BE -> BE : Vérifier JWT + rôle\n(VALIDATOR / ADMIN)
+BE -> DB : Charger Decision pour validation
+activate DB
+DB --> BE : Decision
+deactivate DB
+
+alt Statut ≠ EN_ATTENTE
+  BE --> FE : Erreur 400 / IllegalState\n(seules les EN_ATTENTE)
+  FE --> Validator : Afficher l'erreur
+else Statut = EN_ATTENTE
+  BE -> BE : Mettre à jour statut\n(APPROUVEE / REJETEE /\nMODIFIEE / EN_ATTENTE)
+  BE -> BE : humanDecision +\nvalidatorEmail
+  BE -> BE : Recalculer hashes\n(refreshHashComponents)
+
+  BE -> DB : UPDATE Decision
+  activate DB
+  DB --> BE : OK
+  deactivate DB
+
+  BE -> DB : INSERT ValidationAction\n(typeAction, statutAvant/Après,\ndécisionHumaine, commentaire)
+  activate DB
+  DB --> BE : ValidationAction
+  deactivate DB
+
+  BE -> DB : INSERT DecisionHistory\n(APPROVED / REJECTED /\nMODIFIED / REVIEWED)
+  activate DB
+  DB --> BE : OK
+  deactivate DB
+
+  BE -> DB : Recharger dossier +\nhistorique des validations
+  activate DB
+  DB --> BE : Données à jour
+  deactivate DB
+
+  BE --> FE : DecisionResponse mise à jour
+  deactivate BE
+  FE --> Validator : Afficher le nouveau statut\net la trace de validation
+end
+
+note over Validator, DB
+  La décision finale est **humaine**.
+  ML, SHAP et agents Groq restent des aides
+  consultées dans le dossier ; ils ne valident pas.
+end note
+
+@enduml

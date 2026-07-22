@@ -19,24 +19,40 @@
           >{{ link.label }}</a
         >
       }
+
+      <div class="nav-links__actions">
+        <a
+          class="nav-links__login"
+          routerLink="/auth/login"
+          (click)="menuOpen.set(false)"
+        >
+          Se connecter
+        </a>
+        <a
+          class="btn btn-primary nav-links__cta"
+          routerLink="/auth/login"
+          (click)="menuOpen.set(false)"
+        >
+          Accéder à l'application
+          <app-icon name="arrow-right" [size]="18" />
+        </a>
+      </div>
+    </nav>
+
+    <div class="nav-actions">
       <a
-        class="nav-links__login"
+        class="nav-actions__login"
         routerLink="/auth/login"
-        (click)="menuOpen.set(false)"
       >
         Se connecter
       </a>
       <a
-        class="btn btn-primary nav-links__cta"
+        class="btn btn-primary nav-actions__cta"
         routerLink="/auth/login"
-        (click)="menuOpen.set(false)"
       >
         Accéder à l'application
         <app-icon name="arrow-right" [size]="18" />
       </a>
-    </nav>
-
-    <div class="nav-actions">
       <button
         type="button"
         class="theme-toggle"

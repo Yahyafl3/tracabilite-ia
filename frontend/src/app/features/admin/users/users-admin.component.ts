@@ -210,10 +210,6 @@ export class UsersAdminComponent {
   }
 
   confirmDelete(user: ManagedUser): void {
-    if (!this.isManaged(user)) {
-      this.error.set('Seuls les comptes Administrateur, Validateur et Auditeur sont supprimables ici.');
-      return;
-    }
     if (user.id === this.authService.currentUser?.id) {
       this.error.set('Impossible de supprimer votre propre compte.');
       return;

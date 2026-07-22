@@ -131,17 +131,33 @@ export class AuthService {
   }
 
   /**
-   * Request password reset
+   * Request password reset (forgot password)
    */
-  requestPasswordReset(request: PasswordResetRequest): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/password-reset/request`, request);
+  requestPasswordReset(request: PasswordResetRequest): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.API_URL}/forgot-password`, { email: request.email })
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(error.error?.message || 'Une erreur est survenue')),
+        ),
+      );
   }
 
   /**
-   * Reset password
+   * Confirm password reset with token
    */
-  resetPassword(reset: PasswordReset): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/password-reset/confirm`, reset);
+  resetPassword(reset: PasswordReset): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.API_URL}/reset-password`, {
+        token: reset.token,
+        newPassword: reset.newPassword,
+        confirmPassword: reset.confirmPassword,
+      })
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          throwError(() => new Error(error.error?.message || 'Lien invalide ou expiré')),
+        ),
+      );
   }
 
   /**

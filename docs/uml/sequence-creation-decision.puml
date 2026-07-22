@@ -1,0 +1,80 @@
+@startuml sequence-creation-decision
+autonumber
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #F8FAFC
+skinparam noteBorderColor #94A3B8
+
+title Séquence — Création d'une décision (analyse crédit)
+
+actor "Utilisateur" as User
+participant "Frontend Angular" as FE
+participant "Backend Spring Boot" as BE
+participant "Service ML Python" as ML
+participant "API Groq" as Groq
+database "PostgreSQL" as DB
+
+User -> FE : Saisir description, contexte\net features crédit
+FE -> BE : POST /api/decisions/analyze\n(JWT + CreditFeaturesRequest)
+activate BE
+
+BE -> BE : Vérifier JWT et rôles\n(USER / ADMIN)
+BE -> BE : Valider les features crédit
+
+BE -> DB : INSERT Decision (BROUILLON)\n+ DecisionHistory CREATED / ML_STARTED
+activate DB
+DB --> BE : Decision persistée
+deactivate DB
+
+BE -> ML : POST /predict\n(includeExplanation = true)
+activate ML
+ML --> BE : Prédiction, confiance,\nriskLevel, facteurs SHAP
+deactivate ML
+
+BE -> BE : applyPrediction()\n→ ExplanationFactor[]
+BE -> DB : Sources par défaut +\nhistorique ML_COMPLETED
+activate DB
+DB --> BE : OK
+deactivate DB
+
+alt includeOpenRouter = true et Groq configuré
+  loop Pour chaque agent Groq (3 agents séquentiels)
+    BE -> Groq : Chat completion agent N
+    activate Groq
+    alt Réponse valide
+      Groq --> BE : Recommandation, confiance,\nexplication
+      BE -> DB : INSERT ReponseAgentIA (SUCCESS)
+    else Erreur / timeout / rate-limit
+      Groq --> BE : Erreur fournisseur
+      BE -> DB : INSERT ReponseAgentIA\n(FAILURE / TIMEOUT / ...)
+    end
+    deactivate Groq
+  end
+  BE -> BE : Calculer consensus multi-agents\n(consensusJson, resumeConsensus)
+  BE -> DB : Historique CONSENSUS_CALCULATED
+else Groq indisponible ou non configuré (mode dégradé)
+  BE -> BE : Consensus « skipped »\nou agents ignorés
+  note right of BE
+    La décision ML est conservée.
+    Groq ne bloque pas la création.
+  end note
+end
+
+BE -> BE : Statut → EN_ATTENTE\nHashes métier / sources / agents\nChaînage SHA-256 (previousHash / currentHash)
+BE -> DB : UPDATE Decision complète
+activate DB
+DB --> BE : Decision sauvegardée
+deactivate DB
+
+BE --> FE : DecisionResponse\n(ML, SHAP, agents, consensus)
+deactivate BE
+
+FE --> User : Afficher prédiction ML,\nfacteurs SHAP, agents IA et consensus
+
+note over User, DB
+  La validation humaine (approuver / rejeter / modifier / review)
+  intervient **après** cette analyse, via ValidationAction.
+  Les agents Groq ne prennent jamais la décision finale.
+end note
+
+@enduml
