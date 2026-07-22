@@ -18,16 +18,28 @@ export class AppMenuComponent {
     const role = this.authService.currentUser?.role;
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
-    const canValidate = role === UserRole.VALIDATEUR || isAdmin;
-    const canDecide = role === UserRole.UTILISATEUR || canValidate || isAdmin;
+    const isValidateur = role === UserRole.VALIDATEUR;
+    const canValidate = isValidateur || isAdmin;
 
-    // Auditeur only sees the Audit section
+    // Auditeur — audit only
     if (isAuditeur) {
       return [
         {
           label: 'Audit',
           items: [
             { label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' },
+          ],
+        },
+      ];
+    }
+
+    // Validateur — validation queue only
+    if (isValidateur) {
+      return [
+        {
+          label: 'Validation',
+          items: [
+            { label: 'File de validation', icon: 'pi pi-check-square', routerLink: '/validation' },
           ],
         },
       ];

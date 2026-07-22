@@ -68,12 +68,11 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        // Role-based redirect: Auditeur goes directly to /audit
+        // Role-based redirect
         const role = response.user?.role;
         let defaultUrl = '/decisions';
-        if (role === UserRole.AUDITEUR) {
-          defaultUrl = '/audit';
-        }
+        if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
+        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
         const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
         void this.router.navigate([target]);
       },
