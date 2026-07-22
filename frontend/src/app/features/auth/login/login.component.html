@@ -134,7 +134,7 @@
               />
               <label for="rememberMe">Se souvenir de moi</label>
             </div>
-            <a href="#" class="forgot-link" (click)="$event.preventDefault()">Mot de passe oublié ?</a>
+            <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
           </div>
 
           <p-button
@@ -155,23 +155,8 @@
           }
         </form>
 
-        <div class="login-divider">
-          <span>Ou continuer avec</span>
-        </div>
-
-        <div class="login-social">
-          <button type="button" class="social-btn" disabled>
-            <i class="pi pi-microsoft"></i>
-            Microsoft
-          </button>
-          <button type="button" class="social-btn" disabled>
-            <i class="pi pi-google"></i>
-            Google
-          </button>
-        </div>
-
         <p class="login-help">
-          Besoin d'aide ? <a href="mailto:support@tracabilite.ia">Contactez le support</a>
+          Besoin d'aide ? <a routerLink="/support">Contactez le support</a>
         </p>
       </div>
     </main>

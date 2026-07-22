@@ -106,4 +106,40 @@ describe('LoginComponent', () => {
     expect(text).not.toContain('Consensus OpenRouter');
     expect(text).not.toContain('Réponses OpenRouter');
   });
+
+  it('does not show Google, Microsoft or social divider', () => {
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).not.toContain('Google');
+    expect(text).not.toContain('Microsoft');
+    expect(text).not.toContain('Ou continuer avec');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.login-social')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.login-divider')).toBeNull();
+  });
+
+  it('keeps forgot-password and support links with a usable email/password form', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    const text = el.textContent ?? '';
+
+    expect(text).toContain('Mot de passe oublié');
+    expect(text).toContain('Contactez le support');
+    expect(el.querySelector('.forgot-link')).toBeTruthy();
+    expect(el.querySelector('a[href="/support"]')).toBeTruthy();
+    expect(el.querySelector('#email')).toBeTruthy();
+    expect(el.querySelector('p-password')).toBeTruthy();
+    expect(el.querySelector('button[type="submit"]')).toBeTruthy();
+
+    fixture.componentInstance.loginForm.setValue({
+      email: 'admin@test.fr',
+      password: 'secret1',
+      rememberMe: false,
+    });
+    fixture.componentInstance.onSubmit();
+
+    expect(auth.login).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'admin@test.fr',
+        password: 'secret1',
+      }),
+    );
+  });
 });

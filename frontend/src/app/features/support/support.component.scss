@@ -1,0 +1,161 @@
+.support-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(14, 165, 233, 0.1), transparent 35%),
+    linear-gradient(160deg, #f8fafc 0%, #eef2ff 55%, #f8fafc 100%);
+}
+
+.support-shell {
+  width: 100%;
+  max-width: 42rem;
+}
+
+:host ::ng-deep .support-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.support-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.support-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.support-brand__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #fff;
+}
+
+.support-brand strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.support-brand small {
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+
+.support-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.support-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.support-nav__link:hover {
+  text-decoration: underline;
+}
+
+.support-intro {
+  margin-bottom: 1.25rem;
+}
+
+.support-intro h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  color: #0f172a;
+}
+
+.support-intro p {
+  margin: 0;
+  color: #64748b;
+}
+
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-field__error {
+  margin: 0;
+  color: #ef4444;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+:host ::ng-deep .support-form .p-inputtext,
+:host ::ng-deep .support-form .p-textarea {
+  width: 100%;
+}
+
+:host ::ng-deep .support-submit {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.support-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+:host ::ng-deep .w-full {
+  width: 100%;
+}
+
+:host ::ng-deep .mb-3 {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .support-page {
+    padding: 1rem;
+  }
+
+  .support-intro h1 {
+    font-size: 1.5rem;
+  }
+
+  .support-card__header {
+    padding: 1rem 1rem 0.25rem;
+  }
+}

@@ -40,6 +40,12 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Même confiance Avast au runtime (SMTP Gmail STARTTLS / HTTPS).
+COPY avast-root.crt /tmp/avast-root.crt
+RUN keytool -importcert -noprompt -trustcacerts -alias avast-ssl-scan \
+    -file /tmp/avast-root.crt -cacerts -storepass changeit || true \
+ && rm -f /tmp/avast-root.crt
+
 # Copier le JAR depuis l'étape de build
 COPY --from=build /app/target/*.jar app.jar
 

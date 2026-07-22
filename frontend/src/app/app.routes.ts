@@ -8,6 +8,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing.component').then((m) => m.LandingComponent),
   },
   {
+    path: 'support',
+    loadComponent: () =>
+      import('./features/support/support.component').then((m) => m.SupportComponent),
+  },
+  {
     path: 'auth',
     canActivate: [guestGuard],
     children: [
@@ -15,6 +20,20 @@ export const routes: Routes = [
         path: 'login',
         loadComponent: () =>
           import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password.component').then(
+            (m) => m.ForgotPasswordComponent,
+          ),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/auth/reset-password/reset-password.component').then(
+            (m) => m.ResetPasswordComponent,
+          ),
       },
       {
         path: '',
@@ -84,6 +103,14 @@ export const routes: Routes = [
         canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
         loadComponent: () =>
           import('./features/admin/groq/groq-admin.component').then((m) => m.GroqAdminComponent),
+      },
+      {
+        path: 'admin/support',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
+        loadComponent: () =>
+          import('./features/admin/support/support-admin.component').then(
+            (m) => m.SupportAdminComponent,
+          ),
       },
     ],
   },

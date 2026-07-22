@@ -2,6 +2,7 @@ package com.pfa.tracabilite_ia.controller;
 
 import com.pfa.tracabilite_ia.config.SecurityConfig;
 import com.pfa.tracabilite_ia.dto.response.AuditIntegritySummaryResponse;
+import com.pfa.tracabilite_ia.exception.GlobalExceptionHandler;
 import com.pfa.tracabilite_ia.filter.CorrelationIdFilter;
 import com.pfa.tracabilite_ia.filter.JwtAuthenticationFilter;
 import com.pfa.tracabilite_ia.jwt.JwtProvider;
@@ -28,7 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CorrelationIdFilter.class,
         JwtAuthenticationFilter.class,
         CustomAuthenticationEntryPoint.class,
-        CustomAccessDeniedHandler.class
+        CustomAccessDeniedHandler.class,
+        GlobalExceptionHandler.class
 })
 class AuditControllerSecurityTest {
 
