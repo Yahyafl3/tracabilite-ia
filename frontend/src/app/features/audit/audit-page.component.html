@@ -7,9 +7,31 @@
         Consultation des événements récents, vérifications d'intégrité SHA-256 et accès au détail des décisions.
       </p>
     </div>
-    @if (generatedAt()) {
-      <p-tag severity="secondary" [value]="formatGeneratedAt(generatedAt())" icon="pi pi-clock" />
-    }
+    <div class="page-header-actions">
+      @if (generatedAt()) {
+        <p-tag severity="secondary" [value]="formatGeneratedAt(generatedAt())" icon="pi pi-clock" />
+      }
+      <div class="export-buttons">
+        <p-button
+          label="Export CSV"
+          icon="pi pi-file"
+          [outlined]="true"
+          (onClick)="exportCSV()"
+          [disabled]="filteredItems().length === 0"
+          severity="secondary"
+          ariaLabel="Exporter en CSV"
+        />
+        <p-button
+          label="Export PDF"
+          icon="pi pi-file-pdf"
+          [outlined]="true"
+          (onClick)="exportPDF()"
+          [disabled]="filteredItems().length === 0"
+          severity="secondary"
+          ariaLabel="Exporter en PDF"
+        />
+      </div>
+    </div>
   </header>
 
   @if (loading()) {
@@ -35,6 +57,9 @@
       }
     </section>
 
+    <!-- Statistics Dashboard -->
+    <app-audit-statistics [items]="recentItems()" />
+
     <p-card>
       <ng-template #title>Événements récents</ng-template>
       <ng-template #subtitle>
@@ -56,6 +81,19 @@
         </div>
 
         <div class="field">
+          <label for="audit-prompt">Recherche dans le prompt</label>
+          <input
+            pInputText
+            id="audit-prompt"
+            formControlName="promptSearch"
+            placeholder="Mots-clés dans le prompt…"
+            class="w-full"
+            autocomplete="off"
+            aria-label="Rechercher dans le contenu du prompt"
+          />
+        </div>
+
+        <div class="field">
           <label for="audit-statut">Statut</label>
           <p-select
             inputId="audit-statut"
@@ -65,6 +103,23 @@
             optionValue="value"
             styleClass="w-full"
             ariaLabel="Filtrer par statut"
+          />
+        </div>
+
+        <div class="field">
+          <label for="audit-integrity">Intégrité</label>
+          <p-select
+            inputId="audit-integrity"
+            formControlName="integrityFilter"
+            [options]="[
+              { label: 'Toutes', value: 'all' },
+              { label: 'Valide uniquement', value: 'valid' },
+              { label: 'Invalide uniquement', value: 'invalid' }
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            ariaLabel="Filtrer par intégrité"
           />
         </div>
 
@@ -82,8 +137,23 @@
           />
         </div>
 
-        <div class="field field--action">
-          <p-button type="submit" label="Filtrer" icon="pi pi-filter" [outlined]="true" />
+        <div class="field field--actions">
+          <p-button 
+            type="submit" 
+            label="Filtrer" 
+            icon="pi pi-filter" 
+            [outlined]="true" 
+          />
+          @if (hasActiveFilters) {
+            <p-button 
+              type="button"
+              label="Réinitialiser" 
+              icon="pi pi-filter-slash" 
+              [text]="true"
+              severity="secondary"
+              (onClick)="resetFilters()"
+            />
+          }
         </div>
       </form>
 

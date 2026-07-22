@@ -9,7 +9,7 @@ import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Checkbox } from 'primeng/checkbox';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginCredentials } from '../../../core/models/auth.models';
+import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-login',
@@ -67,8 +67,14 @@ export class LoginComponent {
     const credentials: LoginCredentials = this.loginForm.value;
 
     this.authService.login(credentials).subscribe({
-      next: () => {
-        void this.router.navigate([this.returnUrl]);
+      next: (response) => {
+        // Role-based redirect
+        const role = response.user?.role;
+        let defaultUrl = '/decisions';
+        if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
+        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
+        const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        void this.router.navigate([target]);
       },
       error: (error) => {
         this.isLoading.set(false);

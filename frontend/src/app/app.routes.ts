@@ -49,12 +49,19 @@ export const routes: Routes = [
       import('./layout/app-layout/app-layout.component').then((m) => m.AppLayoutComponent),
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'decisions',
+      },
+      {
         path: 'dashboard',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'decisions',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
         loadComponent: () =>
           import('./features/decisions/decision-list/decision-list.component').then(
             (m) => m.DecisionListComponent,
@@ -62,6 +69,7 @@ export const routes: Routes = [
       },
       {
         path: 'decisions/new',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
         loadComponent: () =>
           import('./features/decisions/decision-new/decision-new.component').then(
             (m) => m.DecisionNewComponent,
@@ -69,6 +77,7 @@ export const routes: Routes = [
       },
       {
         path: 'decisions/:id',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR, UserRole.UTILISATEUR])],
         loadComponent: () =>
           import('./features/decisions/decision-detail/decision-detail.component').then(
             (m) => m.DecisionDetailComponent,
@@ -76,6 +85,7 @@ export const routes: Routes = [
       },
       {
         path: 'comparaison',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
         loadComponent: () =>
           import('./features/comparaison/comparaison.component').then((m) => m.ComparaisonComponent),
       },
@@ -87,6 +97,7 @@ export const routes: Routes = [
       },
       {
         path: 'validation',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR])],
         loadComponent: () =>
           import('./features/validation/validation-queue.component').then(
             (m) => m.ValidationQueueComponent,
