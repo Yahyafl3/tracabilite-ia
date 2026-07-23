@@ -19,45 +19,45 @@ interface Feature {
 export class FeaturesComponent {
   readonly features: Feature[] = [
     {
-      icon: 'route',
-      title: 'Traçabilité complète',
+      icon: 'bar-chart',
+      title: 'Prédiction Machine Learning',
       description:
-        'Capturez chaque décision de bout en bout : données d\'entrée, version du modèle, paramètres et résultat. La chaîne input → modèle → output entièrement reconstituable.',
+        'Analyse des données métier avec conservation du modèle, de la version et du niveau de confiance.',
       accent: 'indigo',
     },
     {
       icon: 'lightbulb',
-      title: 'Explicabilité (XAI)',
+      title: 'Explication SHAP',
       description:
-        "Comprenez le « pourquoi » de chaque résultat grâce aux techniques d'IA explicable : importance des variables, contre-factuels et scores de confiance.",
+        'Identification des facteurs qui influencent positivement ou négativement la prédiction.',
       accent: 'violet',
     },
     {
-      icon: 'scale',
-      title: 'Conformité automatisée',
+      icon: 'activity',
+      title: 'Agents IA Groq',
       description:
-        'Cartographie continue de vos obligations AI Act et RGPD. Classification des risques, registres et preuves de conformité générés automatiquement.',
+        "Consultation de plusieurs modèles IA afin d'obtenir des recommandations complémentaires.",
       accent: 'blue',
     },
     {
-      icon: 'lock',
-      title: 'Audit trail immuable',
+      icon: 'users',
+      title: 'Consensus multi-agents',
       description:
-        'Chaque enregistrement est horodaté et chaîné cryptographiquement (SHA-256). Toute altération est instantanément détectée : un historique infalsifiable.',
+        "Calcul du niveau d'accord entre les agents sans modifier la prédiction ML.",
       accent: 'teal',
     },
     {
-      icon: 'activity',
-      title: 'Alertes sur les dérives',
+      icon: 'file-check',
+      title: 'Validation humaine',
       description:
-        "Détection en temps réel des anomalies et du data/model drift. Vous êtes prévenu avant qu'une dérive du modèle n'impacte vos décisions.",
+        "Décision finale réalisée par un validateur à partir du dossier complet.",
       accent: 'amber',
     },
     {
-      icon: 'file-text',
-      title: 'Rapports exportables',
+      icon: 'lock',
+      title: 'Audit et intégrité',
       description:
-        'Générez en un clic des rapports d\'audit prêts pour vos contrôleurs externes, DPO et autorités : PDF, CSV et API pour vos outils GRC.',
+        "Historique des événements, correlation ID, hashes SHA-256 et chaînage d'intégrité.",
       accent: 'rose',
     },
   ];

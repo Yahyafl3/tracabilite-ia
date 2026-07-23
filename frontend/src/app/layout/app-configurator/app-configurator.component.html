@@ -1,0 +1,42 @@
+<div class="layout-configurator" role="dialog" aria-label="Personnalisation">
+  <header class="layout-configurator__header">
+    <strong>Apparence</strong>
+    <button type="button" class="layout-configurator__close" (click)="layoutService.hideConfigSidebar()" aria-label="Fermer">
+      <i class="pi pi-times"></i>
+    </button>
+  </header>
+
+  <section>
+    <p class="layout-configurator__label">Thème</p>
+    <button type="button" class="layout-configurator__btn" (click)="layoutService.toggleDarkMode()">
+      <i [class]="layoutService.isDarkTheme() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+      {{ layoutService.isDarkTheme() ? 'Passer en clair' : 'Passer en sombre' }}
+    </button>
+  </section>
+
+  <section>
+    <p class="layout-configurator__label">Mode menu</p>
+    <div class="layout-configurator__row">
+      <button
+        type="button"
+        class="layout-configurator__chip"
+        [class.is-active]="layoutService.layoutConfig().menuMode === 'static'"
+        (click)="setMenuMode('static')"
+      >
+        Statique
+      </button>
+      <button
+        type="button"
+        class="layout-configurator__chip"
+        [class.is-active]="layoutService.layoutConfig().menuMode === 'overlay'"
+        (click)="setMenuMode('overlay')"
+      >
+        Overlay
+      </button>
+    </div>
+  </section>
+
+  <p class="layout-configurator__hint">
+    Preset PrimeNG : Aura · accent indigo. Dark mode prêt, non prioritaire.
+  </p>
+</div>

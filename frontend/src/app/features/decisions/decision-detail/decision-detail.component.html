@@ -1,88 +1,78 @@
-<div class="shell-page">
+<div class="page">
   <a routerLink="/decisions" class="back-link">
-    <app-icon name="arrow-left" [size]="15" />
+    <i class="pi pi-arrow-left" aria-hidden="true"></i>
     Retour à la liste
   </a>
 
   @if (loading()) {
-    <app-loading-skeleton [lines]="8" label="Chargement de la décision…" />
+    <p-card>
+      <p-skeleton height="2.5rem" styleClass="mb-2" />
+      <p-skeleton height="8rem" styleClass="mb-2" />
+      <p-skeleton height="16rem" />
+    </p-card>
   } @else if (error(); as err) {
-    <app-error-state [message]="err" />
+    <p-message severity="error" [text]="err" styleClass="w-full" />
   } @else if (decision(); as item) {
-    <app-page-header
-      [breadcrumbs]="['Accueil', 'Décisions', reference(item)]"
-      [title]="item.prompt"
-      [subtitle]="item.contexte"
-    />
+    <header class="page-header">
+      <div>
+        <p class="page-eyebrow">Accueil / Décisions / {{ reference(item) }}</p>
+        <h1>{{ item.prompt }}</h1>
+        <p class="page-subtitle">{{ item.contexte }}</p>
+      </div>
+      <p-tag
+        [value]="statutLabel(item.statutValidation)"
+        [severity]="item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'"
+      />
+    </header>
 
-    <dl class="metadata-grid" aria-label="Métadonnées de la décision">
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Référence</dt>
-        <dd class="metadata-grid__value">
-          <span class="ref-code">{{ reference(item) }}</span>
-        </dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Statut</dt>
-        <dd class="metadata-grid__value">
-          <app-status-badge
-            [label]="statutLabel(item.statutValidation)"
-            [chipClass]="statutChipClass(item.statutValidation)"
-          />
-        </dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Date / heure</dt>
-        <dd class="metadata-grid__value">
-          <span class="time-date">{{ formatDate(item.timestamp) }}</span>
-          <span class="time-hour">{{ formatTime(item.timestamp) }}</span>
-        </dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Secteur</dt>
-        <dd class="metadata-grid__value">{{ formatFeature(featureValue(item, 'sector')) }}</dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Montant</dt>
-        <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'amount')) }}</dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Revenu mensuel</dt>
-        <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'monthlyIncome')) }}</dd>
-      </div>
-      <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Créateur / validateur</dt>
-        <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
-      </div>
-    </dl>
+    <p-card styleClass="meta-card">
+      <dl class="metadata-grid" aria-label="Métadonnées de la décision">
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Référence</dt>
+          <dd class="metadata-grid__value"><code>{{ reference(item) }}</code></dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Date / heure</dt>
+          <dd class="metadata-grid__value">
+            {{ formatDate(item.timestamp) }} · {{ formatTime(item.timestamp) }}
+          </dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Secteur</dt>
+          <dd class="metadata-grid__value">{{ formatFeature(featureValue(item, 'sector')) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Montant</dt>
+          <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'amount')) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Revenu mensuel</dt>
+          <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'monthlyIncome')) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Créateur / validateur</dt>
+          <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
+        </div>
+      </dl>
+    </p-card>
 
-    <nav class="ui-tab-nav" aria-label="Sections de la décision">
-      @for (tab of tabs; track tab.id; let i = $index) {
-        <button
-          type="button"
-          class="ui-tab-nav__btn"
-          role="tab"
-          [id]="'decision-tab-' + tab.id"
-          [class.ui-tab-nav__btn--active]="activeTab() === tab.id"
-          [attr.aria-selected]="activeTab() === tab.id"
-          [attr.aria-controls]="tabPanelId(tab.id)"
-          [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
-          (click)="setTab(tab.id)"
-          (keydown)="onTabKeydown($event, i)"
-        >
-          {{ tab.label }}
-        </button>
-      }
-    </nav>
-
-    <section class="card">
-      <div
-        class="card__body"
-        role="tabpanel"
-        [id]="tabPanelId(activeTab())"
-        [attr.aria-labelledby]="'decision-tab-' + activeTab()"
-      >
-        @switch (activeTab()) {
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="onTabsValueChange($event)"
+      [scrollable]="true"
+      [selectOnFocus]="true"
+    >
+      <p-tablist>
+        @for (tab of tabs; track tab.id) {
+          <p-tab [value]="tab.id">{{ tab.label }}</p-tab>
+        }
+      </p-tablist>
+      <p-tabpanels>
+        @for (tab of tabs; track tab.id) {
+          <p-tabpanel [value]="tab.id">
+            @if (activeTab() === tab.id) {
+              <div class="tab-body">
+                @switch (activeTab()) {
           @case ('resume') {
             <div class="summary-grid">
               <div class="summary-item">
@@ -254,32 +244,41 @@
           }
 
           @case ('validation') {
+            <p-confirmdialog />
+
             @if (validationSuccess()) {
-              <p class="success-banner">{{ validationSuccess() }}</p>
+              <p-message severity="success" [text]="validationSuccess()!" styleClass="w-full mb-3" />
             }
             @if (validationError()) {
-              <app-error-state [message]="validationError()!" />
+              <p-message severity="error" [text]="validationError()!" styleClass="w-full mb-3" />
             }
 
             @if (isPendingValidation()) {
-              <p class="pending-banner">Décision en attente de validation humaine</p>
+              <p-message
+                severity="warn"
+                text="Décision en attente de validation humaine"
+                styleClass="w-full mb-3"
+              />
             } @else if (humanFinalLabel(item)) {
-              <p class="final-banner">
-                Décision finale humaine : <strong>{{ humanFinalLabel(item) }}</strong>
-              </p>
+              <p-message
+                severity="info"
+                [text]="'Décision finale humaine : ' + humanFinalLabel(item)"
+                styleClass="w-full mb-3"
+              />
             }
 
             <div class="validation-block">
               <h3 class="section-title">Dossier consulté</h3>
               <p class="muted">
                 Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
+                La validation humaine porte toujours sur le dossier global, jamais sur un agent isolé.
               </p>
               <div class="summary-grid">
                 <div class="summary-item">
                   <span class="label">Décision ML</span>
-                  <app-status-badge
-                    [label]="mlDecision(item) || 'N/A'"
-                    [chipClass]="decisionChipClass(mlDecision(item))"
+                  <p-tag
+                    [value]="mlDecision(item) || 'N/A'"
+                    [severity]="decisionTagSeverity(mlDecision(item))"
                   />
                 </div>
                 <div class="summary-item">
@@ -308,11 +307,17 @@
                   <article class="agent-card">
                     <header class="agent-card__head">
                       <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
-                      <span class="status-chip chip--pending">{{ agentStatus(agent) }}</span>
+                      <p-tag [value]="agentStatus(agent)" severity="secondary" />
                     </header>
                     @if (agent) {
                       <p class="muted">{{ agent.modelId }}</p>
-                      <p>Décision : <strong>{{ agent.decisionProposee || '—' }}</strong></p>
+                      <p>
+                        Décision :
+                        <p-tag
+                          [value]="agent.decisionProposee || '—'"
+                          [severity]="decisionTagSeverity(agent.decisionProposee)"
+                        />
+                      </p>
                       <p>
                         Confiance déclarée :
                         <app-confidence-display
@@ -331,6 +336,7 @@
             </div>
 
             @if (canValidate()) {
+              <p-divider />
               <div class="validation-block validation-form">
                 <h3 class="section-title">Décision humaine</h3>
                 <p class="muted validation-note">
@@ -343,77 +349,95 @@
 
                 <label class="field-label" for="commentaire">Justification</label>
                 <textarea
+                  pTextarea
                   id="commentaire"
-                  class="field-input"
                   rows="4"
+                  class="w-full"
                   [formControl]="validationForm.controls.commentaire"
                   placeholder="Justification de la décision humaine…"
+                  aria-label="Justification de la décision humaine"
                 ></textarea>
 
-                <label class="validation-confirm">
-                  <input type="checkbox" [formControl]="validationForm.controls.confirmed" />
-                  <span>
+                <div class="validation-confirm">
+                  <p-checkbox
+                    inputId="confirmed"
+                    [binary]="true"
+                    [formControl]="validationForm.controls.confirmed"
+                    ariaLabel="Confirmer la consultation du dossier global"
+                  />
+                  <label for="confirmed">
                     Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
-                  </span>
-                </label>
+                  </label>
+                </div>
                 @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
                   <p class="error-inline">Veuillez confirmer avant d'enregistrer votre décision.</p>
                 }
 
                 <div class="validation-actions">
-                  <button
-                    type="button"
-                    class="btn-primary"
+                  <p-button
+                    label="Approuver (APPROUVER)"
+                    icon="pi pi-check"
+                    severity="success"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="approve()"
-                  >
-                    Approuver (APPROUVER)
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-danger"
+                    [loading]="validationLoading()"
+                    (onClick)="approve()"
+                    ariaLabel="Approuver la décision"
+                  />
+                  <p-button
+                    label="Rejeter (REJETER)"
+                    icon="pi pi-times"
+                    severity="danger"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="reject()"
-                  >
-                    Rejeter (REJETER)
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-secondary"
+                    [loading]="validationLoading()"
+                    (onClick)="reject()"
+                    ariaLabel="Rejeter la décision"
+                  />
+                  <p-button
+                    label="Demander revue (REVIEW)"
+                    icon="pi pi-eye"
+                    severity="warn"
+                    [outlined]="true"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="review()"
-                  >
-                    Demander revue (REVIEW)
-                  </button>
+                    [loading]="validationLoading()"
+                    (onClick)="review()"
+                    ariaLabel="Demander une revue"
+                  />
                 </div>
 
                 <div class="modify-block">
                   <h4 class="section-subtitle">Modifier la décision ML (MODIFIER)</h4>
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
-                  <select
-                    id="decisionHumaine"
-                    class="field-input"
+                  <p-select
+                    inputId="decisionHumaine"
+                    [options]="humanDecisionOptions"
+                    optionLabel="label"
+                    optionValue="value"
                     [formControl]="validationForm.controls.decisionHumaine"
-                  >
-                    <option value="APPROUVER">APPROUVER</option>
-                    <option value="REJETER">REJETER</option>
-                  </select>
-                  <button
-                    type="button"
-                    class="btn-secondary"
+                    styleClass="w-full"
+                    ariaLabel="Décision humaine finale"
+                  />
+                  <p-button
+                    label="Enregistrer la modification"
+                    icon="pi pi-save"
+                    [outlined]="true"
+                    styleClass="mt-2"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    (click)="modify()"
-                  >
-                    Enregistrer la modification
-                  </button>
+                    [loading]="validationLoading()"
+                    (onClick)="modify()"
+                    ariaLabel="Enregistrer la modification de décision"
+                  />
                 </div>
               </div>
             } @else if (!isPendingValidation()) {
+              <p-divider />
               <div class="validation-block validation-result">
                 <div class="summary-grid">
                   <div class="summary-item">
                     <span class="label">Décision humaine finale</span>
-                    <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+                    <p-tag
+                      [value]="humanFinalLabel(item) || '—'"
+                      [severity]="decisionTagSeverity(humanFinalLabel(item))"
+                    />
                   </div>
                   <div class="summary-item">
                     <span class="label">Validateur</span>
@@ -429,21 +453,32 @@
               <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
             }
 
+            <p-divider />
             <h3 class="section-title">Historique des validations</h3>
             <div class="validation-history">
               @for (action of item.validations ?? []; track action.validationActionId) {
                 <article class="history-item">
                   <div class="history-item__head">
                     <strong>{{ action.validateurNom }}</strong>
-                    <app-status-badge
-                      [label]="statutLabel(action.statutApres)"
-                      [chipClass]="statutChipClass(action.statutApres)"
+                    <p-tag
+                      [value]="statutLabel(action.statutApres)"
+                      [severity]="
+                        action.statutApres === 'APPROUVEE'
+                          ? 'success'
+                          : action.statutApres === 'REJETEE'
+                            ? 'danger'
+                            : 'secondary'
+                      "
                     />
                   </div>
                   <p class="muted">
                     {{ action.typeAction }} · {{ action.timestamp | date:'short' }}
                     @if (action.decisionHumaine) {
-                      · Décision humaine : <strong>{{ action.decisionHumaine }}</strong>
+                      · Décision humaine :
+                      <p-tag
+                        [value]="action.decisionHumaine"
+                        [severity]="decisionTagSeverity(action.decisionHumaine)"
+                      />
                     }
                   </p>
                   @if (action.commentaire) {
@@ -651,8 +686,12 @@
               </div>
             </article>
           }
+                }
+              </div>
+            }
+          </p-tabpanel>
         }
-      </div>
-    </section>
+      </p-tabpanels>
+    </p-tabs>
   }
 </div>

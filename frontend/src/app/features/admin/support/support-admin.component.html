@@ -1,0 +1,147 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Administration / Support</p>
+      <h1>Support</h1>
+      <p class="page-subtitle">Consultez et traitez les demandes envoyées depuis le formulaire public.</p>
+    </div>
+  </header>
+
+  @if (success()) {
+    <p-message severity="success" [text]="success()!" styleClass="w-full" />
+  }
+  @if (error()) {
+    <p-message severity="error" [text]="error()!" styleClass="w-full" />
+  }
+
+  <p-card>
+    <ng-template #title>Demandes de support</ng-template>
+    <ng-template #subtitle>{{ totalElements() }} demande(s)</ng-template>
+
+    <div class="toolbar">
+      <div class="field field--grow">
+        <label for="support-search">Recherche</label>
+        <input
+          pInputText
+          id="support-search"
+          class="w-full"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Nom, email, sujet…"
+          aria-label="Rechercher une demande"
+        />
+      </div>
+      <div class="field">
+        <label for="status-filter">Statut</label>
+        <p-select
+          inputId="status-filter"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="onStatusFilterChange($event)"
+          styleClass="w-full"
+          ariaLabel="Filtrer par statut"
+        />
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div aria-label="Chargement des demandes">
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" />
+      </div>
+    } @else if (empty()) {
+      <div class="empty-state" role="status">
+        <i class="pi pi-inbox empty-state__icon" aria-hidden="true"></i>
+        <p>Aucune demande de support pour ces critères.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <p-table [value]="messages()" [tableStyle]="{ 'min-width': '56rem' }" styleClass="p-datatable-sm">
+          <ng-template #header>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Sujet</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item>
+            <tr>
+              <td class="mono">{{ item.id | slice: 0:8 }}…</td>
+              <td>{{ formatDate(item.createdAt) }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.subject }}</td>
+              <td>
+                <p-tag [value]="item.status" [severity]="statusSeverity(item.status)" />
+              </td>
+              <td>
+                <p-button
+                  label="Voir le détail"
+                  icon="pi pi-eye"
+                  [text]="true"
+                  (onClick)="openDetail(item)"
+                  ariaLabel="Voir le détail de la demande"
+                />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <p-paginator
+        [rows]="size()"
+        [totalRecords]="totalElements()"
+        [first]="page() * size()"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        (onPageChange)="onPageChange($event)"
+      />
+    }
+  </p-card>
+
+  <p-dialog
+    header="Détail de la demande"
+    [modal]="true"
+    [style]="{ width: 'min(40rem, 95vw)' }"
+    [visible]="detailOpen()"
+    (visibleChange)="!$event && closeDetail()"
+  >
+    @if (selected(); as item) {
+      <div class="detail">
+        <p><strong>ID :</strong> <span class="mono">{{ item.id }}</span></p>
+        <p><strong>Date :</strong> {{ formatDate(item.createdAt) }}</p>
+        <p><strong>Nom :</strong> {{ item.name }}</p>
+        <p><strong>Email :</strong> {{ item.email }}</p>
+        <p><strong>Sujet :</strong> {{ item.subject }}</p>
+        <p><strong>Statut :</strong>
+          <p-tag [value]="item.status" [severity]="statusSeverity(item.status)" />
+        </p>
+        <p><strong>Traité par :</strong> {{ item.processedByName || '—' }}</p>
+        <p><strong>Traité le :</strong> {{ formatDate(item.processedAt) }}</p>
+        <label for="detail-message">Message</label>
+        <textarea pTextarea id="detail-message" [ngModel]="item.message" [rows]="6" [readonly]="true" class="w-full"></textarea>
+
+        <div class="detail-actions">
+          <label for="status-edit">Changer le statut</label>
+          <p-select
+            inputId="status-edit"
+            [options]="statusEditOptions"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="item.status"
+            (ngModelChange)="updateSelectedStatus($event)"
+            [disabled]="saving()"
+            styleClass="w-full"
+            ariaLabel="Changer le statut"
+          />
+        </div>
+      </div>
+    }
+  </p-dialog>
+</div>

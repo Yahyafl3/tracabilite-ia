@@ -1,221 +1,251 @@
-<div class="shell-page">
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Administration', 'Utilisateurs']"
-    title="Utilisateurs"
-    subtitle="Gestion des comptes Administrateur, Validateur et Auditeur."
-  >
-    <button class="btn-primary" type="button" (click)="openCreateForm()">
-      <app-icon name="file-check" [size]="16" />
-      Nouvel utilisateur
-    </button>
-  </app-page-header>
+<div class="page">
+  <p-confirmdialog />
 
-  <section class="card groq-status-card" aria-label="État Groq">
-    <div class="card__header">
-      <h2 class="card__title">
-        <app-icon name="server" [size]="17" />
-        Agents Groq
-      </h2>
-      <button class="btn-secondary btn-secondary--sm" type="button" (click)="loadGroqStatus()" [disabled]="groqLoading()">
-        Actualiser
-      </button>
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Administration / Utilisateurs</p>
+      <h1>Utilisateurs</h1>
+      <p class="page-subtitle">
+        Gestion des comptes Administrateur, Validateur et Auditeur.
+      </p>
     </div>
-    <div class="card__body">
-      @if (groqLoading()) {
-        <app-loading-skeleton [lines]="3" label="Chargement statut Groq…" />
-      } @else if (groqError(); as err) {
-        <app-error-state [message]="err" />
-      } @else if (groqStatus(); as status) {
-        <dl class="groq-meta">
-          <div>
-            <dt>État</dt>
-            <dd>{{ status.configured ? (status.reachable ? 'Configuré & joignable' : 'Configuré (hors ligne)') : 'Non configuré' }}</dd>
-          </div>
-          <div>
-            <dt>Réponses réussies</dt>
-            <dd>{{ status.successfulResponses ?? 0 }}</dd>
-          </div>
-          @if (status.lastError) {
-            <div class="groq-meta__full">
-              <dt>Dernière erreur</dt>
-              <dd class="groq-meta__error">{{ status.lastError }}</dd>
-            </div>
-          }
-        </dl>
-        <ul class="groq-models" aria-label="Modèles Groq configurés">
-          @for (model of status.models; track model.agent) {
-            <li>
-              <strong>{{ model.displayName || model.agent }}</strong>
-              <code>{{ model.modelId }}</code>
-              <span [class]="model.available ? 'chip--approved' : 'chip--pending'" class="status-chip">
-                {{ model.available ? 'Disponible' : 'Indisponible' }}
-              </span>
-            </li>
-          }
-        </ul>
-      }
-    </div>
-  </section>
+    <p-button
+      label="Nouvel utilisateur"
+      icon="pi pi-user-plus"
+      (onClick)="openCreateForm()"
+      ariaLabel="Créer un nouvel utilisateur"
+    />
+  </header>
 
   @if (success()) {
-    <p class="success-banner" role="status">{{ success() }}</p>
+    <p-message severity="success" [text]="success()!" styleClass="w-full" />
   }
   @if (error()) {
-    <app-error-state [message]="error()!" />
+    <p-message severity="error" [text]="error()!" styleClass="w-full" />
   }
 
-  @if (loading()) {
-    <app-loading-skeleton [lines]="6" label="Chargement des utilisateurs…" />
-  } @else {
-    <section class="card table-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <app-icon name="users" [size]="17" />
-          Comptes enregistrés
-        </h2>
-        <span class="count-badge">{{ users().length }} utilisateur(s)</span>
-      </div>
+  <p-card>
+    <ng-template #title>Comptes enregistrés</ng-template>
+    <ng-template #subtitle>{{ filteredUsers().length }} / {{ users().length }} utilisateur(s)</ng-template>
 
+    <div class="toolbar">
+      <div class="field field--grow">
+        <label for="user-search">Recherche</label>
+        <input
+          pInputText
+          id="user-search"
+          class="w-full"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          placeholder="Nom, email, rôle…"
+          aria-label="Rechercher un utilisateur"
+        />
+      </div>
+      <div class="field">
+        <label for="role-filter">Rôle</label>
+        <p-select
+          inputId="role-filter"
+          [options]="roleFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="roleFilter()"
+          (ngModelChange)="roleFilter.set($event)"
+          styleClass="w-full"
+          ariaLabel="Filtrer par rôle"
+        />
+      </div>
+      <div class="field">
+        <label for="account-filter">Type de compte</label>
+        <p-select
+          inputId="account-filter"
+          [options]="accountFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="accountFilter()"
+          (ngModelChange)="accountFilter.set($event)"
+          styleClass="w-full"
+          ariaLabel="Filtrer actif ou opérateur"
+        />
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div aria-label="Chargement des utilisateurs">
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" />
+      </div>
+    } @else if (filteredUsers().length === 0) {
+      <div class="empty-state" role="status">
+        <i class="pi pi-users empty-state__icon" aria-hidden="true"></i>
+        <h2>Aucun utilisateur</h2>
+        <p>
+          @if (users().length === 0) {
+            Aucun utilisateur enregistré pour le moment.
+          } @else {
+            Aucun utilisateur ne correspond aux filtres.
+          }
+        </p>
+      </div>
+    } @else {
       <div class="table-scroll">
-        <table class="decisions-table" aria-label="Liste des utilisateurs">
-          <thead>
+        <p-table
+          [value]="filteredUsers()"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '48rem' }"
+          ariaLabel="Liste des utilisateurs"
+        >
+          <ng-template #header>
             <tr>
-              <th scope="col">Utilisateur</th>
-              <th scope="col">Email</th>
-              <th scope="col">Rôle</th>
-              <th scope="col">Créé le</th>
-              <th scope="col"><span class="sr-only">Actions</span></th>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Type</th>
+              <th>Créé le</th>
+              <th>Actions</th>
             </tr>
-          </thead>
-          <tbody>
-            @for (user of users(); track user.id) {
-              <tr [class.row-muted]="!isManaged(user)">
-                <td>
-                  <div class="user-cell">
-                    <span class="user-avatar" [class.user-avatar--muted]="!isManaged(user)">
-                      {{ userInitial(user) }}
-                    </span>
-                    <span class="user-cell__info">
-                      <strong>{{ user.nom }}</strong>
-                      @if (isCurrentUser(user)) {
-                        <span class="user-cell__tag">Vous</span>
-                      }
-                    </span>
-                  </div>
-                </td>
-                <td class="td-email">{{ user.email }}</td>
-                <td>
-                  <app-status-badge
-                    [label]="roleLabel(user.role)"
-                    [chipClass]="roleChipClass(user.role)"
-                  />
-                </td>
-                <td class="td-time">
-                  <span class="time-date">{{ user.dateCreation | date:'dd MMM yyyy' }}</span>
-                  <span class="time-hour">{{ user.dateCreation | date:'HH:mm' }}</span>
-                </td>
-                <td class="td-actions">
+          </ng-template>
+          <ng-template #body let-user>
+            <tr [class.row-muted]="!isManaged(user)">
+              <td>
+                <div class="user-cell">
+                  <span class="user-avatar" [class.user-avatar--muted]="!isManaged(user)">
+                    {{ userInitial(user) }}
+                  </span>
+                  <span class="user-cell__info">
+                    <strong>{{ user.nom }}</strong>
+                    @if (isCurrentUser(user)) {
+                      <p-tag value="Vous" severity="info" />
+                    }
+                  </span>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <p-tag [value]="roleLabel(user.role)" [severity]="roleSeverity(user.role)" />
+              </td>
+              <td>
+                <p-tag
+                  [value]="isManaged(user) ? 'Géré' : 'Opérateur'"
+                  [severity]="isManaged(user) ? 'success' : 'secondary'"
+                />
+              </td>
+              <td>
+                <div class="td-time">
+                  <span>{{ user.dateCreation | date:'dd MMM yyyy' }}</span>
+                  <span class="muted">{{ user.dateCreation | date:'HH:mm' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="actions">
                   @if (isManaged(user)) {
-                    <button class="btn-secondary btn-secondary--sm" type="button" (click)="openEditForm(user)">
-                      Modifier
-                    </button>
-                    <button
-                      class="btn-danger btn-danger--sm"
-                      type="button"
-                      [disabled]="isCurrentUser(user)"
-                      [attr.aria-label]="'Supprimer ' + user.email"
-                      (click)="deleteUser(user)">
-                      Supprimer
-                    </button>
-                  } @else {
-                    <span class="muted-inline">Compte opérateur</span>
+                    <p-button
+                      icon="pi pi-pencil"
+                      [rounded]="true"
+                      [text]="true"
+                      (onClick)="openEditForm(user)"
+                      [attr.aria-label]="'Modifier ' + user.email"
+                    />
                   }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5">
-                  <app-empty-state
-                    icon="users"
-                    message="Aucun utilisateur enregistré pour le moment."
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [rounded]="true"
+                    [text]="true"
+                    [disabled]="isCurrentUser(user)"
+                    (onClick)="confirmDelete(user)"
+                    [attr.aria-label]="'Supprimer ' + user.email"
                   />
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
-    </section>
-  }
+    }
+  </p-card>
 
-  @if (formOpen()) {
-    <div class="modal-backdrop" (click)="closeForm()" aria-hidden="true"></div>
-    <section
-      class="modal card"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="user-modal-title"
-      (keydown.escape)="closeForm()"
-    >
-      <div class="card__header">
-        <h2 class="card__title" id="user-modal-title">
-          <app-icon [name]="formMode() === 'create' ? 'file-check' : 'file-text'" [size]="17" />
-          {{ formMode() === 'create' ? 'Créer un utilisateur' : 'Modifier l\'utilisateur' }}
-        </h2>
-        <button class="btn-link" type="button" (click)="closeForm()" aria-label="Fermer la fenêtre">
-          <app-icon name="close" [size]="14" />
-          Fermer
-        </button>
+  <p-dialog
+    [header]="formMode() === 'create' ? 'Créer un utilisateur' : 'Modifier l\'utilisateur'"
+    [modal]="true"
+    [visible]="formOpen()"
+    (visibleChange)="!$event && closeForm()"
+    [style]="{ width: 'min(28rem, 96vw)' }"
+    [draggable]="false"
+  >
+    <form id="user-admin-form" class="user-form" [formGroup]="form" (ngSubmit)="submitForm()">
+      <div class="field">
+        <label for="nom">Nom</label>
+        <input
+          pInputText
+          id="nom"
+          formControlName="nom"
+          class="w-full"
+          placeholder="Nom complet"
+          autocomplete="name"
+        />
       </div>
 
-      <form class="modal__body" [formGroup]="form" (ngSubmit)="submitForm()">
-        <div class="field">
-          <label for="nom">Nom</label>
-          <input id="nom" formControlName="nom" placeholder="Nom complet" autocomplete="name" />
-        </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          pInputText
+          id="email"
+          type="email"
+          formControlName="email"
+          class="w-full"
+          placeholder="email@exemple.fr"
+          autocomplete="email"
+        />
+      </div>
 
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" type="email" formControlName="email" placeholder="email@exemple.fr" autocomplete="email" />
-        </div>
+      <div class="field">
+        <label for="role">Rôle</label>
+        <p-select
+          inputId="role"
+          formControlName="role"
+          [options]="roleOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          appendTo="body"
+          [scrollHeight]="'12rem'"
+          placeholder="Choisir un rôle"
+          ariaLabel="Rôle utilisateur"
+        />
+      </div>
 
-        <div class="field">
-          <label for="role">Rôle</label>
-          <select id="role" formControlName="role">
-            @for (role of roles; track role) {
-              <option [value]="role">{{ roleLabel(role) }}</option>
-            }
-          </select>
-        </div>
+      <div class="field">
+        <label for="motDePasse">
+          Mot de passe
+          @if (formMode() === 'edit') {
+            <span class="field-hint"> (laisser vide pour conserver)</span>
+          }
+        </label>
+        <p-password
+          inputId="motDePasse"
+          formControlName="motDePasse"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+      </div>
+    </form>
 
-        <div class="field">
-          <label for="motDePasse">
-            Mot de passe
-            @if (formMode() === 'edit') {
-              <span class="field-hint-inline"> (laisser vide pour conserver)</span>
-            }
-          </label>
-          <input
-            id="motDePasse"
-            type="password"
-            formControlName="motDePasse"
-            placeholder="••••••••"
-            autocomplete="new-password"
-          />
-        </div>
-
-        <footer class="modal__footer">
-          <button class="btn-secondary" type="button" (click)="closeForm()">Annuler</button>
-          <button class="btn-primary" type="submit" [disabled]="saving()">
-            @if (saving()) {
-              <span class="spinner spinner--sm" aria-hidden="true"></span>
-              Enregistrement…
-            } @else {
-              Enregistrer
-            }
-          </button>
-        </footer>
-      </form>
-    </section>
-  }
+    <ng-template #footer>
+      <p-button label="Annuler" [text]="true" type="button" (onClick)="closeForm()" [disabled]="saving()" />
+      <p-button
+        type="submit"
+        form="user-admin-form"
+        label="Enregistrer"
+        icon="pi pi-check"
+        [disabled]="saving()"
+        [loading]="saving()"
+        (onClick)="submitForm()"
+      />
+    </ng-template>
+  </p-dialog>
 </div>

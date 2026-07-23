@@ -1,72 +1,357 @@
-<div class="shell-page">
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Validation']"
-    title="Décisions en attente"
-    subtitle="File de validation pour les décisions ML nécessitant un contrôle humain."
-  >
-    <span class="count-badge">{{ totalElements() }} en attente</span>
-  </app-page-header>
+<div class="page">
 
-  <section class="card table-card">
-    @if (loading()) {
-      <app-loading-skeleton [lines]="6" label="Chargement de la file de validation…" />
-    } @else if (error()) {
-      <app-error-state [message]="error()!" />
-    } @else if (decisions().length === 0) {
-      <app-empty-state
-        icon="check-circle"
-        message="Aucune décision en attente de validation."
+  <!-- Page Header -->
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Validation</p>
+      <h1>Validation humaine</h1>
+      <p class="page-subtitle">
+        File de validation pour les décisions ML nécessitant un contrôle humain.
+      </p>
+    </div>
+    <div class="page-header-actions">
+      <p-button
+        icon="pi pi-refresh"
+        [outlined]="true"
+        severity="secondary"
+        (onClick)="loadPending()"
+        [loading]="loading()"
+        ariaLabel="Actualiser la file"
+        pTooltip="Actualiser"
       />
-    } @else {
-      <div class="card__header">
-        <h2 class="card__title">
-          <app-icon name="file-check" [size]="17" />
-          File de validation
-        </h2>
-        <span class="card__hint">{{ totalElements() }} en attente</span>
-      </div>
+    </div>
+  </header>
 
+  <!-- KPI Row -->
+  @if (!loading() && !error()) {
+    <section class="kpi-row" aria-label="Statistiques de validation">
+      @for (kpi of kpis(); track kpi.label) {
+        <div class="kpi-card" [ngClass]="kpiColorClass(kpi.color)">
+          <div class="kpi-card__icon">
+            <i [class]="kpi.icon" aria-hidden="true"></i>
+          </div>
+          <div class="kpi-card__body">
+            <p class="kpi-card__label">{{ kpi.label }}</p>
+            <p class="kpi-card__value">{{ kpi.value }}</p>
+            <p class="kpi-card__hint">{{ kpi.hint }}</p>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Main Card -->
+  <p-card>
+    <ng-template #title>
+      <div class="card-title-row">
+        <span>File de validation</span>
+        <p-tag severity="warn" [value]="totalElements() + ' en attente'" icon="pi pi-clock" />
+      </div>
+    </ng-template>
+
+    @if (loading()) {
+      <div aria-label="Chargement">
+        @for (i of [1,2,3,4]; track i) {
+          <p-skeleton height="3.5rem" styleClass="mb-2" />
+        }
+      </div>
+    } @else if (error()) {
+      <p-message severity="error" [text]="error()!" styleClass="w-full" />
+    } @else if (decisions().length === 0) {
+      <div class="empty-state" role="status">
+        <div class="empty-state__icon-wrap">
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+        </div>
+        <h2>File vide</h2>
+        <p>Aucune décision en attente de validation.</p>
+        <p-button
+          label="Actualiser"
+          icon="pi pi-refresh"
+          [outlined]="true"
+          (onClick)="loadPending()"
+        />
+      </div>
+    } @else {
       <div class="table-scroll">
-        <table class="decisions-table" aria-label="Décisions en attente de validation">
-          <thead>
+        <p-table
+          [value]="decisions()"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '62rem' }"
+          ariaLabel="Décisions en attente de validation"
+        >
+          <ng-template #header>
             <tr>
-              <th scope="col">Dossier</th>
-              <th scope="col">Décision ML</th>
-              <th scope="col">Confiance</th>
-              <th scope="col">Risque</th>
-              <th scope="col">Date</th>
-              <th scope="col">Actions</th>
+              <th>Dossier</th>
+              <th>Décision ML</th>
+              <th>Confiance</th>
+              <th>Risque</th>
+              <th>Consensus</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
-          </thead>
-          <tbody>
-            @for (row of decisions(); track row.decisionId) {
-              <tr>
-                <td class="td-prompt">
-                  <span class="prompt-text">{{ row.prompt }}</span>
-                  <span class="prompt-sub">{{ row.contexte }}</span>
-                </td>
-                <td>
-                  <app-status-badge
-                    [label]="decisionLabel(row.suggestedDecision) || 'N/A'"
-                    [chipClass]="decisionChipClass(row.suggestedDecision)"
+          </ng-template>
+          <ng-template #body let-row>
+            <tr [class.row--high-risk]="row.riskLevel === 'HIGH'">
+              <td>
+                <div class="dossier-cell">
+                  <button class="dossier-link" (click)="openDetail(row)" type="button">
+                    {{ row.prompt | slice:0:60 }}{{ row.prompt?.length > 60 ? '…' : '' }}
+                  </button>
+                  <span class="dossier-context">{{ row.contexte | slice:0:50 }}</span>
+                </div>
+              </td>
+              <td>
+                <p-tag
+                  [value]="decisionLabel(row.suggestedDecision) || 'N/A'"
+                  [severity]="mlSeverity(row.suggestedDecision)"
+                />
+              </td>
+              <td>
+                <app-confidence-display [confidence]="row.confidenceScore" scale="percent" />
+              </td>
+              <td>
+                <p-tag
+                  [value]="riskLabel(row.riskLevel)"
+                  [severity]="riskSeverity(row.riskLevel)"
+                />
+              </td>
+              <td class="consensus-cell">{{ consensusLabel(row) }}</td>
+              <td>
+                <div class="td-time">
+                  <span>{{ row.timestamp | date:'dd MMM' }}</span>
+                  <span class="muted">{{ row.timestamp | date:'HH:mm' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <p-button
+                    icon="pi pi-check"
+                    severity="success"
+                    size="small"
+                    [text]="true"
+                    (onClick)="openAction(row, 'APPROUVER')"
+                    pTooltip="Approuver"
+                    ariaLabel="Approuver cette décision"
                   />
-                </td>
-                <td>{{ row.confidenceScore ?? '—' }}@if (row.confidenceScore != null) { %}</td>
-                <td>{{ row.riskLevel || '—' }}</td>
-                <td class="td-time">
-                  <span class="time-date">{{ row.timestamp | date:'dd MMM' }}</span>
-                  <span class="time-hour">{{ row.timestamp | date:'HH:mm' }}</span>
-                </td>
-                <td>
-                  <a class="btn-primary btn-primary--sm" [routerLink]="['/decisions', row.decisionId]">
-                    Valider
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                  <p-button
+                    icon="pi pi-times"
+                    severity="danger"
+                    size="small"
+                    [text]="true"
+                    (onClick)="openAction(row, 'REJETER')"
+                    pTooltip="Rejeter"
+                    ariaLabel="Rejeter cette décision"
+                  />
+                  <p-button
+                    icon="pi pi-pencil"
+                    severity="warn"
+                    size="small"
+                    [text]="true"
+                    (onClick)="openAction(row, 'MODIFIER')"
+                    pTooltip="Modifier"
+                    ariaLabel="Modifier la décision"
+                  />
+                  <p-button
+                    icon="pi pi-eye"
+                    severity="secondary"
+                    size="small"
+                    [text]="true"
+                    (onClick)="openDetail(row)"
+                    pTooltip="Voir le dossier"
+                    ariaLabel="Voir le détail du dossier"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
-  </section>
+  </p-card>
+
+  <!-- ── Detail Dialog ─────────────────────────────────── -->
+  <p-dialog
+    header="Résumé du dossier"
+    [modal]="true"
+    [visible]="detailVisible()"
+    (visibleChange)="!$event && closeDetail()"
+    [style]="{ width: 'min(38rem, 96vw)' }"
+    [draggable]="false"
+  >
+    @if (detailTarget(); as row) {
+      <div class="detail-note">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        La validation porte sur le <strong>dossier global</strong> — ML, SHAP, agents IA, consensus
+        et intégrité.
+      </div>
+
+      <p-divider />
+
+      <dl class="detail-grid">
+        <div class="detail-item">
+          <dt>Demande</dt>
+          <dd>{{ row.prompt }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Contexte</dt>
+          <dd>{{ row.contexte || '—' }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Décision ML</dt>
+          <dd>
+            <p-tag
+              [value]="decisionLabel(row.suggestedDecision) || 'N/A'"
+              [severity]="mlSeverity(row.suggestedDecision)"
+            />
+          </dd>
+        </div>
+        <div class="detail-item">
+          <dt>Confiance ML</dt>
+          <dd>
+            <app-confidence-display [confidence]="row.confidenceScore" scale="percent" />
+          </dd>
+        </div>
+        <div class="detail-item">
+          <dt>Risque</dt>
+          <dd>
+            <p-tag
+              [value]="riskLabel(row.riskLevel)"
+              [severity]="riskSeverity(row.riskLevel)"
+            />
+          </dd>
+        </div>
+        <div class="detail-item">
+          <dt>Consensus agents</dt>
+          <dd>{{ consensusLabel(row) }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Date soumission</dt>
+          <dd>{{ row.timestamp | date:'dd MMM yyyy, HH:mm' }}</dd>
+        </div>
+        <div class="detail-item">
+          <dt>Statut</dt>
+          <dd><p-tag severity="warn" value="En attente" /></dd>
+        </div>
+      </dl>
+
+      <p-divider />
+
+      <div class="detail-actions">
+        <p-button
+          label="Approuver"
+          icon="pi pi-check"
+          severity="success"
+          (onClick)="closeDetail(); openAction(row, 'APPROUVER')"
+        />
+        <p-button
+          label="Rejeter"
+          icon="pi pi-times"
+          severity="danger"
+          (onClick)="closeDetail(); openAction(row, 'REJETER')"
+        />
+        <p-button
+          label="Modifier"
+          icon="pi pi-pencil"
+          severity="warn"
+          [outlined]="true"
+          (onClick)="closeDetail(); openAction(row, 'MODIFIER')"
+        />
+        <p-button
+          label="Dossier complet"
+          icon="pi pi-external-link"
+          [outlined]="true"
+          severity="secondary"
+          (onClick)="goToDossier(row)"
+        />
+      </div>
+    }
+  </p-dialog>
+
+  <!-- ── Action Dialog ─────────────────────────────────── -->
+  <p-dialog
+    [header]="actionLabel(pendingAction())"
+    [modal]="true"
+    [visible]="actionDialogVisible()"
+    (visibleChange)="!$event && closeAction()"
+    [style]="{ width: 'min(32rem, 96vw)' }"
+    [draggable]="false"
+  >
+    @if (actionTarget(); as row) {
+      <div class="action-context">
+        <span class="action-context__label">Dossier</span>
+        <span class="action-context__value">{{ (row.prompt ?? '') | slice:0:80 }}{{ (row.prompt ?? '').length > 80 ? '…' : '' }}</span>
+        <p-tag
+          [value]="decisionLabel(row.suggestedDecision) || 'N/A'"
+          [severity]="mlSeverity(row.suggestedDecision)"
+        />
+      </div>
+
+      <p-divider />
+
+      <form [formGroup]="actionForm" (ngSubmit)="submitAction()" class="action-form">
+
+        <!-- New decision selector for MODIFIER -->
+        @if (pendingAction() === 'MODIFIER') {
+          <div class="form-field" [class.form-field--error]="hasError('decisionHumaine')">
+            <label for="decisionHumaine">Nouvelle décision</label>
+            <p-select
+              inputId="decisionHumaine"
+              formControlName="decisionHumaine"
+              [options]="newDecisionOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner…"
+              styleClass="w-full"
+            />
+            @if (hasError('decisionHumaine')) {
+              <p class="field-error">Ce champ est requis</p>
+            }
+          </div>
+        }
+
+        <!-- Commentaire -->
+        <div class="form-field" [class.form-field--error]="hasError('commentaire')">
+          <label for="commentaire">
+            Commentaire
+            <span class="field-required">*</span>
+          </label>
+          <textarea
+            pTextarea
+            id="commentaire"
+            formControlName="commentaire"
+            rows="4"
+            placeholder="Motivez votre décision (minimum 10 caractères)…"
+            class="w-full"
+            [autoResize]="true"
+          ></textarea>
+          @if (hasError('commentaire')) {
+            <p class="field-error">Commentaire requis (minimum 10 caractères)</p>
+          }
+        </div>
+
+        @if (submitError()) {
+          <p-message severity="error" [text]="submitError()!" styleClass="w-full" />
+        }
+      </form>
+
+      <ng-template #footer>
+        <p-button
+          label="Annuler"
+          [text]="true"
+          severity="secondary"
+          (onClick)="closeAction()"
+          [disabled]="submitting()"
+        />
+        <p-button
+          [label]="actionLabel(pendingAction())"
+          [icon]="actionIcon(pendingAction())"
+          [severity]="actionSeverity(pendingAction())"
+          (onClick)="submitAction()"
+          [loading]="submitting()"
+          [disabled]="submitting()"
+        />
+      </ng-template>
+    }
+  </p-dialog>
+
 </div>

@@ -3,28 +3,28 @@
     <div class="hero__content">
       <span class="eyebrow" appReveal>
         <app-icon name="sparkle" [size]="15" />
-        Conformité IA Act &amp; RGPD
+        Traçabilité · Explicabilité · Audit
       </span>
 
       <h1 class="hero__title" appReveal [revealDelay]="80">
-        Rendez chaque décision de votre IA
-        <span class="text-gradient"> traçable, explicable et conforme</span>
+        Des décisions IA
+        <span class="text-gradient"> traçables, explicables et responsables</span>
       </h1>
 
       <p class="hero__subtitle" appReveal [revealDelay]="160">
-        Traçabilité IA enregistre, audite et explique chaque décision prise ou
-        influencée par vos modèles. Un audit trail complet et immuable, prêt pour
-        les exigences de l'AI Act européen et du RGPD.
+        Traçabilité IA centralise la prédiction Machine Learning, les explications SHAP,
+        les recommandations multi-agents, les sources et la validation humaine dans un
+        dossier complet et auditable.
       </p>
 
       <div class="hero__actions" appReveal [revealDelay]="240">
-        <button type="button" class="btn btn-primary btn-lg" (click)="goTo('contact')">
-          Demander une démo
+        <a routerLink="/auth/login" class="btn btn-primary btn-lg">
+          Accéder à l'application
           <app-icon name="arrow-right" [size]="18" />
-        </button>
+        </a>
         <button type="button" class="btn btn-secondary btn-lg" (click)="goTo('fonctionnement')">
           <app-icon name="book" [size]="18" />
-          Voir la documentation
+          Découvrir le fonctionnement
         </button>
       </div>
 
@@ -43,7 +43,7 @@
       <div class="hero__card">
         <img
           src="images/dashboard-preview.png"
-          alt="Tableau de bord Traçabilité IA affichant le flux d'audit des décisions"
+          alt="Aperçu du tableau de bord Traçabilité IA et du suivi des décisions"
           width="1200"
           height="800"
           fetchpriority="high"
@@ -52,11 +52,11 @@
 
       <div class="float-chip float-chip--tl" aria-hidden="true">
         <span class="float-chip__dot"></span>
-        Décision tracée
+        Dossier auditable
       </div>
       <div class="float-chip float-chip--br" aria-hidden="true">
         <app-icon name="shield-check" [size]="18" />
-        Hash vérifié
+        Hash SHA-256
       </div>
     </div>
   </div>

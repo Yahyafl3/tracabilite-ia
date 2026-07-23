@@ -1,0 +1,233 @@
+@startuml class-diagram-tracabilite-ia
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 50
+
+skinparam class {
+  BackgroundColor #FEFEFE
+  BorderColor #1F2937
+  ArrowColor #1F2937
+  FontName Arial
+  AttributeFontName Arial
+  AttributeFontSize 11
+  FontSize 12
+}
+
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #94A3B8
+  FontStyle bold
+}
+
+title Diagramme de classes — Traçabilité IA
+
+' ========== Utilisateurs (héritage comme le modèle de référence) ==========
+class Utilisateur {
+  +id: UUID
+  +nom: String
+  +email: String
+  +motDePasseHash: String
+  +role: RoleEnum
+  +dateCreation: LocalDateTime
+}
+
+class Administrateur {
+}
+
+class Validateur {
+}
+
+class Auditeur {
+}
+
+Administrateur --|> Utilisateur
+Validateur --|> Utilisateur
+Auditeur --|> Utilisateur
+
+' ========== Domaine décision ==========
+class Decision {
+  +decisionId: UUID
+  +timestamp: LocalDateTime
+  +prompt: String
+  +contexte: String
+  +modelName: String
+  +modelVersion: String
+  +reponse: String
+  +statutValidation: StatutDecisionEnum
+  +featuresJson: String
+  +suggestedDecision: String
+  +confidenceScore: Double
+  +riskLevel: String
+  +probabilitiesJson: String
+  +resumeConsensus: String
+  +consensusJson: String
+  +explanationSource: String
+  +previousHash: String
+  +currentHash: String
+  +businessDataHash: String
+  +sourcesHash: String
+  +agentResponsesHash: String
+  +humanDecision: String
+  +validatorEmail: String
+  --
+  +calculerHash(): String
+  +chainerAvecPrecedent(Decision): void
+  +changerStatut(StatutDecisionEnum): void
+}
+
+class ExplanationFactor {
+  +factorId: UUID
+  +name: String
+  +value: String
+  +shapValue: Double
+  +impact: String
+  +rank: Integer
+  +contributionPercent: Double
+  +source: String
+}
+
+class ReponseAgentIA {
+  +reponseAgentId: UUID
+  +agentKey: String
+  +modelId: String
+  +modelName: String
+  +provider: String
+  +decisionProposee: String
+  +confianceDeclaree: Double
+  +niveauRisque: String
+  +resume: String
+  +explication: String
+  +statut: StatutReponseAgentEnum
+  +timestamp: LocalDateTime
+}
+
+class ValidationAction {
+  +validationActionId: UUID
+  +typeAction: TypeActionEnum
+  +statutAvant: StatutDecisionEnum
+  +statutApres: StatutDecisionEnum
+  +decisionHumaine: String
+  +commentaire: String
+  +timestamp: LocalDateTime
+}
+
+class DecisionSource {
+  +sourceId: UUID
+  +sourceType: DecisionSourceType
+  +name: String
+  +description: String
+  +url: String
+  +contentHash: String
+  +createdById: UUID
+  +createdByEmail: String
+  +createdAt: LocalDateTime
+}
+
+class DecisionHistory {
+  +historyId: UUID
+  +action: DecisionHistoryAction
+  +previousStatus: StatutDecisionEnum
+  +newStatus: StatutDecisionEnum
+  +performedById: UUID
+  +performedByEmail: String
+  +comment: String
+  +eventDataJson: String
+  +correlationId: String
+  +createdAt: LocalDateTime
+}
+
+class SystemeIA {
+  +systemeIaId: UUID
+  +nom: String
+  +fournisseur: String
+  +modele: String
+  +versionModele: String
+  +actif: Boolean
+}
+
+' ========== Relations (multiplicités) ==========
+Utilisateur "1" <-- "0..*" ValidationAction : validateur
+Validateur "1" ..> "0..*" ValidationAction : valide
+Administrateur "1" ..> "0..*" Utilisateur : gère
+Auditeur "1" ..> "0..*" DecisionHistory : consulte
+
+Decision "1" *-- "0..*" ExplanationFactor : explanationFactors
+Decision "1" *-- "0..*" ReponseAgentIA : reponsesAgents
+Decision "1" *-- "0..*" DecisionSource : sources
+Decision "1" *-- "0..*" DecisionHistory : historyEntries
+Decision "1" <-- "0..*" ValidationAction : decision
+Decision "0..1" <-- "0..*" Decision : decisionPrecedente
+SystemeIA "0..1" <-- "0..*" Decision : systemeIa
+
+' ========== Services (style pointillé du modèle de référence) ==========
+class DecisionService <<service>> {
+  +analyserCredit(CreditFeaturesRequest): DecisionResponse
+  +obtenir(UUID): DecisionResponse
+  +rechercher(...): DecisionPageResponse
+}
+
+class MLDecisionService <<service>> {
+  +predict(CreditFeaturesRequest): MLPredictionResponse
+  +isMLServiceAvailable(): boolean
+}
+
+class GroqMultiAgentService <<service>> {
+  +analyzeDecisionAgents(Decision, String, String): GroqAnalysisBundle
+  +retryAgentResponse(Decision, ReponseAgentIA): ReponseAgentIA
+}
+
+class ConsensusService <<service>> {
+  +compute(List<ReponseAgentIA>): ConsensusResponse
+  +buildSkippedConsensus(String): ConsensusResponse
+}
+
+class ValidationService <<service>> {
+  +approuver(UUID, ValidationRequest): DecisionResponse
+  +rejeter(UUID, ValidationRequest): DecisionResponse
+  +modifier(UUID, ValidationRequest): DecisionResponse
+  +review(UUID, ValidationRequest): DecisionResponse
+}
+
+class DecisionHashService <<service>> {
+  +computeBusinessDataHash(String): String
+  +computeAgentResponsesHash(List): String
+  +refreshHashComponents(Decision, List): void
+}
+
+class AuditService <<service>> {
+  +getDecisionAudit(UUID): AuditDecisionResponse
+  +getRecentAudits(int): AuditRecentResponse
+  +getIntegritySummary(): AuditIntegritySummaryResponse
+}
+
+DecisionService ..> Decision : utilise
+DecisionService ..> MLDecisionService : utilise
+DecisionService ..> GroqMultiAgentService : utilise
+DecisionService ..> DecisionHashService : utilise
+GroqMultiAgentService ..> ConsensusService : utilise
+GroqMultiAgentService ..> ReponseAgentIA : produit
+MLDecisionService ..> ExplanationFactor : alimente
+ValidationService ..> ValidationAction : produit
+ValidationService ..> Decision : met à jour
+AuditService ..> DecisionHistory : agrège
+AuditService ..> Decision : vérifie hashes
+Administrateur ..> AuditService : utilise
+Administrateur ..> DecisionService : utilise
+Validateur ..> ValidationService : utilise
+Utilisateur ..> DecisionService : utilise
+
+note bottom of Decision
+  Créateur tracé via DecisionHistory
+  (performedById / performedByEmail).
+  Décision finale = ValidationAction
+  + humanDecision / validatorEmail.
+end note
+
+note bottom of ExplanationFactor
+  Facteurs SHAP persistés.
+  Aucune entité SHAP séparée.
+end note
+
+@enduml

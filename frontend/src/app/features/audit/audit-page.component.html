@@ -1,146 +1,377 @@
-<div class="shell-page">
-  <app-page-header
-    [breadcrumbs]="['Accueil', 'Audit']"
-    title="Audit & traçabilité"
-    subtitle="Consultation des événements récents, vérifications d'intégrité SHA-256 et accès au détail des décisions."
-  >
-    @if (generatedAt()) {
-      <span class="date-chip">
-        <app-icon name="history" [size]="13" />
-        {{ formatGeneratedAt(generatedAt()) }}
-      </span>
-    }
-  </app-page-header>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Audit</p>
+      <h1>Audit &amp; traçabilité</h1>
+      <p class="page-subtitle">
+        Consultation des événements récents, vérifications d'intégrité SHA-256 et accès au détail des décisions.
+      </p>
+    </div>
+    <div class="page-header-actions">
+      @if (generatedAt()) {
+        <p-tag severity="secondary" [value]="formatGeneratedAt(generatedAt())" icon="pi pi-clock" />
+      }
+      <div class="export-buttons">
+        <p-button
+          label="Export CSV"
+          icon="pi pi-file"
+          [outlined]="true"
+          (onClick)="exportCSV()"
+          [disabled]="filteredItems().length === 0"
+          severity="secondary"
+          ariaLabel="Exporter en CSV"
+        />
+        <p-button
+          label="Export PDF"
+          icon="pi pi-file-pdf"
+          [outlined]="true"
+          (onClick)="exportPDF()"
+          [disabled]="filteredItems().length === 0"
+          severity="secondary"
+          ariaLabel="Exporter en PDF"
+        />
+      </div>
+    </div>
+  </header>
 
   @if (loading()) {
-    <app-loading-skeleton [lines]="8" label="Chargement des données d'audit…" />
+    <p-card>
+      <div aria-label="Chargement des données d'audit">
+        <p-skeleton height="4rem" styleClass="mb-2" />
+        <p-skeleton height="3rem" styleClass="mb-2" />
+        <p-skeleton height="10rem" />
+      </div>
+    </p-card>
   } @else if (error()) {
-    <app-error-state [message]="error()!" />
+    <p-card>
+      <p-message severity="error" [text]="error()!" styleClass="w-full" />
+    </p-card>
   } @else {
-    <section class="ui-kpi-row" aria-label="Résumé d'intégrité">
+    <section class="kpi-row" aria-label="Résumé d'intégrité">
       @for (kpi of kpiCards(); track kpi.label) {
-        <app-kpi-card
-          [label]="kpi.label"
-          [value]="kpi.value"
-          [unit]="kpi.unit"
-          [icon]="kpi.icon"
-          [accent]="kpi.accent"
-          [hint]="kpi.hint"
-        />
+        <p-card styleClass="kpi-card">
+          <p class="kpi-label">{{ kpi.label }}</p>
+          <p class="kpi-value">{{ kpi.value }}</p>
+          <p-tag [value]="kpi.hint" [severity]="kpi.severity" />
+        </p-card>
       }
     </section>
 
-    <section class="card table-card">
-      <div class="card__header">
-        <h2 class="card__title">
-          <app-icon name="history" [size]="17" />
-          Événements récents
-        </h2>
-        <span class="card__hint">{{ filteredItems().length }} / {{ recentItems().length }} affichés</span>
-      </div>
+    <!-- Statistics Dashboard -->
+    <app-audit-statistics [items]="recentItems()" />
 
-      <form [formGroup]="filters" class="ui-toolbar" (ngSubmit)="applyFilters()">
+    <p-card>
+      <ng-template #title>Événements récents</ng-template>
+      <ng-template #subtitle>
+        {{ filteredItems().length }} / {{ recentItems().length }} affichés
+      </ng-template>
+
+      <form class="toolbar" [formGroup]="filters" (ngSubmit)="applyFilters()">
         <div class="field">
           <label for="audit-search">UUID décision</label>
           <input
+            pInputText
             id="audit-search"
             formControlName="search"
             placeholder="Rechercher par UUID…"
+            class="w-full"
             autocomplete="off"
+            aria-label="Rechercher par UUID de décision"
+          />
+        </div>
+
+        <div class="field">
+          <label for="audit-prompt">Recherche dans le prompt</label>
+          <input
+            pInputText
+            id="audit-prompt"
+            formControlName="promptSearch"
+            placeholder="Mots-clés dans le prompt…"
+            class="w-full"
+            autocomplete="off"
+            aria-label="Rechercher dans le contenu du prompt"
           />
         </div>
 
         <div class="field">
           <label for="audit-statut">Statut</label>
-          <select id="audit-statut" formControlName="statut">
-            <option value="">Tous</option>
-            @for (statut of statuts; track statut) {
-              <option [value]="statut">{{ statutLabel(statut) }}</option>
-            }
-          </select>
+          <p-select
+            inputId="audit-statut"
+            formControlName="statut"
+            [options]="statutOptions"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            ariaLabel="Filtrer par statut"
+          />
         </div>
 
-        <button class="btn-secondary" type="submit">
-          <app-icon name="scan" [size]="15" />
-          Filtrer
-        </button>
+        <div class="field">
+          <label for="audit-integrity">Intégrité</label>
+          <p-select
+            inputId="audit-integrity"
+            formControlName="integrityFilter"
+            [options]="[
+              { label: 'Toutes', value: 'all' },
+              { label: 'Valide uniquement', value: 'valid' },
+              { label: 'Invalide uniquement', value: 'invalid' }
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="w-full"
+            ariaLabel="Filtrer par intégrité"
+          />
+        </div>
+
+        <div class="field">
+          <label for="audit-period">Période</label>
+          <p-datepicker
+            inputId="audit-period"
+            formControlName="period"
+            selectionMode="range"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            placeholder="Plage de dates"
+            styleClass="w-full"
+            ariaLabel="Filtrer par période"
+          />
+        </div>
+
+        <div class="field field--actions">
+          <p-button 
+            type="submit" 
+            label="Filtrer" 
+            icon="pi pi-filter" 
+            [outlined]="true" 
+          />
+          @if (hasActiveFilters) {
+            <p-button 
+              type="button"
+              label="Réinitialiser" 
+              icon="pi pi-filter-slash" 
+              [text]="true"
+              severity="secondary"
+              (onClick)="resetFilters()"
+            />
+          }
+        </div>
       </form>
 
       @if (recentItems().length === 0) {
-        <app-empty-state
-          icon="shield-check"
-          message="Aucun événement d'audit enregistré pour le moment."
-        />
+        <div class="empty-state" role="status">
+          <i class="pi pi-shield empty-state__icon" aria-hidden="true"></i>
+          <h2>Aucun événement</h2>
+          <p>Aucun événement d'audit enregistré pour le moment.</p>
+        </div>
       } @else if (filteredItems().length === 0) {
-        <app-empty-state
-          icon="scan"
-          message="Aucun événement ne correspond à vos critères de filtre."
-        />
+        <div class="empty-state" role="status">
+          <i class="pi pi-filter empty-state__icon" aria-hidden="true"></i>
+          <h2>Aucun résultat</h2>
+          <p>Aucun événement ne correspond à vos critères de filtre.</p>
+        </div>
       } @else {
         <div class="table-scroll">
-          <table class="decisions-table" aria-label="Événements d'audit récents">
-            <thead>
+          <p-table
+            [value]="filteredItems()"
+            styleClass="p-datatable-sm"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 20, 50]"
+            [tableStyle]="{ 'min-width': '58rem' }"
+            ariaLabel="Événements d'audit récents"
+          >
+            <ng-template #header>
               <tr>
-                <th scope="col">Date</th>
-                <th scope="col">UUID</th>
-                <th scope="col">Prompt</th>
-                <th scope="col">Statut</th>
-                <th scope="col">Intégrité</th>
-                <th scope="col">Actions</th>
+                <th>Date</th>
+                <th>UUID</th>
+                <th>Prompt</th>
+                <th>Statut</th>
+                <th>Intégrité</th>
+                <th>Actions</th>
               </tr>
-            </thead>
-            <tbody>
-              @for (row of filteredItems(); track row.decisionId) {
-                <tr>
-                  <td class="td-time">
-                    <span class="time-date">{{ formatDate(row.timestamp) }}</span>
-                    <span class="time-hour">{{ formatTime(row.timestamp) }}</span>
-                  </td>
-                  <td>
-                    <code class="ref-code" [title]="row.decisionId">{{ shortUuid(row.decisionId) }}</code>
-                  </td>
-                  <td class="td-prompt">
-                    <span class="prompt-text">{{ row.prompt }}</span>
-                  </td>
-                  <td>
-                    <app-status-badge
-                      [label]="statutLabel(row.statutValidation)"
-                      [chipClass]="statutChipClass(row.statutValidation)"
-                    />
-                  </td>
-                  <td>
-                    <app-status-badge
-                      [label]="integrityLabel(row.integrityValid)"
-                      [chipClass]="integrityChipClass(row.integrityValid)"
-                    />
-                  </td>
-                  <td>
-                    <a class="btn-link" [routerLink]="['/decisions', row.decisionId]">
-                      Détail
-                      <app-icon name="arrow-right" [size]="13" />
-                    </a>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+            </ng-template>
+            <ng-template #body let-row>
+              <tr>
+                <td>
+                  <div class="td-time">
+                    <span>{{ formatDate(row.timestamp) }}</span>
+                    <span class="muted">{{ formatTime(row.timestamp) }}</span>
+                  </div>
+                </td>
+                <td>
+                  <code class="mono" [title]="row.decisionId">{{ shortUuid(row.decisionId) }}</code>
+                  <p-button
+                    icon="pi pi-copy"
+                    [rounded]="true"
+                    [text]="true"
+                    size="small"
+                    (onClick)="copyText(row.decisionId, 'UUID')"
+                    [attr.aria-label]="'Copier UUID ' + row.decisionId"
+                  />
+                </td>
+                <td class="td-prompt">{{ row.prompt }}</td>
+                <td>
+                  <p-tag
+                    [value]="statutLabel(row.statutValidation)"
+                    [severity]="statutSeverity(row.statutValidation)"
+                  />
+                </td>
+                <td>
+                  <p-tag
+                    [value]="integrityLabel(row.integrityValid)"
+                    [severity]="integritySeverity(row.integrityValid)"
+                  />
+                </td>
+                <td class="td-actions">
+                  <p-button
+                    label="Détail"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    (onClick)="openDetail(row)"
+                    [attr.aria-label]="'Voir le détail audit de ' + row.decisionId"
+                  />
+                  <p-button
+                    label="Décision"
+                    icon="pi pi-external-link"
+                    size="small"
+                    [text]="true"
+                    (onClick)="openDecision(row.decisionId)"
+                    [attr.aria-label]="'Ouvrir la décision ' + row.decisionId"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
       }
 
       @if (integrity(); as summary) {
-        <footer
-          class="integrity-footer"
-          [class.integrity-footer--ok]="summary.chainIntact"
-          [class.integrity-footer--warn]="!summary.chainIntact"
-        >
-          <app-icon name="shield-check" [size]="13" />
-          @if (summary.chainIntact) {
-            Intégrité cryptographique vérifiée — {{ summary.validDecisions }} décision(s) valide(s) sur {{ summary.totalDecisions }}
-          } @else {
-            Alerte : {{ summary.invalidDecisions }} décision(s) avec intégrité compromise — chaîne SHA-256 à vérifier
-          }
-        </footer>
+        <p-message
+          [severity]="summary.chainIntact ? 'success' : 'warn'"
+          [text]="
+            summary.chainIntact
+              ? 'Intégrité cryptographique vérifiée — ' + summary.validDecisions + ' décision(s) valide(s) sur ' + summary.totalDecisions
+              : 'Alerte : ' + summary.invalidDecisions + ' décision(s) avec intégrité compromise — chaîne SHA-256 à vérifier'
+          "
+          styleClass="w-full mt-3"
+        />
       }
-    </section>
+    </p-card>
   }
+
+  <p-dialog
+    header="Détail de l'événement d'audit"
+    [modal]="true"
+    [visible]="detailVisible()"
+    (visibleChange)="!$event && closeDetail()"
+    [style]="{ width: 'min(44rem, 96vw)' }"
+    [draggable]="false"
+  >
+    @if (detailLoading()) {
+      <p-skeleton height="2rem" styleClass="mb-2" />
+      <p-skeleton height="8rem" />
+    } @else if (detailError()) {
+      <p-message severity="error" [text]="detailError()!" styleClass="w-full" />
+    } @else if (detail(); as audit) {
+      <div class="detail-grid">
+        <div>
+          <span class="label">UUID décision</span>
+          <div class="copy-row">
+            <code class="mono">{{ audit.decisionId }}</code>
+            <p-button
+              icon="pi pi-copy"
+              [rounded]="true"
+              [text]="true"
+              size="small"
+              (onClick)="copyText(audit.decisionId, 'UUID')"
+              aria-label="Copier UUID décision"
+            />
+          </div>
+        </div>
+        <div>
+          <span class="label">Statut</span>
+          <p-tag [value]="statutLabel(audit.statutValidation)" [severity]="statutSeverity(audit.statutValidation)" />
+        </div>
+        <div>
+          <span class="label">Intégrité</span>
+          <p-tag
+            [value]="integrityLabel(audit.integrityValid)"
+            [severity]="integritySeverity(audit.integrityValid)"
+          />
+        </div>
+        <div>
+          <span class="label">Validateur</span>
+          <span>{{ audit.validatorEmail || '—' }}</span>
+        </div>
+        <div>
+          <span class="label">Hash courant</span>
+          @if (audit.currentHash) {
+            <app-copy-hash [hash]="audit.currentHash" label="Hash" />
+          } @else {
+            <span>—</span>
+          }
+        </div>
+        <div>
+          <span class="label">Hash précédent</span>
+          @if (audit.previousHash) {
+            <app-copy-hash [hash]="audit.previousHash" label="Hash précédent" />
+          } @else {
+            <span>—</span>
+          }
+        </div>
+      </div>
+
+      <h3 class="detail-title">Chronologie</h3>
+      @if (timelineEvents().length === 0) {
+        <p class="muted">Aucun événement d'historique pour cette décision.</p>
+      } @else {
+        <p-timeline [value]="timelineEvents()" align="left">
+          <ng-template #content let-event>
+            <div class="timeline-event">
+              <strong>{{ event.action }}</strong>
+              @if (event.status) {
+                <p-tag [value]="statutLabel(event.status)" severity="secondary" />
+              }
+              <p class="muted">
+                {{ event.date | date:'short' }}
+                @if (event.actor) {
+                  · {{ event.actor }}
+                }
+              </p>
+              @if (event.detail) {
+                <p>{{ event.detail }}</p>
+              }
+              @if (event.correlationId) {
+                <div class="copy-row">
+                  <code class="mono">{{ event.correlationId }}</code>
+                  <p-button
+                    icon="pi pi-copy"
+                    [rounded]="true"
+                    [text]="true"
+                    size="small"
+                    (onClick)="copyText(event.correlationId, 'correlationId')"
+                    [attr.aria-label]="'Copier correlation ID ' + event.correlationId"
+                  />
+                </div>
+              }
+            </div>
+          </ng-template>
+        </p-timeline>
+      }
+    } @else if (selectedRecent(); as row) {
+      <p class="muted">UUID : <code class="mono">{{ row.decisionId }}</code></p>
+    }
+
+    <ng-template #footer>
+      <p-button label="Fermer" [text]="true" (onClick)="closeDetail()" />
+      @if (detail(); as audit) {
+        <p-button
+          label="Ouvrir la décision"
+          icon="pi pi-external-link"
+          (onClick)="openDecision(audit.decisionId)"
+        />
+      }
+    </ng-template>
+  </p-dialog>
 </div>

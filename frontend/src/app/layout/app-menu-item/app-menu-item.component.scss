@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+.layout-menuitem-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.875rem;
+  border-radius: 0.625rem;
+  color: rgba(203, 213, 225, 0.8);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: #f1f5f9;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.active-route {
+    background: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
+
+    // Left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 3px;
+      background: #818cf8;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .layout-menuitem-icon {
+      color: #818cf8;
+    }
+  }
+}
+
+.layout-menuitem-icon {
+  font-size: 0.9375rem;
+  width: 1.125rem;
+  text-align: center;
+  flex-shrink: 0;
+  color: inherit;
+  transition: color 0.15s ease;
+}
+
+.layout-menuitem-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}

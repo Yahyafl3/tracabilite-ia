@@ -3,10 +3,11 @@
  * Design system B2B : bleu / violet / blanc (tech + confiance)
  */
 
-// Angular Material (utilisé par les modules auth / dashboard existants)
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-
-@import 'app/styles/coreui-theme';
+@use 'app/styles/coreui-theme';
+@use 'app/styles/app-ui';
+@use 'app/styles/comparaison-ui';
+@use 'app/styles/ui-shared';
+@use 'app/features/decisions/decisions-shared';
 
 :root {
   --color-secondary: #7c3aed;
@@ -116,60 +117,79 @@
 }
 
 /* ============================================================
-   Thème sombre
+   Thème sombre — moderne et cohérent
    ============================================================ */
-[data-theme='dark'] {
+[data-theme='dark'],
+html.app-dark {
+  // Colors primaires
   --color-primary: #818cf8;
   --color-secondary: #a78bfa;
   --color-info: #60a5fa;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
+  // Textes — contraste élevé
+  --text-primary: #f9fafb;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9ca3af;
 
-  --bg-page: #0b1120;
-  --bg-card: #131c31;
-  --border-color: #24314d;
+  // Surfaces — palette gris neutre
+  --bg-page: #0f111a;
+  --bg-card: #1a1d29;
+  --border-color: #272b3a;
 
-  --chip-approved-bg: rgba(16, 185, 129, 0.18);
-  --chip-approved-fg: #6ee7b7;
-  --chip-approved-border: rgba(16, 185, 129, 0.35);
-  --chip-modified-bg: rgba(245, 158, 11, 0.18);
-  --chip-modified-fg: #fcd34d;
-  --chip-modified-border: rgba(245, 158, 11, 0.35);
-  --chip-rejected-bg: rgba(239, 68, 68, 0.18);
-  --chip-rejected-fg: #fca5a5;
-  --chip-rejected-border: rgba(239, 68, 68, 0.35);
-  --chip-info-bg: rgba(99, 102, 241, 0.2);
+  // Chips sémantiques — couleurs vives et modernes
+  --chip-approved-bg: rgba(16, 185, 129, 0.12);
+  --chip-approved-fg: #34d399;
+  --chip-approved-border: rgba(16, 185, 129, 0.25);
+  --chip-modified-bg: rgba(251, 191, 36, 0.12);
+  --chip-modified-fg: #fbbf24;
+  --chip-modified-border: rgba(251, 191, 36, 0.25);
+  --chip-rejected-bg: rgba(239, 68, 68, 0.12);
+  --chip-rejected-fg: #f87171;
+  --chip-rejected-border: rgba(239, 68, 68, 0.25);
+  --chip-info-bg: rgba(129, 140, 248, 0.12);
   --chip-info-fg: #a5b4fc;
 
+  // Brand
   --brand-50: #1e1b4b;
   --brand-100: #312e81;
+  --brand-400: #818cf8;
+  --brand-600: #6366f1;
+  --brand-700: #4f46e5;
 
-  --ink: #f1f5f9;
-  --ink-soft: #e2e8f0;
-  --muted: #94a3b8;
-  --muted-soft: #64748b;
+  // Hiérarchie de textes
+  --ink: #f9fafb;
+  --ink-soft: #d1d5db;
+  --muted: #9ca3af;
+  --muted-soft: #6b7280;
 
-  --bg: #0b1120;
-  --bg-soft: #0f172a;
-  --bg-mute: #111c33;
-  --border: #24314d;
+  // Hiérarchie de fonds
+  --bg: #0f111a;
+  --bg-soft: #1a1d29;
+  --bg-mute: #22252f;
+  --border: #2d3139;
 
-  --surface: #131c31;
-  --surface-2: #182238;
-  --navbar-bg: rgba(11, 17, 32, 0.72);
-  --navbar-bg-scrolled: rgba(11, 17, 32, 0.92);
+  // Surfaces (cards, panels) — niveaux séparés
+  --surface: #1a1d29;
+  --surface-2: #22252f;
+  --surface-3: #2d3139;
+  --navbar-bg: rgba(15, 17, 26, 0.9);
+  --navbar-bg-scrolled: rgba(15, 17, 26, 0.95);
 
-  --brand-tint: rgba(99, 102, 241, 0.18);
-  --brand-tint-ink: #a5b4fc;
+  // Accents brand
+  --brand-tint: rgba(129, 140, 248, 0.10);
+  --brand-tint-ink: #c7d2fe;
 
-  --grad-hero: radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.28), transparent 60%),
-    radial-gradient(900px 500px at 0% 10%, rgba(37, 99, 235, 0.24), transparent 55%);
+  --grad-hero: radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.15), transparent 60%),
+    radial-gradient(900px 500px at 0% 10%, rgba(37, 99, 235, 0.12), transparent 55%);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  // Ombres douces
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-brand: 0 8px 24px rgba(99, 102, 241, 0.2);
 
   color-scheme: dark;
 }
@@ -376,73 +396,8 @@ button {
   width: 100%;
 }
 
-/* ============================================================
-   Shell pages (dashboard, décisions, comparaison…)
-   ============================================================ */
-.shell-page {
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  min-height: 100%;
+.page {
   width: 100%;
-
-  @media (max-width: 768px) {
-    padding: 20px 16px;
-    gap: 20px;
-  }
-
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .page-header__left {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--brand-600);
-  }
-
-  .page-title {
-    font-size: clamp(1.5rem, 2.5vw, 1.85rem);
-    font-weight: 700;
-    color: var(--ink);
-    font-family: var(--font-display);
-    letter-spacing: -0.02em;
-  }
-
-  .page-subtitle {
-    font-size: 1.05rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .mat-mdc-form-field {
-    font-size: 1rem;
-  }
-
-  .mat-mdc-header-cell,
-  .mat-mdc-cell {
-    font-size: 0.95rem;
-  }
-
-  .mat-mdc-card-title {
-    font-size: 1.2rem;
-  }
 }
 
 /* ============================================================
@@ -494,11 +449,510 @@ button {
 }
 
 /* ============================================================
-   App UI — composants partagés
+   Dark mode — pages métier (contrastes lisibles)
    ============================================================ */
-@import 'app/styles/app-ui';
-@import 'app/styles/comparaison-ui';
-@import 'app/styles/coreui-layout';
-@import 'app/styles/coreui-components';
-@import 'app/styles/ui-shared';
-@import 'app/features/decisions/decisions-shared';
+html.app-dark {
+  .page-header h1,
+  .kpi-name,
+  .kpi-value,
+  .breakdown-agent__name {
+    color: #f8fafc;
+  }
+
+  .page-eyebrow,
+  .page-subtitle,
+  .muted,
+  .kpi-meta,
+  .kpi-label,
+  .kpi-score-label,
+  .empty-state p,
+  .empty-state h2,
+  .table-footer,
+  .field label {
+    color: #94a3b8;
+  }
+
+  .empty-state__icon {
+    color: #64748b;
+  }
+
+  .mono {
+    color: #cbd5e1;
+  }
+}
+
+/* ============================================================
+   PrimeNG Dark Mode — Tables avec meilleure lisibilité
+   ============================================================ */
+html.app-dark {
+  // Tables — couleurs plus claires et contrastées
+  .p-datatable {
+    background: #1f2330 !important;
+
+    .p-datatable-header {
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #f9fafb !important;
+      font-weight: 600;
+    }
+
+    .p-datatable-thead > tr > th {
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #f9fafb !important;
+      font-weight: 600;
+      padding: 1rem 0.75rem !important;
+    }
+
+    .p-datatable-tbody > tr {
+      background: #22252f !important;
+      color: #d1d5db !important;
+      border-color: #3d4451 !important;
+
+      &:nth-child(even) {
+        background: #262936 !important;
+      }
+
+      &:hover {
+        background: #2d3139 !important;
+      }
+
+      &.p-highlight {
+        background: rgba(129, 140, 248, 0.15) !important;
+        color: #f9fafb !important;
+      }
+    }
+
+    .p-datatable-tbody > tr > td {
+      border-color: #3d4451 !important;
+      padding: 1rem 0.75rem !important;
+      color: #d1d5db !important;
+    }
+
+    .p-datatable-footer {
+      background: #252936 !important;
+      border-color: #3d4451 !important;
+      color: #9ca3af !important;
+    }
+
+    // Ensure table wrapper has proper background
+    .p-datatable-wrapper {
+      background: #1f2330 !important;
+    }
+  }
+
+  // Cards — lighter background
+  .p-card {
+    background: #1f2330 !important;
+    border: 1px solid #3d4451 !important;
+    color: var(--ink);
+    box-shadow: none;
+
+    .p-card-title {
+      color: var(--ink);
+    }
+
+    .p-card-subtitle {
+      color: var(--muted);
+    }
+
+    .p-card-content {
+      color: var(--ink-soft);
+      background: #1f2330 !important;
+    }
+
+    .p-card-header {
+      background: #1f2330 !important;
+      border-bottom-color: #3d4451 !important;
+    }
+
+    .p-card-body {
+      background: #1f2330 !important;
+    }
+  }
+
+  // Buttons
+  .p-button {
+    &.p-button-outlined {
+      border-color: var(--surface-2);
+      color: var(--ink);
+      background: transparent;
+
+      &:enabled:hover {
+        background: var(--surface-2);
+        border-color: var(--brand-400);
+        color: var(--brand-400);
+      }
+
+      &:enabled:active {
+        background: var(--surface-3);
+      }
+    }
+
+    &.p-button-text {
+      color: var(--ink-soft);
+      background: transparent;
+
+      &:enabled:hover {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+
+      &:enabled:active {
+        background: var(--surface-3);
+      }
+    }
+
+    &.p-button-secondary {
+      background: var(--surface-2);
+      border-color: var(--surface-2);
+      color: var(--ink);
+
+      &:enabled:hover {
+        background: var(--surface-3);
+        border-color: var(--surface-3);
+      }
+    }
+  }
+
+  // Input fields — cleaner borders
+  .p-inputtext,
+  .p-inputnumber-input {
+    background: var(--surface-2);
+    border-color: var(--surface-3);
+    color: var(--ink);
+
+    &::placeholder {
+      color: var(--muted);
+    }
+
+    &:enabled:hover {
+      border-color: var(--border);
+    }
+
+    &:enabled:focus {
+      border-color: var(--brand-400);
+      box-shadow: 0 0 0 0.15rem rgba(129, 140, 248, 0.12);
+    }
+  }
+
+  // Dropdowns & Selects
+  .p-dropdown,
+  .p-multiselect,
+  .p-select {
+    background: var(--surface-2);
+    border-color: var(--surface-3);
+
+    &:not(.p-disabled):hover {
+      border-color: var(--border);
+    }
+
+    &:not(.p-disabled).p-focus {
+      border-color: var(--brand-400);
+      box-shadow: 0 0 0 0.15rem rgba(129, 140, 248, 0.12);
+    }
+
+    .p-dropdown-label,
+    .p-multiselect-label,
+    .p-select-label {
+      color: var(--ink);
+    }
+
+    .p-dropdown-trigger,
+    .p-multiselect-trigger {
+      color: var(--muted);
+    }
+  }
+
+  // Dropdown panels
+  .p-dropdown-panel,
+  .p-multiselect-panel,
+  .p-select-overlay {
+    background: var(--surface);
+    border-color: var(--surface-2);
+    box-shadow: var(--shadow-lg);
+
+    .p-dropdown-header,
+    .p-multiselect-header {
+      background: var(--surface);
+      border-bottom-color: var(--surface-2);
+    }
+
+    .p-dropdown-items .p-dropdown-item,
+    .p-multiselect-items .p-multiselect-item,
+    .p-select-option {
+      color: var(--ink-soft);
+
+      &:not(.p-highlight):not(.p-disabled):hover {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+
+      &.p-highlight {
+        background: var(--brand-tint);
+        color: var(--brand-tint-ink);
+      }
+
+      &.p-focus {
+        background: var(--surface-2);
+      }
+    }
+
+    .p-dropdown-empty-message,
+    .p-multiselect-empty-message {
+      color: var(--muted);
+    }
+  }
+
+  // Paginator
+  .p-paginator {
+    background: var(--surface);
+    border-color: var(--surface-2);
+    color: var(--muted);
+
+    .p-paginator-pages .p-paginator-page {
+      color: var(--ink-soft);
+      background: transparent;
+      border-color: transparent;
+      min-width: 2.5rem;
+      height: 2.5rem;
+
+      &:not(.p-highlight):hover {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+
+      &.p-highlight {
+        background: var(--brand-tint);
+        color: var(--brand-tint-ink);
+        border-color: transparent;
+      }
+    }
+
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-first,
+    .p-paginator-last {
+      color: var(--ink-soft);
+
+      &:not(.p-disabled):hover {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+    }
+
+    .p-dropdown {
+      background: var(--surface-2);
+      border-color: var(--surface-3);
+    }
+  }
+
+  // Menu
+  .p-menu {
+    background: var(--surface);
+    border-color: var(--surface-2);
+    box-shadow: var(--shadow-md);
+
+    .p-menuitem-link {
+      color: var(--ink-soft);
+
+      &:not(.p-disabled):hover {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+
+      &:focus {
+        box-shadow: inset 0 0 0 0.15rem rgba(129, 140, 248, 0.15);
+      }
+    }
+
+    .p-menuitem-icon {
+      color: var(--muted);
+    }
+
+    .p-submenu-header {
+      background: var(--surface);
+      color: var(--muted);
+      border-bottom-color: var(--surface-2);
+    }
+  }
+
+  // Messages & Toasts
+  .p-message {
+    &.p-message-error {
+      background: var(--chip-rejected-bg);
+      border-color: var(--chip-rejected-border);
+      color: var(--chip-rejected-fg);
+
+      .p-message-icon,
+      .p-message-close-icon {
+        color: var(--chip-rejected-fg);
+      }
+    }
+
+    &.p-message-warn {
+      background: var(--chip-modified-bg);
+      border-color: var(--chip-modified-border);
+      color: var(--chip-modified-fg);
+
+      .p-message-icon,
+      .p-message-close-icon {
+        color: var(--chip-modified-fg);
+      }
+    }
+
+    &.p-message-success {
+      background: var(--chip-approved-bg);
+      border-color: var(--chip-approved-border);
+      color: var(--chip-approved-fg);
+
+      .p-message-icon,
+      .p-message-close-icon {
+        color: var(--chip-approved-fg);
+      }
+    }
+
+    &.p-message-info {
+      background: var(--chip-info-bg);
+      border-color: var(--chip-info-border, var(--surface-2));
+      color: var(--chip-info-fg);
+
+      .p-message-icon,
+      .p-message-close-icon {
+        color: var(--chip-info-fg);
+      }
+    }
+  }
+
+  // Skeleton
+  .p-skeleton {
+    background: var(--surface-2);
+
+    &::after {
+      background: linear-gradient(90deg, transparent, var(--surface-3), transparent);
+    }
+  }
+
+  // Tags & Badges
+  .p-tag {
+    &.p-tag-success {
+      background: var(--chip-approved-bg);
+      color: var(--chip-approved-fg);
+      border: 1px solid var(--chip-approved-border);
+    }
+
+    &.p-tag-warning {
+      background: var(--chip-modified-bg);
+      color: var(--chip-modified-fg);
+      border: 1px solid var(--chip-modified-border);
+    }
+
+    &.p-tag-danger {
+      background: var(--chip-rejected-bg);
+      color: var(--chip-rejected-fg);
+      border: 1px solid var(--chip-rejected-border);
+    }
+
+    &.p-tag-info {
+      background: var(--chip-info-bg);
+      color: var(--chip-info-fg);
+      border: 1px solid var(--surface-2);
+    }
+  }
+
+  .p-badge {
+    &.p-badge-success {
+      background: var(--chip-approved-fg);
+    }
+
+    &.p-badge-warning {
+      background: var(--chip-modified-fg);
+    }
+
+    &.p-badge-danger {
+      background: var(--chip-rejected-fg);
+    }
+
+    &.p-badge-info {
+      background: var(--chip-info-fg);
+    }
+  }
+
+  // Dialog
+  .p-dialog {
+    background: var(--surface);
+    border-color: var(--surface-2);
+    box-shadow: var(--shadow-lg);
+
+    .p-dialog-header {
+      background: var(--surface);
+      border-bottom-color: var(--surface-2);
+      color: var(--ink);
+    }
+
+    .p-dialog-content {
+      background: var(--surface);
+      color: var(--ink-soft);
+    }
+
+    .p-dialog-footer {
+      background: var(--surface);
+      border-top-color: var(--surface-2);
+    }
+  }
+
+  // Tooltip
+  .p-tooltip .p-tooltip-text {
+    background: var(--surface-3);
+    color: var(--ink);
+    box-shadow: var(--shadow-md);
+  }
+
+  .p-tooltip.p-tooltip-top .p-tooltip-arrow {
+    border-top-color: var(--surface-3);
+  }
+
+  .p-tooltip.p-tooltip-bottom .p-tooltip-arrow {
+    border-bottom-color: var(--surface-3);
+  }
+
+  // Chips
+  .p-chip {
+    background: var(--surface-2);
+    color: var(--ink-soft);
+    border: 1px solid var(--surface-3);
+  }
+
+  // Calendar
+  .p-calendar .p-datepicker {
+    background: var(--surface);
+    border-color: var(--surface-2);
+
+    .p-datepicker-header {
+      background: var(--surface);
+      border-bottom-color: var(--surface-2);
+      color: var(--ink);
+    }
+
+    .p-datepicker-calendar {
+      td {
+        color: var(--ink-soft);
+
+        &.p-datepicker-today > span {
+          background: var(--surface-2);
+          color: var(--brand-400);
+          border-color: var(--brand-400);
+        }
+
+        span:hover {
+          background: var(--surface-2);
+        }
+
+        &.p-highlight > span {
+          background: var(--brand-tint);
+          color: var(--brand-tint-ink);
+        }
+      }
+    }
+  }
+}

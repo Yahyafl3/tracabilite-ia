@@ -1,5 +1,142 @@
-// Decision list — styles spécifiques (toolbar, pagination dans _ui-shared.scss)
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
 
-.table-card {
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.page-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: var(--ink);
+}
+
+.page-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 0.85rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.td-time {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.td-prompt {
+  max-width: 16rem;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-soft);
+}
+
+.ref-code {
+  font-size: 0.78rem;
+  background: var(--bg-mute);
+  color: var(--ink-soft);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.35rem;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.empty-state__icon {
+  font-size: 2rem;
+  color: var(--muted-soft);
+}
+
+.empty-state h2 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.empty-state p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+:host ::ng-deep .w-full {
+  width: 100%;
+}
+
+:host ::ng-deep .mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
 }

@@ -8,7 +8,11 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
 import com.pfa.tracabilite_ia.exception.UnauthorizedActionException;
 import com.pfa.tracabilite_ia.mapper.UtilisateurMapper;
+import com.pfa.tracabilite_ia.repository.AppelIARepository;
+import com.pfa.tracabilite_ia.repository.PasswordResetTokenRepository;
+import com.pfa.tracabilite_ia.repository.SupportMessageRepository;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
+import com.pfa.tracabilite_ia.repository.ValidationActionRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
 import com.pfa.tracabilite_ia.service.UtilisateurService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,15 +38,27 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private final PasswordEncoder passwordEncoder;
     private final UtilisateurMapper utilisateurMapper;
     private final AuthService authService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final SupportMessageRepository supportMessageRepository;
+    private final AppelIARepository appelIARepository;
+    private final ValidationActionRepository validationActionRepository;
 
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
                                   PasswordEncoder passwordEncoder,
                                   UtilisateurMapper utilisateurMapper,
-                                  AuthService authService) {
+                                  AuthService authService,
+                                  PasswordResetTokenRepository passwordResetTokenRepository,
+                                  SupportMessageRepository supportMessageRepository,
+                                  AppelIARepository appelIARepository,
+                                  ValidationActionRepository validationActionRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilisateurMapper = utilisateurMapper;
         this.authService = authService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.supportMessageRepository = supportMessageRepository;
+        this.appelIARepository = appelIARepository;
+        this.validationActionRepository = validationActionRepository;
     }
 
     @Override
@@ -106,11 +122,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new UnauthorizedActionException("Impossible de supprimer votre propre compte.");
         }
 
-        if (utilisateur.getRole() == RoleEnum.UTILISATEUR) {
-            throw new UnauthorizedActionException(
-                    "Seuls les comptes Administrateur, Validateur et Auditeur sont supprimables depuis cette interface.");
-        }
-
         if (utilisateur.getRole() == RoleEnum.ADMINISTRATEUR) {
             long adminCount = utilisateurRepository.findAll().stream()
                     .filter(user -> user.getRole() == RoleEnum.ADMINISTRATEUR)
@@ -119,6 +130,15 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 throw new IllegalStateException("Impossible de supprimer le dernier administrateur.");
             }
         }
+
+        if (validationActionRepository.existsByValidateur(utilisateur)) {
+            throw new IllegalStateException(
+                    "Impossible de supprimer cet utilisateur : des validations lui sont encore associées.");
+        }
+
+        passwordResetTokenRepository.deleteByUtilisateur(utilisateur);
+        supportMessageRepository.clearProcessedBy(utilisateur);
+        appelIARepository.clearUtilisateur(utilisateur);
 
         utilisateurRepository.delete(utilisateur);
     }

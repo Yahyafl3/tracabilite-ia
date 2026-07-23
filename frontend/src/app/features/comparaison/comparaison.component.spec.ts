@@ -28,6 +28,19 @@ describe('ComparaisonComponent', () => {
                   enAttente: 2,
                   scorePourcentage: 80,
                 },
+                {
+                  rang: 2,
+                  nom: 'Groq Llama',
+                  fournisseur: 'GROQ',
+                  modele: 'llama-3.1-70b',
+                  versionModele: 'latest',
+                  totalDecisions: 4,
+                  approuvees: 3,
+                  modifiees: 0,
+                  rejetees: 0,
+                  enAttente: 1,
+                  scorePourcentage: 75,
+                },
               ]),
           },
         },
@@ -42,6 +55,27 @@ describe('ComparaisonComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('Taux de succès API');
     expect(text).not.toMatch(/\bScore\b/i);
+  });
+
+  it('keeps historical OpenRouter and Groq agent data without recalculation', () => {
+    const agents = fixture.componentInstance.agentsData();
+    expect(agents.some((a) => a.fournisseur === 'OpenRouter')).toBe(true);
+    expect(agents.some((a) => a.fournisseur === 'GROQ')).toBe(true);
+    expect(agents.find((a) => a.fournisseur === 'OpenRouter')?.scorePourcentage).toBe(80);
+    expect(agents.find((a) => a.fournisseur === 'GROQ')?.scorePourcentage).toBe(75);
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('OpenRouter');
+    expect(text).toContain('GROQ');
+    expect(text).not.toContain('Consensus OpenRouter');
+  });
+
+  it('filters by provider without changing API values', () => {
+    fixture.componentInstance.providerFilter.set('GROQ');
+    fixture.detectChanges();
+    const filtered = fixture.componentInstance.agents();
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].scorePourcentage).toBe(75);
   });
 
   it('sorts agents by API success rate descending by default', () => {

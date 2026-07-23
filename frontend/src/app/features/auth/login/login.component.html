@@ -1,92 +1,171 @@
-<div class="auth">
-  <div class="auth__overlay"></div>
+<div class="login-page">
+  <div class="login-split">
+    <!-- Left side - Branding & Info -->
+    <aside class="login-side">
+      <div class="login-side__content">
+        <a routerLink="/" class="login-side__brand" aria-label="Traçabilité IA — accueil">
+          <div class="brand-icon">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div class="brand-text">
+            <strong>Traçabilité IA</strong>
+            <small>Décisions assistées et auditables</small>
+          </div>
+        </a>
 
-  <div class="auth__card">
-    <a routerLink="/" class="auth__back">
-      <app-icon name="arrow-left" [size]="18" />
-      Retour au site
-    </a>
-
-    <header class="auth__head">
-      <a routerLink="/" class="brand" aria-label="Traçabilité IA — accueil">
-        <app-logo [size]="46" />
-        <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
-      </a>
-      <h1 class="auth__title">Connexion</h1>
-      <p class="auth__subtitle">Accédez à votre espace Traçabilité IA</p>
-    </header>
-
-    @if (errorMessage()) {
-      <div class="auth__alert" role="alert">
-        <app-icon name="shield-alert" [size]="18" />
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth__form" novalidate>
-      <!-- Email -->
-      <div class="field" [class.field--error]="hasError('email')">
-        <label for="email">Adresse email</label>
-        <div class="field__control">
-          <app-icon name="mail" [size]="18" />
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            placeholder="vous@entreprise.com"
-            autocomplete="email"
-          />
+        <div class="login-side__hero">
+          <h2>Plateforme de traçabilité IA de confiance</h2>
+          <p>
+            Auditez, tracez et validez chaque décision d'intelligence artificielle.
+            Conformité RGPD et AI Act européen.
+          </p>
         </div>
-        @if (hasError('email')) {
-          <p class="field__msg">{{ getErrorMessage('email') }}</p>
-        }
-      </div>
 
-      <!-- Mot de passe -->
-      <div class="field" [class.field--error]="hasError('password')">
-        <label for="password">Mot de passe</label>
-        <div class="field__control">
-          <app-icon name="lock" [size]="18" />
-          <input
-            id="password"
-            [type]="hidePassword() ? 'password' : 'text'"
-            formControlName="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-          />
-          <button
-            type="button"
-            class="field__toggle"
-            (click)="togglePasswordVisibility()"
-            [attr.aria-label]="hidePassword() ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
-          >
-            <app-icon [name]="hidePassword() ? 'eye' : 'eye-off'" [size]="18" />
-          </button>
+        <div class="login-side__features">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Traçabilité complète</h3>
+              <p>Audit trail immuable de chaque décision IA</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-shield"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Conformité garantie</h3>
+              <p>RGPD, AI Act et standards de sécurité</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="pi pi-users"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Validation humaine</h3>
+              <p>Workflow de revue et d'approbation</p>
+            </div>
+          </div>
         </div>
-        @if (hasError('password')) {
-          <p class="field__msg">{{ getErrorMessage('password') }}</p>
-        }
+
+        <div class="login-side__footer">
+          <p>© 2026 Traçabilité IA. Tous droits réservés.</p>
+        </div>
       </div>
 
-      <label class="remember">
-        <input type="checkbox" formControlName="rememberMe" />
-        <span>Se souvenir de moi</span>
-      </label>
+      <div class="login-side__bg" aria-hidden="true">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        <div class="bg-pattern"></div>
+      </div>
+    </aside>
 
-      <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="isLoading()">
-        @if (isLoading()) {
-          <span class="spinner" aria-hidden="true"></span>
-          <span>Connexion…</span>
-        } @else {
-          <span>Se connecter</span>
-          <app-icon name="arrow-right" [size]="18" />
+    <!-- Right side - Login Form -->
+    <main class="login-main">
+      <div class="login-main__content">
+        <a routerLink="/" class="login-back">
+          <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          Retour au site
+        </a>
+
+        <div class="login-header">
+          <h1>Connexion</h1>
+          <p>Accédez à votre espace sécurisé</p>
+        </div>
+
+        @if (errorMessage()) {
+          <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-3" role="alert" />
         }
-      </button>
-    </form>
 
-    <p class="auth__footnote">
-      © 2024 Traçabilité IA · <a routerLink="/">Conditions</a> ·
-      <a routerLink="/">Confidentialité</a>
-    </p>
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+          class="login-form"
+          novalidate
+          autocomplete="off"
+          method="post"
+        >
+          <!-- Chrome autofill decoys (not bound to the reactive form). -->
+          <div class="login-autofill-decoy" aria-hidden="true">
+            <input type="text" name="username" autocomplete="username" tabindex="-1" />
+            <input type="password" name="password" autocomplete="current-password" tabindex="-1" />
+          </div>
+
+          <div class="form-field" [class.form-field--error]="hasError('email')">
+            <label for="login-email">Adresse email</label>
+            <div class="input-wrapper">
+              <i class="pi pi-envelope input-icon"></i>
+              <input
+                pInputText
+                id="login-email"
+                name="login-email"
+                type="email"
+                formControlName="email"
+                class="input-with-icon"
+                placeholder="vous@entreprise.com"
+                autocomplete="off"
+                [attr.readonly]="emailReadonly() ? true : null"
+                (focus)="unlockEmailField()"
+                [attr.aria-invalid]="hasError('email')"
+                [attr.aria-describedby]="hasError('email') ? 'email-error' : null"
+              />
+            </div>
+            @if (hasError('email')) {
+              <p id="email-error" class="form-field__error">{{ getErrorMessage('email') }}</p>
+            }
+          </div>
+
+          <div class="form-field" [class.form-field--error]="hasError('password')">
+            <label for="login-password">Mot de passe</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <p-password
+                inputId="login-password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                styleClass="w-full password-field"
+                inputStyleClass="input-with-icon"
+                placeholder="••••••••"
+                autocomplete="new-password"
+                [attr.aria-invalid]="hasError('password')"
+                [attr.aria-describedby]="hasError('password') ? 'password-error' : null"
+              />
+            </div>
+            @if (hasError('password')) {
+              <p id="password-error" class="form-field__error">{{ getErrorMessage('password') }}</p>
+            }
+          </div>
+
+          <div class="form-extras form-extras--end">
+            <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+          </div>
+
+          <p-button
+            type="submit"
+            label="Se connecter"
+            icon="pi pi-sign-in"
+            styleClass="login-submit"
+            [disabled]="isLoading()"
+            [loading]="isLoading()"
+            ariaLabel="Se connecter"
+          />
+
+          @if (isLoading()) {
+            <div class="login-loading" aria-live="polite">
+              <p-progressSpinner strokeWidth="4" [style]="{ width: '2rem', height: '2rem' }" />
+              <span>Connexion en cours…</span>
+            </div>
+          }
+        </form>
+
+        <p class="login-help">
+          Besoin d'aide ? <a routerLink="/support">Contactez le support</a>
+        </p>
+      </div>
+    </main>
   </div>
 </div>

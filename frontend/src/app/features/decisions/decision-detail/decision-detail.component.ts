@@ -4,9 +4,21 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { Card } from 'primeng/card';
+import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
+import { Tag } from 'primeng/tag';
+import { TableModule } from 'primeng/table';
+import { Skeleton } from 'primeng/skeleton';
+import { Message } from 'primeng/message';
+import { Button } from 'primeng/button';
+import { Textarea } from 'primeng/textarea';
+import { Select } from 'primeng/select';
+import { Checkbox } from 'primeng/checkbox';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Divider } from 'primeng/divider';
+import { ConfirmationService } from 'primeng/api';
 import { IconComponent } from '../../../shared/icon.component';
 import {
-  PageHeaderComponent,
   StatusBadgeComponent,
   RiskBadgeComponent,
   EmptyStateComponent,
@@ -68,8 +80,23 @@ type DetailTab =
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    Card,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel,
+    Tag,
+    TableModule,
+    Skeleton,
+    Message,
+    Button,
+    Textarea,
+    Select,
+    Checkbox,
+    ConfirmDialog,
+    Divider,
     IconComponent,
-    PageHeaderComponent,
     StatusBadgeComponent,
     RiskBadgeComponent,
     EmptyStateComponent,
@@ -82,6 +109,7 @@ type DetailTab =
     TimelineComponent,
     ModelIdentityComponent,
   ],
+  providers: [ConfirmationService],
   templateUrl: './decision-detail.component.html',
   styleUrl: './decision-detail.component.scss',
 })
@@ -92,8 +120,14 @@ export class DecisionDetailComponent {
   private readonly authService = inject(AuthService);
   private readonly traceService = inject(DecisionTraceService);
   private readonly auditService = inject(AuditService);
+  private readonly confirmation = inject(ConfirmationService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly humanDecisionOptions = [
+    { label: 'APPROUVER', value: 'APPROUVER' },
+    { label: 'REJETER', value: 'REJETER' },
+  ];
 
   readonly decision = signal<DecisionResponse | null>(null);
   readonly historyEntries = signal<DecisionHistoryEntry[]>([]);
@@ -181,7 +215,7 @@ export class DecisionDetailComponent {
 
   readonly tabs: Array<{ id: DetailTab; label: string }> = [
     { id: 'resume', label: 'Résumé' },
-    { id: 'prediction', label: 'Prédiction ML' },
+    { id: 'prediction', label: 'ML' },
     { id: 'shap', label: 'SHAP' },
     { id: 'agents', label: 'Agents IA' },
     { id: 'validation', label: 'Validation humaine' },
@@ -300,13 +334,17 @@ export class DecisionDetailComponent {
     return `decision-tabpanel-${tab}`;
   }
 
-  setTab(tab: DetailTab): void {
-    this.activeTab.set(tab);
-    if (tab === 'integrity') {
-      if (this.canAudit()) {
-        this.loadIntegrityAudit();
-      }
+  setTab(tab: DetailTab | string | number | undefined): void {
+    if (tab == null) return;
+    const next = String(tab) as DetailTab;
+    this.activeTab.set(next);
+    if (next === 'integrity' && this.canAudit()) {
+      this.loadIntegrityAudit();
     }
+  }
+
+  onTabsValueChange(value: string | number | undefined): void {
+    this.setTab(value);
   }
 
   onTabKeydown(event: KeyboardEvent, index: number): void {
@@ -362,57 +400,95 @@ export class DecisionDetailComponent {
   }
 
   approve(): void {
-    if (!this.validationForm.controls.confirmed.value) {
-      this.validationForm.controls.confirmed.markAsTouched();
-      return;
-    }
-    const id = this.decision()?.decisionId;
-    if (!id) return;
-    this.submitValidation(() =>
-      this.validationService.approve(id, { commentaire: this.validationForm.value.commentaire ?? undefined }),
+    this.confirmAndSubmit(
+      'Confirmer l’approbation',
+      'Enregistrer APPROUVER sur le dossier global de décision ?',
+      () => {
+        const id = this.decision()?.decisionId;
+        if (!id) return;
+        this.submitValidation(() =>
+          this.validationService.approve(id, {
+            commentaire: this.validationForm.value.commentaire ?? undefined,
+          }),
+        );
+      },
     );
   }
 
   reject(): void {
-    if (!this.validationForm.controls.confirmed.value) {
-      this.validationForm.controls.confirmed.markAsTouched();
-      return;
-    }
-    const id = this.decision()?.decisionId;
-    if (!id) return;
-    this.submitValidation(() =>
-      this.validationService.reject(id, { commentaire: this.validationForm.value.commentaire ?? undefined }),
+    this.confirmAndSubmit(
+      'Confirmer le rejet',
+      'Enregistrer REJETER sur le dossier global de décision ?',
+      () => {
+        const id = this.decision()?.decisionId;
+        if (!id) return;
+        this.submitValidation(() =>
+          this.validationService.reject(id, {
+            commentaire: this.validationForm.value.commentaire ?? undefined,
+          }),
+        );
+      },
     );
   }
 
   modify(): void {
-    if (!this.validationForm.controls.confirmed.value) {
-      this.validationForm.controls.confirmed.markAsTouched();
-      return;
-    }
-    const id = this.decision()?.decisionId;
-    if (!id || this.validationForm.invalid) {
-      this.validationForm.markAllAsTouched();
-      return;
-    }
-    this.submitValidation(() =>
-      this.validationService.modify(id, {
-        commentaire: this.validationForm.value.commentaire ?? undefined,
-        decisionHumaine: this.validationForm.value.decisionHumaine as 'APPROUVER' | 'REJETER',
-      }),
+    this.confirmAndSubmit(
+      'Confirmer la modification',
+      'Enregistrer la décision humaine finale (MODIFIER) sur le dossier global ?',
+      () => {
+        const id = this.decision()?.decisionId;
+        if (!id || this.validationForm.invalid) {
+          this.validationForm.markAllAsTouched();
+          return;
+        }
+        this.submitValidation(() =>
+          this.validationService.modify(id, {
+            commentaire: this.validationForm.value.commentaire ?? undefined,
+            decisionHumaine: this.validationForm.value.decisionHumaine as 'APPROUVER' | 'REJETER',
+          }),
+        );
+      },
     );
   }
 
   review(): void {
+    this.confirmAndSubmit(
+      'Confirmer la revue',
+      'Enregistrer REVIEW sur le dossier global de décision ?',
+      () => {
+        const id = this.decision()?.decisionId;
+        if (!id) return;
+        this.submitValidation(() =>
+          this.validationService.review(id, {
+            commentaire: this.validationForm.value.commentaire ?? undefined,
+          }),
+        );
+      },
+    );
+  }
+
+  private confirmAndSubmit(header: string, message: string, onAccept: () => void): void {
     if (!this.validationForm.controls.confirmed.value) {
       this.validationForm.controls.confirmed.markAsTouched();
       return;
     }
-    const id = this.decision()?.decisionId;
-    if (!id) return;
-    this.submitValidation(() =>
-      this.validationService.review(id, { commentaire: this.validationForm.value.commentaire ?? undefined }),
-    );
+    this.confirmation.confirm({
+      header,
+      message,
+      icon: 'pi pi-exclamation-circle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: onAccept,
+    });
+  }
+
+  decisionTagSeverity(value: string | undefined): 'success' | 'danger' | 'warn' | 'secondary' {
+    if (value === 'APPROUVER' || value === 'APPROUVEE') return 'success';
+    if (value === 'REJETER' || value === 'REJETEE') return 'danger';
+    if (value === 'REVIEW' || value === 'MODIFIEE') return 'warn';
+    return 'secondary';
   }
 
   retryFailedAgents(): void {

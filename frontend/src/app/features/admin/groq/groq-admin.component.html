@@ -1,0 +1,84 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Administration / Agents Groq</p>
+      <h1>Agents Groq</h1>
+      <p class="page-subtitle">
+        Statut de la connexion Groq et disponibilité des trois modèles multi-agents.
+      </p>
+    </div>
+    <p-button
+      label="Actualiser"
+      icon="pi pi-refresh"
+      [outlined]="true"
+      [loading]="loading()"
+      (onClick)="loadStatus()"
+      ariaLabel="Actualiser le statut Groq"
+    />
+  </header>
+
+  @if (loading()) {
+    <p-card>
+      <p-skeleton height="4rem" styleClass="mb-3" />
+      <p-skeleton height="12rem" />
+    </p-card>
+  } @else if (error(); as err) {
+    <p-message severity="error" [text]="err" styleClass="w-full" />
+  } @else if (status(); as s) {
+    <div class="status-grid">
+      <p-card header="État global">
+        <div class="status-row">
+          <span>Statut</span>
+          <p-tag [severity]="globalSeverity(s)" [value]="globalStateLabel(s)" />
+        </div>
+        <div class="status-row">
+          <span>Clé API</span>
+          <p-tag
+            [severity]="s.configured ? 'success' : 'danger'"
+            [value]="keyAvailabilityLabel(s)"
+          />
+        </div>
+        <div class="status-row">
+          <span>Réponses réussies</span>
+          <strong>{{ s.successfulResponses ?? 0 }}</strong>
+        </div>
+        @if (s.lastError) {
+          <p-message severity="warn" [text]="'Dernière erreur : ' + s.lastError" styleClass="w-full mt-3" />
+        }
+      </p-card>
+
+      <p-card header="Modèles configurés">
+        <p-table [value]="s.models" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '40rem' }">
+          <ng-template #header>
+            <tr>
+              <th>Agent</th>
+              <th>Display name</th>
+              <th>Model ID</th>
+              <th>Provider</th>
+              <th>Disponibilité</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-model>
+            <tr>
+              <td><code>{{ model.agent }}</code></td>
+              <td>{{ model.displayName || '—' }}</td>
+              <td><code>{{ model.modelId }}</code></td>
+              <td><p-tag severity="info" [value]="providerLabel" /></td>
+              <td>
+                <p-tag
+                  [severity]="model.available ? 'success' : 'danger'"
+                  [value]="model.available ? 'Disponible' : 'Indisponible'"
+                />
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="5">Aucun modèle Groq configuré.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  }
+</div>

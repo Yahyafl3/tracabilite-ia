@@ -1,0 +1,125 @@
+@startuml use-case-tracabilite-ia
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 20
+skinparam ranksep 30
+
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #4B5563
+  FontName Arial
+  FontSize 12
+}
+skinparam actor {
+  BorderColor #111827
+  FontName Arial
+  FontSize 13
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #6B7280
+  FontStyle bold
+  FontSize 14
+}
+
+title Cas d'utilisation — Traçabilité IA
+
+actor "Utilisateur" as User
+actor "Validateur" as Validator
+actor "Auditeur" as Auditor
+actor "Administrateur" as Admin
+actor "Service ML" as ML
+actor "Agents IA Groq" as Groq
+
+Validator --|> User
+Auditor --|> User
+Admin --|> Validator
+Admin --|> Auditor
+
+rectangle "Application Traçabilité IA" {
+  usecase "Login / Logout" as UC_Login
+  usecase "Consulter le dashboard" as UC_Dashboard
+  usecase "Créer une décision" as UC_Create
+  usecase "Consulter les décisions" as UC_List
+  usecase "Consulter le détail d'une décision" as UC_Detail
+  usecase "Modifier une décision" as UC_Update
+  usecase "Consulter le schéma crédit" as UC_Schema
+  usecase "Ajouter une source" as UC_AddSource
+  usecase "Consulter les sources" as UC_ListSources
+  usecase "Supprimer une source" as UC_DelSource
+  usecase "Consulter l'historique" as UC_History
+  usecase "Soumettre à validation" as UC_Submit
+  usecase "Obtenir une prédiction ML" as UC_ML
+  usecase "Générer une explication SHAP" as UC_SHAP
+  usecase "Interroger les agents IA" as UC_Agents
+  usecase "Calculer le consensus" as UC_Consensus
+  usecase "Consulter la file de validation" as UC_Pending
+  usecase "Approuver une décision" as UC_Approve
+  usecase "Rejeter une décision" as UC_Reject
+  usecase "Modifier la décision humaine" as UC_Modify
+  usecase "Review d'une décision" as UC_Review
+  usecase "Consulter l'historique de validation" as UC_ValHistory
+  usecase "Comparer les modèles IA" as UC_Compare
+  usecase "Consulter l'audit" as UC_Audit
+  usecase "Consulter l'audit d'une décision" as UC_AuditDetail
+  usecase "Vérifier l'intégrité" as UC_Integrity
+  usecase "Gérer les utilisateurs" as UC_Users
+  usecase "Créer un utilisateur" as UC_CreateUser
+  usecase "Modifier un utilisateur" as UC_UpdateUser
+  usecase "Supprimer un utilisateur" as UC_DeleteUser
+  usecase "Consulter le statut Groq" as UC_GroqStatus
+  usecase "Relancer les agents en échec" as UC_RetryAgents
+}
+
+' --- Utilisateur (et héritiers) ---
+User --> UC_Login
+User --> UC_Dashboard
+User --> UC_Create
+User --> UC_List
+User --> UC_Detail
+User --> UC_Update
+User --> UC_Schema
+User --> UC_AddSource
+User --> UC_ListSources
+User --> UC_DelSource
+User --> UC_History
+User --> UC_Submit
+
+' --- Validateur ---
+Validator --> UC_Pending
+Validator --> UC_Approve
+Validator --> UC_Reject
+Validator --> UC_Modify
+Validator --> UC_Review
+Validator --> UC_ValHistory
+Validator --> UC_Compare
+
+' --- Auditeur ---
+Auditor --> UC_Audit
+Auditor --> UC_AuditDetail
+Auditor --> UC_Integrity
+Auditor --> UC_Compare
+
+' --- Administrateur (spécifique) ---
+Admin --> UC_Users
+Admin --> UC_CreateUser
+Admin --> UC_UpdateUser
+Admin --> UC_DeleteUser
+Admin --> UC_GroqStatus
+Admin --> UC_RetryAgents
+
+' --- Acteurs système ---
+ML --> UC_ML
+ML --> UC_SHAP
+Groq --> UC_Agents
+
+' --- Includes création ---
+UC_Create ..> UC_ML : <<include>>
+UC_Create ..> UC_SHAP : <<include>>
+UC_Create ..> UC_Agents : <<include>>
+UC_Create ..> UC_Consensus : <<include>>
+UC_ML ..> UC_SHAP : <<include>>
+
+@enduml

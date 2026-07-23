@@ -48,7 +48,7 @@ describe('DashboardComponent', () => {
     expect(cards[2]).toMatchObject({ label: 'Validées humainement', value: 6 });
     expect(cards[3]).toMatchObject({ label: 'Rejetées', value: 1 });
     expect(cards[4]).toMatchObject({ label: 'Agents configurés', value: 3, hint: '3 agents actifs' });
-    expect(cards[5]).toMatchObject({ label: 'Intégrité chaîne', value: 'Oui', accent: 'green' });
+    expect(cards[5]).toMatchObject({ label: 'Intégrité chaîne', value: 'Oui', severity: 'success' });
     expect(cards.some((card) => /score/i.test(card.label))).toBe(false);
   });
 });

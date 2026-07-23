@@ -2,21 +2,29 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { InputText } from 'primeng/inputtext';
+import { Password } from 'primeng/password';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoginCredentials } from '../../../core/models/auth.models';
-import { IconComponent } from '../../../shared/icon.component';
-import { LogoComponent } from '../../../shared/logo.component';
+import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
 
-/**
- * Login — UI moderne alignée sur la charte de la landing page.
- * Icônes SVG internes (IconComponent), aucun composant Material.
- */
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, IconComponent, LogoComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    InputText,
+    Password,
+    Button,
+    Message,
+    ProgressSpinner,
+  ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -26,18 +34,28 @@ export class LoginComponent {
 
   loginForm: FormGroup;
   isLoading = signal(false);
-  hidePassword = signal(true);
   errorMessage = signal<string | null>(null);
+  /** Blocks aggressive Chrome autofill until the user focuses the field. */
+  readonly emailReadonly = signal(true);
+  /** UI-only: hide broken video and keep CSS gradient fallback. */
+  readonly videoFailed = signal(false);
   returnUrl = '/decisions';
 
   constructor() {
-    this.loginForm = this.fb.group({
+    this.loginForm = this.fb.nonNullable.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
     });
 
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
+  }
+
+  onVideoError(): void {
+    this.videoFailed.set(true);
+  }
+
+  unlockEmailField(): void {
+    this.emailReadonly.set(false);
   }
 
   onSubmit(): void {
@@ -49,24 +67,33 @@ export class LoginComponent {
     }
 
     this.isLoading.set(true);
-    const credentials: LoginCredentials = this.loginForm.value;
+    const { email, password } = this.loginForm.getRawValue();
+    const credentials: LoginCredentials = {
+      email: email.trim(),
+      password,
+    };
 
     this.authService.login(credentials).subscribe({
-      next: () => {
-        this.router.navigate([this.returnUrl]);
+      next: (response) => {
+        const role = response.user?.role;
+        let defaultUrl = '/decisions';
+        if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
+        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
+        const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        void this.router.navigate([target]);
       },
-      error: (error) => {
+      error: (error: Error & { status?: number }) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error?.message || 'Une erreur est survenue');
+        this.errorMessage.set(
+          error?.message && !this.looksTechnical(error.message)
+            ? error.message
+            : AuthService.resolveLoginErrorMessage(error),
+        );
       },
       complete: () => {
         this.isLoading.set(false);
       },
     });
-  }
-
-  togglePasswordVisibility(): void {
-    this.hidePassword.update((value) => !value);
   }
 
   hasError(field: string): boolean {
@@ -88,5 +115,9 @@ export class LoginComponent {
       return `Minimum ${minLength} caractères`;
     }
     return '';
+  }
+
+  private looksTechnical(message: string): boolean {
+    return /http|stack|exception|at\s+\w+\.|localhost:\d+/i.test(message);
   }
 }

@@ -1,12 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { IconComponent } from '../../shared/icon.component';
-import {
-  EmptyStateComponent,
-  ErrorStateComponent,
-  LoadingSkeletonComponent,
-  PageHeaderComponent,
-} from '../../shared/ui';
+import { FormsModule } from '@angular/forms';
+import { Card } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { Select } from 'primeng/select';
+import { DatePicker } from 'primeng/datepicker';
+import { ProgressBar } from 'primeng/progressbar';
+import { Skeleton } from 'primeng/skeleton';
+import { Message } from 'primeng/message';
+import { Button } from 'primeng/button';
 import { ComparaisonAgent, ComparaisonService } from '../../core/services/comparaison.service';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 
@@ -26,12 +29,17 @@ type SortDir = 'asc' | 'desc';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     DecimalPipe,
-    IconComponent,
-    PageHeaderComponent,
-    LoadingSkeletonComponent,
-    ErrorStateComponent,
-    EmptyStateComponent,
+    Card,
+    TableModule,
+    Tag,
+    Select,
+    DatePicker,
+    ProgressBar,
+    Skeleton,
+    Message,
+    Button,
   ],
   templateUrl: './comparaison.component.html',
   styleUrl: './comparaison.component.scss',
@@ -45,10 +53,40 @@ export class ComparaisonComponent {
   readonly sortField = signal<SortField>('scorePourcentage');
   readonly sortDir = signal<SortDir>('desc');
 
+  readonly providerFilter = signal<string | null>(null);
+  readonly modelFilter = signal<string | null>(null);
+  /** UI only — API aggregates have no per-period timestamps; values are never recalculated. */
+  readonly periodRange = signal<Date[] | null>(null);
+
+  readonly providerOptions = computed(() => {
+    const values = [...new Set(this.agentsData().map((a) => a.fournisseur).filter(Boolean))];
+    return [{ label: 'Tous les providers', value: null }, ...values.map((v) => ({ label: v, value: v }))];
+  });
+
+  readonly modelOptions = computed(() => {
+    const values = [...new Set(this.agentsData().map((a) => a.modele).filter(Boolean))];
+    return [{ label: 'Tous les modèles', value: null }, ...values.map((v) => ({ label: v, value: v }))];
+  });
+
+  readonly filteredAgentsData = computed(() => {
+    const provider = this.providerFilter();
+    const model = this.modelFilter();
+    return this.agentsData().filter((agent) => {
+      if (provider && agent.fournisseur !== provider) return false;
+      if (model && agent.modele !== model) return false;
+      return true;
+    });
+  });
+
+  readonly periodFilterActive = computed(() => {
+    const range = this.periodRange();
+    return Array.isArray(range) && range.some((d) => !!d);
+  });
+
   readonly agents = computed<ComparaisonAgent[]>(() => {
     const field = this.sortField();
     const dir = this.sortDir();
-    const sorted = [...this.agentsData()].sort((a, b) => {
+    const sorted = [...this.filteredAgentsData()].sort((a, b) => {
       const va = a[field] as number | string;
       const vb = b[field] as number | string;
       if (typeof va === 'string') {
@@ -66,7 +104,7 @@ export class ComparaisonComponent {
   readonly GAP = 40;
 
   readonly chartBars = computed(() => {
-    const list = [...this.agentsData()].sort((a, b) => b.scorePourcentage - a.scorePourcentage);
+    const list = [...this.filteredAgentsData()].sort((a, b) => b.scorePourcentage - a.scorePourcentage);
     const max = Math.max(...list.map((a) => a.scorePourcentage), 1);
     return list.map((a, i) => ({
       ...a,
@@ -77,7 +115,7 @@ export class ComparaisonComponent {
   });
 
   readonly svgWidth = computed(() =>
-    Math.max(this.agentsData().length, 1) * (this.BAR_W + this.GAP) - this.GAP + 60,
+    Math.max(this.filteredAgentsData().length, 1) * (this.BAR_W + this.GAP) - this.GAP + 60,
   );
 
   constructor() {
@@ -91,6 +129,12 @@ export class ComparaisonComponent {
         this.loading.set(false);
       },
     });
+  }
+
+  clearFilters(): void {
+    this.providerFilter.set(null);
+    this.modelFilter.set(null);
+    this.periodRange.set(null);
   }
 
   sort(field: SortField): void {
@@ -114,9 +158,9 @@ export class ComparaisonComponent {
   }
 
   rankIcon(rang: number): string {
-    if (rang === 1) return '🥇';
-    if (rang === 2) return '🥈';
-    if (rang === 3) return '🥉';
+    if (rang === 1) return '1';
+    if (rang === 2) return '2';
+    if (rang === 3) return '3';
     return String(rang);
   }
 
@@ -124,6 +168,19 @@ export class ComparaisonComponent {
     if (rate >= 70) return 'score-high';
     if (rate >= 40) return 'score-mid';
     return 'score-low';
+  }
+
+  scoreSeverity(rate: number): 'success' | 'warn' | 'danger' {
+    if (rate >= 70) return 'success';
+    if (rate >= 40) return 'warn';
+    return 'danger';
+  }
+
+  providerSeverity(provider: string): 'info' | 'secondary' | 'success' {
+    const normalized = provider.toLowerCase();
+    if (normalized.includes('groq')) return 'success';
+    if (normalized.includes('openrouter')) return 'info';
+    return 'secondary';
   }
 
   private barColor(index: number): string {

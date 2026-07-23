@@ -1,0 +1,12 @@
+@if (item.routerLink) {
+  <a
+    class="layout-menuitem-link"
+    [routerLink]="item.routerLink"
+    routerLinkActive="active-route"
+    [routerLinkActiveOptions]="{ exact: item.exact ?? item.routerLink === '/dashboard' }"
+    pRipple
+  >
+    <i [class]="item.icon" class="layout-menuitem-icon" aria-hidden="true"></i>
+    <span class="layout-menuitem-text">{{ item.label }}</span>
+  </a>
+}
