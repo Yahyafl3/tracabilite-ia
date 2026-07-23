@@ -64,6 +64,15 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of(
+                        "message", ex.getMessage() != null ? ex.getMessage() : "Identifiants invalides",
+                        "code", "INVALID_CREDENTIALS"
+                ));
+    }
+
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<Map<String, String>> handleUnauthorized(UnauthorizedActionException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)

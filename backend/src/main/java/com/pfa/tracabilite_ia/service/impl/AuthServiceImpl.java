@@ -1,6 +1,7 @@
 package com.pfa.tracabilite_ia.service.impl;
 
 import com.pfa.tracabilite_ia.entities.Utilisateur;
+import com.pfa.tracabilite_ia.exception.InvalidCredentialsException;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,9 +28,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Utilisateur login(String email, String motDePasse) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(motDePasse, utilisateur.getMotDePasseHash())) {
-            throw new RuntimeException("Mot de passe incorrect");
+            throw new InvalidCredentialsException();
         }
         return utilisateur;
     }
