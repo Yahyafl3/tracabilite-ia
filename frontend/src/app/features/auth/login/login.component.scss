@@ -236,6 +236,7 @@
 }
 
 .login-form {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -321,17 +322,20 @@
   gap: 1rem;
 }
 
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.form-extras--end {
+  justify-content: flex-end;
 }
 
-.remember-me label {
-  font-size: 0.875rem;
-  color: #475569;
-  cursor: pointer;
-  font-weight: 500;
+/* Off-screen decoys so Chrome autofill does not target the real fields. */
+.login-autofill-decoy {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .forgot-link {
@@ -432,7 +436,6 @@
 
 :host-context(html.app-dark) .login-header p,
 :host-context(html.app-dark) .login-back,
-:host-context(html.app-dark) .remember-me label,
 :host-context(html.app-dark) .login-help {
   color: #9ca3af;
 }

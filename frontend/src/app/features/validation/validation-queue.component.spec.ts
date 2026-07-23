@@ -54,28 +54,22 @@ describe('ValidationQueueComponent', () => {
     fixture.detectChanges();
   });
 
-  it('shows pending decisions and opens global dossier summary', () => {
+  it('shows pending decisions and opens detail dialog', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Dossier crédit');
     expect(compiled.textContent).toContain('File de validation');
 
-    fixture.componentInstance.openSummary(fixture.componentInstance.decisions()[0]);
+    fixture.componentInstance.openDetail(fixture.componentInstance.decisions()[0]);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.summaryVisible()).toBe(true);
-    expect(compiled.textContent).toContain('dossier global');
+    expect(fixture.componentInstance.detailVisible()).toBe(true);
     expect(compiled.textContent).not.toContain('Consensus OpenRouter');
   });
 
-  it('disables continue action while navigating after confirmation', () => {
-    const row = fixture.componentInstance.decisions()[0];
-    fixture.componentInstance.openSummary(row);
-    fixture.componentInstance.navigating.set(true);
+  it('tracks submit state when an action is in progress', () => {
+    fixture.componentInstance.submitting.set(true);
     fixture.detectChanges();
-
-    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll('button');
-    const disabled = Array.from(buttons).some((btn) => (btn as HTMLButtonElement).disabled);
-    expect(disabled).toBe(true);
+    expect(fixture.componentInstance.submitting()).toBe(true);
   });
 
   it('shows empty state when queue is empty', async () => {

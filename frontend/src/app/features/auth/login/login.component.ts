@@ -7,7 +7,6 @@ import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { Checkbox } from 'primeng/checkbox';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
 
@@ -23,7 +22,6 @@ import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
     Button,
     Message,
     ProgressSpinner,
-    Checkbox,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -37,15 +35,16 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  /** Blocks aggressive Chrome autofill until the user focuses the field. */
+  readonly emailReadonly = signal(true);
   /** UI-only: hide broken video and keep CSS gradient fallback. */
   readonly videoFailed = signal(false);
   returnUrl = '/decisions';
 
   constructor() {
-    this.loginForm = this.fb.group({
+    this.loginForm = this.fb.nonNullable.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
     });
 
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
@@ -53,6 +52,10 @@ export class LoginComponent {
 
   onVideoError(): void {
     this.videoFailed.set(true);
+  }
+
+  unlockEmailField(): void {
+    this.emailReadonly.set(false);
   }
 
   onSubmit(): void {
@@ -64,11 +67,14 @@ export class LoginComponent {
     }
 
     this.isLoading.set(true);
-    const credentials: LoginCredentials = this.loginForm.value;
+    const { email, password } = this.loginForm.getRawValue();
+    const credentials: LoginCredentials = {
+      email: email.trim(),
+      password,
+    };
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        // Role-based redirect
         const role = response.user?.role;
         let defaultUrl = '/decisions';
         if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
@@ -76,9 +82,13 @@ export class LoginComponent {
         const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
         void this.router.navigate([target]);
       },
-      error: (error) => {
+      error: (error: Error & { status?: number }) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error?.message || 'Une erreur est survenue');
+        this.errorMessage.set(
+          error?.message && !this.looksTechnical(error.message)
+            ? error.message
+            : AuthService.resolveLoginErrorMessage(error),
+        );
       },
       complete: () => {
         this.isLoading.set(false);
@@ -105,5 +115,9 @@ export class LoginComponent {
       return `Minimum ${minLength} caractères`;
     }
     return '';
+  }
+
+  private looksTechnical(message: string): boolean {
+    return /http|stack|exception|at\s+\w+\.|localhost:\d+/i.test(message);
   }
 }

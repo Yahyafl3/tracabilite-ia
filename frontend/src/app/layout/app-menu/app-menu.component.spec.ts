@@ -51,7 +51,7 @@ describe('AppMenuComponent', () => {
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toContain('Validation humaine');
+    expect(labels).toContain('File de validation');
     expect(labels).not.toContain('Utilisateurs');
     expect(labels).not.toContain('Agents Groq');
     expect(labels).not.toContain('Support');

@@ -259,36 +259,24 @@ export class AuthService {
   }
 
   private handleAuthError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'Une erreur est survenue';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Erreur: ${error.error.message}`;
-    } else {
-      // Server-side error
-      switch (error.status) {
-        case 401:
-          errorMessage = 'Email ou mot de passe incorrect';
-          break;
-        case 403:
-          errorMessage = 'Accès refusé';
-          break;
-        case 404:
-          errorMessage = 'Service non disponible';
-          break;
-        case 422:
-          errorMessage = error.error?.message || 'Données invalides';
-          break;
-        case 500:
-          errorMessage = 'Erreur serveur. Veuillez réessayer plus tard';
-          break;
-        default:
-          errorMessage = error.error?.message || errorMessage;
-      }
-    }
-
+    const errorMessage = AuthService.resolveLoginErrorMessage(error);
     this.authState.update(state => ({ ...state, error: errorMessage }));
     return throwError(() => new Error(errorMessage));
+  }
+
+  /** Public mapping for login UI / tests — never expose backend stack traces. */
+  static resolveLoginErrorMessage(error: { status?: number } | null | undefined): string {
+    const status = error?.status ?? 0;
+    if (status === 400 || status === 401) {
+      return 'Adresse email ou mot de passe incorrect.';
+    }
+    if (status === 403) {
+      return 'Votre compte est désactivé ou vous ne disposez pas des autorisations nécessaires.';
+    }
+    if (status === 0 || status === 500 || status === 502 || status === 503) {
+      return 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
+    }
+    return 'Adresse email ou mot de passe incorrect.';
   }
 
   private setLoading(loading: boolean): void {
@@ -332,6 +320,10 @@ export class AuthService {
         storage.removeItem(this.TOKEN_KEY);
         storage.removeItem(this.REFRESH_TOKEN_KEY);
         storage.removeItem(this.USER_KEY);
+        // Never persist credentials; clear any legacy remembered-email keys.
+        storage.removeItem('remembered_email');
+        storage.removeItem('login_email');
+        storage.removeItem('rememberMe');
       });
     }
 
