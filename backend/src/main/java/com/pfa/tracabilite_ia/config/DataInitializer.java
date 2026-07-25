@@ -25,6 +25,7 @@ public class DataInitializer {
         return args -> {
             updateRoleCheckConstraint(jdbcTemplate);
             updateDecisionStatusCheckConstraint(jdbcTemplate);
+            ensureUtilisateurActifColumn(jdbcTemplate);
 
             long userCount = utilisateurRepository.count();
             if (userCount == 0) {
@@ -70,6 +71,17 @@ public class DataInitializer {
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
                 CHECK (role IN ('ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR'))
+                """);
+    }
+
+    /** Soft-disable flag — default true for existing rows. */
+    private void ensureUtilisateurActifColumn(JdbcTemplate jdbcTemplate) {
+        jdbcTemplate.execute("""
+                ALTER TABLE utilisateur
+                ADD COLUMN IF NOT EXISTS actif BOOLEAN NOT NULL DEFAULT TRUE
+                """);
+        jdbcTemplate.execute("""
+                UPDATE utilisateur SET actif = TRUE WHERE actif IS NULL
                 """);
     }
 

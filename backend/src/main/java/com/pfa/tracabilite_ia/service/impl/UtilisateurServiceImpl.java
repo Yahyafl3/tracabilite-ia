@@ -8,11 +8,7 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
 import com.pfa.tracabilite_ia.exception.UnauthorizedActionException;
 import com.pfa.tracabilite_ia.mapper.UtilisateurMapper;
-import com.pfa.tracabilite_ia.repository.AppelIARepository;
-import com.pfa.tracabilite_ia.repository.PasswordResetTokenRepository;
-import com.pfa.tracabilite_ia.repository.SupportMessageRepository;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
-import com.pfa.tracabilite_ia.repository.ValidationActionRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
 import com.pfa.tracabilite_ia.service.UtilisateurService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,36 +25,25 @@ import java.util.UUID;
 public class UtilisateurServiceImpl implements UtilisateurService {
 
     private static final Set<RoleEnum> MANAGED_ROLES = EnumSet.of(
-            RoleEnum.ADMINISTRATEUR,
+            RoleEnum.UTILISATEUR,
             RoleEnum.VALIDATEUR,
-            RoleEnum.AUDITEUR
+            RoleEnum.AUDITEUR,
+            RoleEnum.ADMINISTRATEUR
     );
 
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
     private final UtilisateurMapper utilisateurMapper;
     private final AuthService authService;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final SupportMessageRepository supportMessageRepository;
-    private final AppelIARepository appelIARepository;
-    private final ValidationActionRepository validationActionRepository;
 
     public UtilisateurServiceImpl(UtilisateurRepository utilisateurRepository,
                                   PasswordEncoder passwordEncoder,
                                   UtilisateurMapper utilisateurMapper,
-                                  AuthService authService,
-                                  PasswordResetTokenRepository passwordResetTokenRepository,
-                                  SupportMessageRepository supportMessageRepository,
-                                  AppelIARepository appelIARepository,
-                                  ValidationActionRepository validationActionRepository) {
+                                  AuthService authService) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilisateurMapper = utilisateurMapper;
         this.authService = authService;
-        this.passwordResetTokenRepository = passwordResetTokenRepository;
-        this.supportMessageRepository = supportMessageRepository;
-        this.appelIARepository = appelIARepository;
-        this.validationActionRepository = validationActionRepository;
     }
 
     @Override
@@ -73,6 +58,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setEmail(request.getEmail().trim().toLowerCase());
         utilisateur.setMotDePasseHash(passwordEncoder.encode(request.getMotDePasse()));
         utilisateur.setRole(request.getRole());
+        utilisateur.setActif(true);
         return utilisateurMapper.toResponse(utilisateurRepository.save(utilisateur));
     }
 
@@ -93,14 +79,15 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         assertManagedRole(request.getRole());
         Utilisateur utilisateur = findUtilisateur(id);
 
-        if (utilisateur.getRole() == RoleEnum.UTILISATEUR) {
-            throw new UnauthorizedActionException(
-                    "Seuls les comptes Administrateur, Validateur et Auditeur sont modifiables depuis cette interface.");
-        }
-
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         if (utilisateurRepository.existsByEmailAndIdNot(normalizedEmail, id)) {
             throw new IllegalArgumentException("Email deja utilise : " + normalizedEmail);
+        }
+
+        if (utilisateur.getRole() == RoleEnum.ADMINISTRATEUR
+                && request.getRole() != RoleEnum.ADMINISTRATEUR
+                && isLastActiveAdmin(utilisateur.getId())) {
+            throw new IllegalStateException("Impossible de retirer le rôle du dernier administrateur actif.");
         }
 
         utilisateur.setNom(request.getNom());
@@ -114,33 +101,34 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    public void supprimer(UUID id) {
+    public UtilisateurResponse desactiver(UUID id) {
         Utilisateur utilisateur = findUtilisateur(id);
         Utilisateur currentUser = authService.getCurrentUser();
 
         if (currentUser.getId().equals(id)) {
-            throw new UnauthorizedActionException("Impossible de supprimer votre propre compte.");
+            throw new UnauthorizedActionException("Impossible de désactiver votre propre compte.");
         }
 
-        if (utilisateur.getRole() == RoleEnum.ADMINISTRATEUR) {
-            long adminCount = utilisateurRepository.findAll().stream()
-                    .filter(user -> user.getRole() == RoleEnum.ADMINISTRATEUR)
-                    .count();
-            if (adminCount <= 1) {
-                throw new IllegalStateException("Impossible de supprimer le dernier administrateur.");
-            }
+        if (utilisateur.getRole() == RoleEnum.ADMINISTRATEUR && isLastActiveAdmin(id)) {
+            throw new IllegalStateException("Impossible de désactiver le dernier administrateur actif.");
         }
 
-        if (validationActionRepository.existsByValidateur(utilisateur)) {
-            throw new IllegalStateException(
-                    "Impossible de supprimer cet utilisateur : des validations lui sont encore associées.");
-        }
+        utilisateur.setActif(false);
+        return utilisateurMapper.toResponse(utilisateurRepository.save(utilisateur));
+    }
 
-        passwordResetTokenRepository.deleteByUtilisateur(utilisateur);
-        supportMessageRepository.clearProcessedBy(utilisateur);
-        appelIARepository.clearUtilisateur(utilisateur);
+    @Override
+    public UtilisateurResponse reactiver(UUID id) {
+        Utilisateur utilisateur = findUtilisateur(id);
+        utilisateur.setActif(true);
+        return utilisateurMapper.toResponse(utilisateurRepository.save(utilisateur));
+    }
 
-        utilisateurRepository.delete(utilisateur);
+    private boolean isLastActiveAdmin(UUID candidateId) {
+        return utilisateurRepository.findAll().stream()
+                .filter(user -> user.getRole() == RoleEnum.ADMINISTRATEUR)
+                .filter(Utilisateur::isActif)
+                .noneMatch(user -> !user.getId().equals(candidateId));
     }
 
     private Utilisateur findUtilisateur(UUID id) {
@@ -151,7 +139,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private void assertManagedRole(RoleEnum role) {
         if (role == null || !MANAGED_ROLES.contains(role)) {
             throw new IllegalArgumentException(
-                    "Role non autorise. Roles geres : ADMINISTRATEUR, VALIDATEUR, AUDITEUR.");
+                    "Role non autorise. Roles geres : UTILISATEUR, VALIDATEUR, AUDITEUR, ADMINISTRATEUR.");
         }
     }
 }

@@ -16,5 +16,8 @@ public interface UtilisateurService {
 
     UtilisateurResponse modifier(UUID id, ModifierUtilisateurRequest request);
 
-    void supprimer(UUID id);
+    /** Soft-disable: preserves decisions, validations and audit history. */
+    UtilisateurResponse desactiver(UUID id);
+
+    UtilisateurResponse reactiver(UUID id);
 }

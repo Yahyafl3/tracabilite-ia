@@ -36,6 +36,10 @@ public class Utilisateur {
     @Column(nullable = false)
     private RoleEnum role;
 
+    /** Soft status — false = compte désactivé (historique conservé). */
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean actif = true;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;

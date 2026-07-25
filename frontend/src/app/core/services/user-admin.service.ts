@@ -9,6 +9,7 @@ export interface ManagedUser {
   nom: string;
   email: string;
   role: UserRole;
+  actif?: boolean;
   dateCreation?: string;
 }
 
@@ -26,10 +27,12 @@ export interface UpdateManagedUserRequest {
   role: UserRole;
 }
 
+/** Ordre d’affichage du dropdown admin. Valeurs = RoleEnum backend. */
 export const MANAGED_USER_ROLES: UserRole[] = [
-  UserRole.ADMINISTRATEUR,
+  UserRole.UTILISATEUR,
   UserRole.VALIDATEUR,
   UserRole.AUDITEUR,
+  UserRole.ADMINISTRATEUR,
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -53,7 +56,12 @@ export class UserAdminService {
     return this.http.put<ManagedUser>(`${this.baseUrl}/${id}`, request);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  /** Soft-disable — historique et décisions conservés. */
+  deactivate(id: string): Observable<ManagedUser> {
+    return this.http.delete<ManagedUser>(`${this.baseUrl}/${id}`);
+  }
+
+  reactivate(id: string): Observable<ManagedUser> {
+    return this.http.post<ManagedUser>(`${this.baseUrl}/${id}/reactivate`, {});
   }
 }

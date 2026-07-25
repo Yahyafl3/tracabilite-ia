@@ -230,6 +230,12 @@ public class DecisionServiceImpl implements DecisionService {
 
                 .orElseThrow(() -> new ResourceNotFoundException("Decision introuvable : " + id));
 
+        if (decision.getStatutValidation() != StatutDecisionEnum.BROUILLON) {
+            throw new IllegalStateException(
+                    "Les donnees sources d'une decision ne sont modifiables qu'en statut BROUILLON. "
+                            + "Apres analyse IA ou soumission, utilisez l'historique / une nouvelle decision.");
+        }
+
         mapToEntity(request, decision);
 
         refreshHash(decision);

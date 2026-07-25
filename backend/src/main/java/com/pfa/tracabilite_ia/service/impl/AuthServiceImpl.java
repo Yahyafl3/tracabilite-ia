@@ -2,6 +2,7 @@ package com.pfa.tracabilite_ia.service.impl;
 
 import com.pfa.tracabilite_ia.entities.Utilisateur;
 import com.pfa.tracabilite_ia.exception.InvalidCredentialsException;
+import com.pfa.tracabilite_ia.exception.UnauthorizedActionException;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,6 +32,10 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(motDePasse, utilisateur.getMotDePasseHash())) {
             throw new InvalidCredentialsException();
+        }
+        if (!utilisateur.isActif()) {
+            throw new UnauthorizedActionException(
+                    "Votre compte est désactivé ou vous ne disposez pas des autorisations nécessaires.");
         }
         return utilisateur;
     }

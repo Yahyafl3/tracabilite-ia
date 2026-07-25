@@ -27,7 +27,7 @@ import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { roleLabel } from '../../../core/utils/label.util';
 
 type FormMode = 'create' | 'edit';
-type AccountFilter = 'all' | 'managed' | 'operator';
+type StatusFilter = 'all' | 'active' | 'inactive';
 
 @Component({
   selector: 'app-users-admin',
@@ -64,10 +64,10 @@ export class UsersAdminComponent {
     { label: 'Tous les rôles', value: null as UserRole | null },
     ...this.roleOptions,
   ];
-  readonly accountFilterOptions = [
-    { label: 'Tous les comptes', value: 'all' as AccountFilter },
-    { label: 'Gérés (actifs admin)', value: 'managed' as AccountFilter },
-    { label: 'Opérateurs (non gérés)', value: 'operator' as AccountFilter },
+  readonly statusFilterOptions = [
+    { label: 'Tous les statuts', value: 'all' as StatusFilter },
+    { label: 'Actifs', value: 'active' as StatusFilter },
+    { label: 'Désactivés', value: 'inactive' as StatusFilter },
   ];
 
   readonly users = signal<ManagedUser[]>([]);
@@ -81,17 +81,18 @@ export class UsersAdminComponent {
 
   readonly search = signal('');
   readonly roleFilter = signal<UserRole | null>(null);
-  readonly accountFilter = signal<AccountFilter>('all');
+  readonly statusFilter = signal<StatusFilter>('all');
 
   readonly filteredUsers = computed(() => {
     const query = this.search().trim().toLowerCase();
     const role = this.roleFilter();
-    const account = this.accountFilter();
+    const status = this.statusFilter();
 
     return this.users().filter((user) => {
       if (role && user.role !== role) return false;
-      if (account === 'managed' && !this.isManaged(user)) return false;
-      if (account === 'operator' && this.isManaged(user)) return false;
+      const active = user.actif !== false;
+      if (status === 'active' && !active) return false;
+      if (status === 'inactive' && active) return false;
       if (!query) return true;
       return (
         user.nom.toLowerCase().includes(query) ||
@@ -105,7 +106,7 @@ export class UsersAdminComponent {
     nom: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     motDePasse: ['', [Validators.minLength(6)]],
-    role: [UserRole.VALIDATEUR, Validators.required],
+    role: [UserRole.UTILISATEUR, Validators.required],
   });
 
   constructor() {
@@ -134,7 +135,7 @@ export class UsersAdminComponent {
       nom: '',
       email: '',
       motDePasse: '',
-      role: UserRole.VALIDATEUR,
+      role: UserRole.UTILISATEUR,
     });
     this.form.controls.motDePasse.setValidators([Validators.required, Validators.minLength(6)]);
     this.form.controls.motDePasse.updateValueAndValidity();
@@ -143,10 +144,6 @@ export class UsersAdminComponent {
   }
 
   openEditForm(user: ManagedUser): void {
-    if (!this.isManaged(user)) {
-      this.error.set('Seuls les comptes Administrateur, Validateur et Auditeur sont modifiables ici.');
-      return;
-    }
     this.formMode.set('edit');
     this.editingUserId.set(user.id);
     this.form.reset({
@@ -209,40 +206,55 @@ export class UsersAdminComponent {
     });
   }
 
-  confirmDelete(user: ManagedUser): void {
+  confirmDeactivate(user: ManagedUser): void {
     if (user.id === this.authService.currentUser?.id) {
-      this.error.set('Impossible de supprimer votre propre compte.');
+      this.error.set('Impossible de désactiver votre propre compte.');
       return;
     }
 
     this.confirmation.confirm({
-      header: 'Supprimer l’utilisateur',
-      message: `Supprimer le compte ${user.email} ? Cette action est définitive.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Supprimer',
+      header: 'Désactiver l’utilisateur',
+      message:
+        'Voulez-vous désactiver cet utilisateur ?\nSes décisions et son historique seront conservés.',
+      icon: 'pi pi-ban',
+      acceptLabel: 'Désactiver',
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
-      accept: () => this.deleteUser(user),
+      accept: () => this.deactivateUser(user),
     });
   }
 
-  deleteUser(user: ManagedUser): void {
+  deactivateUser(user: ManagedUser): void {
     this.error.set(null);
     this.success.set(null);
-    this.userAdminService.delete(user.id).subscribe({
+    this.userAdminService.deactivate(user.id).subscribe({
       next: () => {
-        this.success.set('Utilisateur supprimé.');
+        this.success.set('Utilisateur désactivé. Historique conservé.');
         this.loadUsers();
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Suppression impossible.'));
+        this.error.set(resolveHttpErrorMessage(err, 'Désactivation impossible.'));
       },
     });
   }
 
-  isManaged(user: ManagedUser): boolean {
-    return this.roles.includes(user.role);
+  reactivateUser(user: ManagedUser): void {
+    this.error.set(null);
+    this.success.set(null);
+    this.userAdminService.reactivate(user.id).subscribe({
+      next: () => {
+        this.success.set('Utilisateur réactivé.');
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.error.set(resolveHttpErrorMessage(err, 'Réactivation impossible.'));
+      },
+    });
+  }
+
+  isActive(user: ManagedUser): boolean {
+    return user.actif !== false;
   }
 
   roleLabel = roleLabel;

@@ -143,3 +143,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+

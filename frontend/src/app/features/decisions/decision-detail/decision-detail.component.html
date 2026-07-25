@@ -405,7 +405,7 @@
                 </div>
 
                 <div class="modify-block">
-                  <h4 class="section-subtitle">Modifier la décision ML (MODIFIER)</h4>
+                  <h4 class="section-subtitle">Réviser la décision humaine (MODIFIER)</h4>
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
                   <p-select
                     inputId="decisionHumaine"
@@ -417,14 +417,14 @@
                     ariaLabel="Décision humaine finale"
                   />
                   <p-button
-                    label="Enregistrer la modification"
+                    label="Enregistrer la révision humaine"
                     icon="pi pi-save"
                     [outlined]="true"
                     styleClass="mt-2"
                     [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
                     [loading]="validationLoading()"
                     (onClick)="modify()"
-                    ariaLabel="Enregistrer la modification de décision"
+                    ariaLabel="Enregistrer la révision de la décision humaine"
                   />
                 </div>
               </div>

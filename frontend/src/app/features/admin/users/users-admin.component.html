@@ -6,7 +6,7 @@
       <p class="page-eyebrow">Accueil / Administration / Utilisateurs</p>
       <h1>Utilisateurs</h1>
       <p class="page-subtitle">
-        Gestion des comptes Administrateur, Validateur et Auditeur.
+        Gestion des comptes Utilisateur, Validateur, Auditeur et Administrateur.
       </p>
     </div>
     <p-button
@@ -55,16 +55,16 @@
         />
       </div>
       <div class="field">
-        <label for="account-filter">Type de compte</label>
+        <label for="status-filter">Statut</label>
         <p-select
-          inputId="account-filter"
-          [options]="accountFilterOptions"
+          inputId="status-filter"
+          [options]="statusFilterOptions"
           optionLabel="label"
           optionValue="value"
-          [ngModel]="accountFilter()"
-          (ngModelChange)="accountFilter.set($event)"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event)"
           styleClass="w-full"
-          ariaLabel="Filtrer actif ou opérateur"
+          ariaLabel="Filtrer par statut"
         />
       </div>
     </div>
@@ -100,16 +100,16 @@
               <th>Utilisateur</th>
               <th>Email</th>
               <th>Rôle</th>
-              <th>Type</th>
+              <th>Statut</th>
               <th>Créé le</th>
               <th>Actions</th>
             </tr>
           </ng-template>
           <ng-template #body let-user>
-            <tr [class.row-muted]="!isManaged(user)">
+            <tr [class.row-muted]="!isActive(user)">
               <td>
                 <div class="user-cell">
-                  <span class="user-avatar" [class.user-avatar--muted]="!isManaged(user)">
+                  <span class="user-avatar" [class.user-avatar--muted]="!isActive(user)">
                     {{ userInitial(user) }}
                   </span>
                   <span class="user-cell__info">
@@ -126,8 +126,8 @@
               </td>
               <td>
                 <p-tag
-                  [value]="isManaged(user) ? 'Géré' : 'Opérateur'"
-                  [severity]="isManaged(user) ? 'success' : 'secondary'"
+                  [value]="isActive(user) ? 'Actif' : 'Désactivé'"
+                  [severity]="isActive(user) ? 'success' : 'danger'"
                 />
               </td>
               <td>
@@ -138,24 +138,33 @@
               </td>
               <td>
                 <div class="actions">
-                  @if (isManaged(user)) {
-                    <p-button
-                      icon="pi pi-pencil"
-                      [rounded]="true"
-                      [text]="true"
-                      (onClick)="openEditForm(user)"
-                      [attr.aria-label]="'Modifier ' + user.email"
-                    />
-                  }
                   <p-button
-                    icon="pi pi-trash"
-                    severity="danger"
+                    icon="pi pi-pencil"
                     [rounded]="true"
                     [text]="true"
-                    [disabled]="isCurrentUser(user)"
-                    (onClick)="confirmDelete(user)"
-                    [attr.aria-label]="'Supprimer ' + user.email"
+                    (onClick)="openEditForm(user)"
+                    [attr.aria-label]="'Modifier ' + user.email"
                   />
+                  @if (isActive(user)) {
+                    <p-button
+                      icon="pi pi-ban"
+                      severity="danger"
+                      [rounded]="true"
+                      [text]="true"
+                      [disabled]="isCurrentUser(user)"
+                      (onClick)="confirmDeactivate(user)"
+                      [attr.aria-label]="'Désactiver ' + user.email"
+                    />
+                  } @else {
+                    <p-button
+                      icon="pi pi-check-circle"
+                      severity="success"
+                      [rounded]="true"
+                      [text]="true"
+                      (onClick)="reactivateUser(user)"
+                      [attr.aria-label]="'Réactiver ' + user.email"
+                    />
+                  }
                 </div>
               </td>
             </tr>
@@ -184,6 +193,9 @@
           placeholder="Nom complet"
           autocomplete="name"
         />
+        @if (form.controls.nom.invalid && form.controls.nom.touched) {
+          <small class="field-error">Le nom est requis.</small>
+        }
       </div>
 
       <div class="field">
@@ -197,6 +209,9 @@
           placeholder="email@exemple.fr"
           autocomplete="email"
         />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <small class="field-error">Adresse email invalide.</small>
+        }
       </div>
 
       <div class="field">
@@ -232,6 +247,9 @@
           placeholder="••••••••"
           autocomplete="new-password"
         />
+        @if (form.controls.motDePasse.invalid && form.controls.motDePasse.touched) {
+          <small class="field-error">Mot de passe requis (6 caractères minimum).</small>
+        }
       </div>
     </form>
 

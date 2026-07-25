@@ -15,6 +15,7 @@ public class UtilisateurMapper {
                 .nom(utilisateur.getNom())
                 .email(utilisateur.getEmail())
                 .role(utilisateur.getRole())
+                .actif(utilisateur.isActif())
                 .dateCreation(utilisateur.getDateCreation())
                 .build();
     }

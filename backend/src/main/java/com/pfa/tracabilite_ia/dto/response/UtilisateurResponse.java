@@ -14,5 +14,6 @@ public class UtilisateurResponse {
     private String nom;
     private String email;
     private RoleEnum role;
+    private boolean actif;
     private LocalDateTime dateCreation;
 }

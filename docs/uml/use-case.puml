@@ -35,16 +35,15 @@ actor "Agents IA Groq" as Groq
 
 Validator --|> User
 Auditor --|> User
-Admin --|> Validator
-Admin --|> Auditor
+Admin --|> User
 
 rectangle "Application Traçabilité IA" {
   usecase "Login / Logout" as UC_Login
   usecase "Consulter le dashboard" as UC_Dashboard
   usecase "Créer une décision" as UC_Create
-  usecase "Consulter les décisions" as UC_List
+  usecase "Consulter ses décisions" as UC_List
   usecase "Consulter le détail d'une décision" as UC_Detail
-  usecase "Modifier une décision" as UC_Update
+  usecase "Modifier une décision (BROUILLON uniquement)" as UC_Update
   usecase "Consulter le schéma crédit" as UC_Schema
   usecase "Ajouter une source" as UC_AddSource
   usecase "Consulter les sources" as UC_ListSources
@@ -58,7 +57,7 @@ rectangle "Application Traçabilité IA" {
   usecase "Consulter la file de validation" as UC_Pending
   usecase "Approuver une décision" as UC_Approve
   usecase "Rejeter une décision" as UC_Reject
-  usecase "Modifier la décision humaine" as UC_Modify
+  usecase "Réviser la décision humaine" as UC_Modify
   usecase "Review d'une décision" as UC_Review
   usecase "Consulter l'historique de validation" as UC_ValHistory
   usecase "Comparer les modèles IA" as UC_Compare
@@ -68,12 +67,17 @@ rectangle "Application Traçabilité IA" {
   usecase "Gérer les utilisateurs" as UC_Users
   usecase "Créer un utilisateur" as UC_CreateUser
   usecase "Modifier un utilisateur" as UC_UpdateUser
-  usecase "Supprimer un utilisateur" as UC_DeleteUser
+  usecase "Désactiver un utilisateur" as UC_DeactivateUser
+  usecase "Réactiver un utilisateur" as UC_ReactivateUser
   usecase "Consulter le statut Groq" as UC_GroqStatus
   usecase "Relancer les agents en échec" as UC_RetryAgents
+  usecase "Consulter les messages support" as UC_SupportList
+  usecase "Consulter le détail d'un message support" as UC_SupportDetail
+  usecase "Traiter un message support" as UC_SupportTreat
+  usecase "Modifier le statut d'un message support" as UC_SupportStatus
 }
 
-' --- Utilisateur (et héritiers) ---
+' --- Utilisateur ---
 User --> UC_Login
 User --> UC_Dashboard
 User --> UC_Create
@@ -104,11 +108,12 @@ Auditor --> UC_Compare
 
 ' --- Administrateur (spécifique) ---
 Admin --> UC_Users
-Admin --> UC_CreateUser
-Admin --> UC_UpdateUser
-Admin --> UC_DeleteUser
 Admin --> UC_GroqStatus
 Admin --> UC_RetryAgents
+Admin --> UC_SupportList
+Admin --> UC_Audit
+Admin --> UC_Compare
+Admin --> UC_Pending
 
 ' --- Acteurs système ---
 ML --> UC_ML
@@ -121,5 +126,16 @@ UC_Create ..> UC_SHAP : <<include>>
 UC_Create ..> UC_Agents : <<include>>
 UC_Create ..> UC_Consensus : <<include>>
 UC_ML ..> UC_SHAP : <<include>>
+
+' --- Includes gestion utilisateurs ---
+UC_Users ..> UC_CreateUser : <<include>>
+UC_Users ..> UC_UpdateUser : <<include>>
+UC_Users ..> UC_DeactivateUser : <<include>>
+UC_Users ..> UC_ReactivateUser : <<include>>
+
+' --- Includes support admin ---
+UC_SupportTreat ..> UC_SupportDetail : <<include>>
+UC_SupportTreat ..> UC_SupportStatus : <<include>>
+UC_SupportList ..> UC_SupportTreat : <<include>>
 
 @enduml

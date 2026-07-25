@@ -45,9 +45,14 @@ public class UtilisateurController {
         return utilisateurService.modifier(id, request);
     }
 
+    /** Soft-disable (preserves audit / decisions). DELETE kept for admin UI compatibility. */
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void supprimer(@PathVariable UUID id) {
-        utilisateurService.supprimer(id);
+    public UtilisateurResponse desactiver(@PathVariable UUID id) {
+        return utilisateurService.desactiver(id);
+    }
+
+    @PostMapping("/{id}/reactivate")
+    public UtilisateurResponse reactiver(@PathVariable UUID id) {
+        return utilisateurService.reactiver(id);
     }
 }
