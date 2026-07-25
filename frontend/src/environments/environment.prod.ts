@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '',
+  /** Backend origin. Empty = same-origin (Nginx /api proxy). Set API_URL on Vercel. */
+  apiUrl: "",
 };

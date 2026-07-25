@@ -298,6 +298,19 @@ Les noms suivants sont définis dans `.env.example` (à adapter localement) :
 **ML**
 
 - `ML_SERVICE_URL`
+- `PORT` (service ML et backend cloud)
+
+**Frontend / CORS**
+
+- `FRONTEND_URL` (origine autorisée CORS + base des liens reset-password)
+- `FRONTEND_RESET_PASSWORD_URL` (optionnel ; défaut `${FRONTEND_URL}/auth/reset-password`)
+- `API_URL` (build Vercel → `environment.prod.ts`)
+
+**Cloud DB (Neon)**
+
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
 
 **SMTP / support**
 
@@ -306,7 +319,6 @@ Les noms suivants sont définis dans `.env.example` (à adapter localement) :
 - `MAIL_USERNAME`
 - `MAIL_PASSWORD`
 - `MAIL_FROM`
-- `FRONTEND_RESET_PASSWORD_URL`
 - `SUPPORT_EMAIL`
 
 > **Sécurité :** ne jamais committer le fichier `.env`, ni partager les clés API, mots de passe SMTP ou secrets JWT.
@@ -390,6 +402,76 @@ Il n’y a pas de pipeline CI/CD ni de suite E2E automatisée dans le dépôt à
 
 ---
 
+## Déploiement Vercel + Render + Neon
+
+Cible gratuite recommandée pour une démo cloud :
+
+| Composant | Plateforme | Dossier / artéfact |
+|-----------|------------|--------------------|
+| Frontend Angular | **Vercel** | `frontend/` |
+| Backend Spring Boot | **Render** (Web Service Docker) | `backend/` |
+| Service ML Flask | **Render** (Web Service Docker) | `ml-service/` |
+| PostgreSQL | **Neon** | base managée (SSL) |
+
+### 1. Neon (PostgreSQL)
+
+1. Créer un projet Neon et une base.
+2. Récupérer l’URL de connexion (avec `sslmode=require` ou laisser le backend l’ajouter pour `*.neon.tech`).
+3. Noter user / password.
+
+Le backend accepte :
+
+- `DATABASE_URL` au format `postgres://…`, `postgresql://…` ou `jdbc:postgresql://…`
+- et/ou `DATABASE_USERNAME` / `DATABASE_PASSWORD`
+
+`spring.jpa.hibernate.ddl-auto=update` crée/met à jour le schéma **sans** supprimer les données au redémarrage.
+
+### 2. Render — service ML (`ml-service/`)
+
+- Runtime : **Docker**
+- Root directory / Dockerfile path : `ml-service`
+- Health check : `GET /health` → `{"status":"ok"}`
+- Variable : `PORT` (fournie par Render)
+
+### 3. Render — backend (`backend/`)
+
+- Runtime : **Docker**
+- Dockerfile path : `backend`
+- Health check : `GET /actuator/health`
+- Variables minimales :
+
+```text
+PORT                  # fourni par Render
+DATABASE_URL
+DATABASE_USERNAME
+DATABASE_PASSWORD
+FRONTEND_URL          # ex. https://votre-app.vercel.app
+ML_SERVICE_URL        # URL publique du service ML Render
+JWT_SECRET
+GROQ_API_KEY
+MAIL_HOST / MAIL_PORT / MAIL_USERNAME / MAIL_PASSWORD / MAIL_FROM   # si reset-password
+```
+
+CORS autorise uniquement `http://localhost`, `http://localhost:4200` et `FRONTEND_URL` (pas de wildcard avec credentials).
+
+Lien reset-password construit ainsi : `${FRONTEND_URL}/auth/reset-password?token=…` (override possible via `FRONTEND_RESET_PASSWORD_URL`).
+
+### 4. Vercel — frontend (`frontend/`)
+
+1. Importer le monorepo, **Root Directory** = `frontend`.
+2. Build : `npm run build` (injecte `API_URL` puis `ng build`).
+3. Output : `dist/frontend/browser` (voir `frontend/vercel.json`).
+4. Variable de build : `API_URL=https://votre-backend.onrender.com` (sans slash final).
+5. Les rewrites SPA renvoient `index.html` pour `/auth/login`, `/dashboard`, etc.
+
+### 5. Ordre de mise en ligne
+
+1. Neon → 2. ML Render → 3. Backend Render (pointe vers Neon + ML) → 4. Vercel (pointe vers le backend) → 5. vérifier `FRONTEND_URL` côté backend.
+
+Le déploiement **Docker Compose local** (`docker compose up -d --build`) reste inchangé.
+
+---
+
 ## Améliorations futures
 
 - CI/CD ;
@@ -398,7 +480,6 @@ Il n’y a pas de pipeline CI/CD ni de suite E2E automatisée dans le dépôt à
 - stockage documentaire externe ;
 - moteur de recherche avancé ;
 - monitoring ;
-- déploiement cloud ;
 - dataset métier réel validé ;
 - amélioration du modèle ML ;
 - gestion plus avancée des refresh tokens ;

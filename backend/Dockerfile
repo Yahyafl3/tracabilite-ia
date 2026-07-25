@@ -49,8 +49,8 @@ RUN keytool -importcert -noprompt -trustcacerts -alias avast-ssl-scan \
 # Copier le JAR depuis l'étape de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Exposer le port
+# Render injecte PORT ; local / compose = 8080 (voir server.port=${PORT:8080})
+ENV PORT=8080
 EXPOSE 8080
 
-# Lancer l'application
 ENTRYPOINT ["java", "-jar", "app.jar"]

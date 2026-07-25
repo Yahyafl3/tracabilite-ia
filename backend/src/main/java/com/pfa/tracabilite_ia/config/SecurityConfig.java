@@ -6,6 +6,7 @@ import com.pfa.tracabilite_ia.jwt.JwtProvider;
 import com.pfa.tracabilite_ia.security.CustomAccessDeniedHandler;
 import com.pfa.tracabilite_ia.security.CustomAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,7 +23,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -136,14 +140,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${FRONTEND_URL:}") String frontendUrl
+    ) {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost",
-            "http://localhost:4200"
-        ));
+        // Pas de wildcard avec credentials : origines explicites uniquement.
+        Set<String> origins = new LinkedHashSet<>();
+        origins.add("http://localhost");
+        origins.add("http://localhost:4200");
+        String normalizedFrontend = normalizeOrigin(frontendUrl);
+        if (normalizedFrontend != null) {
+            origins.add(normalizedFrontend);
+        }
 
+        configuration.setAllowedOrigins(new ArrayList<>(origins));
         configuration.setAllowedMethods(List.of(
             "GET",
             "POST",
@@ -152,16 +163,24 @@ public class SecurityConfig {
             "PATCH",
             "OPTIONS"
         ));
-
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
+    }
+
+    private static String normalizeOrigin(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String trimmed = value.trim();
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed.isBlank() ? null : trimmed;
     }
 
     @Bean

@@ -13,5 +13,7 @@ COPY config.py feature_validator.py schemas.py sector_schema.py shap_config.py d
 COPY docker-entrypoint.sh .
 RUN sed -i 's/\r//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
+# Render injecte PORT ; local / compose = 5000
+ENV PORT=5000
 EXPOSE 5000
 ENTRYPOINT ["./docker-entrypoint.sh"]

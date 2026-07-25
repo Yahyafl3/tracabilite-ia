@@ -8,6 +8,8 @@ import { ProgressBar } from 'primeng/progressbar';
 import { Skeleton } from 'primeng/skeleton';
 import { DashboardRecentDecision, DashboardService } from '../../core/services/dashboard.service';
 import type { ComparaisonAgent } from '../../core/services/comparaison.service';
+import { AuthService } from '../../core/services/auth.service';
+import { UserRole } from '../../core/models/auth.models';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 
 @Component({
@@ -28,6 +30,17 @@ import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 })
 export class DashboardComponent {
   private readonly dashboardService = inject(DashboardService);
+  private readonly authService = inject(AuthService);
+
+  /** Lien /comparaison : réservé aux rôles autorisés côté API (pas ROLE_USER). */
+  readonly canOpenComparaison = computed(() => {
+    const role = this.authService.currentUser?.role;
+    return (
+      role === UserRole.ADMINISTRATEUR ||
+      role === UserRole.VALIDATEUR ||
+      role === UserRole.AUDITEUR
+    );
+  });
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);

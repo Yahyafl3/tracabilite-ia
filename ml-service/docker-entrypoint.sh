@@ -6,4 +6,5 @@ if [ ! -f artifacts/model.joblib ]; then
   python train_model.py
 fi
 
-exec python app.py
+PORT="${PORT:-5000}"
+exec gunicorn --bind "0.0.0.0:${PORT}" --workers 1 --threads 2 --timeout 120 "app:app"

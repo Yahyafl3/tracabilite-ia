@@ -86,7 +86,9 @@
         <ng-template #header>
           <div class="dashboard-panel__header">
             <span>Performance agents</span>
-            <a routerLink="/comparaison" class="dashboard-link">Voir détails</a>
+            @if (canOpenComparaison()) {
+              <a routerLink="/comparaison" class="dashboard-link">Voir détails</a>
+            }
           </div>
         </ng-template>
 
