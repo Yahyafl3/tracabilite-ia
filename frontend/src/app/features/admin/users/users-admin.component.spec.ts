@@ -75,7 +75,7 @@ describe('UsersAdminComponent', () => {
     fixture.detectChanges();
   });
 
-  it('exposes Utilisateur in role options with backend enum value', () => {
+  it('exposes Agent de crédit label with UTILISATEUR technical value', () => {
     const roles = fixture.componentInstance.roles;
     expect(roles).toContain(UserRole.UTILISATEUR);
     expect(roles).toEqual([
@@ -85,14 +85,15 @@ describe('UsersAdminComponent', () => {
       UserRole.ADMINISTRATEUR,
     ]);
     expect(fixture.componentInstance.roleOptions.map((o) => o.label)).toEqual([
-      'Utilisateur',
+      'Agent de crédit',
       'Validateur',
       'Auditeur',
       'Administrateur',
     ]);
+    expect(fixture.componentInstance.roleOptions[0].value).toBe(UserRole.UTILISATEUR);
   });
 
-  it('filters users by role including Utilisateur', () => {
+  it('filters users by role including Agent de crédit (UTILISATEUR)', () => {
     expect(fixture.componentInstance.filteredUsers()).toHaveLength(3);
 
     fixture.componentInstance.roleFilter.set(UserRole.UTILISATEUR);

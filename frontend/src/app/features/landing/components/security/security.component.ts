@@ -25,7 +25,7 @@ export class SecurityComponent {
     {
       icon: 'users',
       title: 'Gestion des rôles',
-      description: 'Utilisateur, validateur, auditeur et administrateur.',
+      description: 'Agent de crédit, validateur, auditeur et administrateur.',
     },
     {
       icon: 'history',

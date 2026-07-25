@@ -23,7 +23,7 @@ export class HowItWorksComponent {
       icon: 'file-text',
       title: 'Saisie du dossier',
       description:
-        "L'utilisateur saisit le contexte, la demande et les données métier.",
+        "L'agent de crédit saisit le dossier client (demande et données financières).",
     },
     {
       number: '02',

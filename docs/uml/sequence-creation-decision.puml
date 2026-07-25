@@ -7,18 +7,24 @@ skinparam noteBorderColor #94A3B8
 
 title Séquence — Création d'une décision (analyse crédit)
 
-actor "Utilisateur" as User
+actor "Agent de crédit" as User
 participant "Frontend Angular" as FE
 participant "Backend Spring Boot" as BE
 participant "Service ML Python" as ML
 participant "API Groq" as Groq
 database "PostgreSQL" as DB
 
-User -> FE : Saisir description, contexte\net features crédit
+note over User
+  Rôle technique : UTILISATEUR
+  (Spring ROLE_USER).
+  Le client n'a pas de compte.
+end note
+
+User -> FE : Saisir le dossier client\n(description, features crédit)
 FE -> BE : POST /api/decisions/analyze\n(JWT + CreditFeaturesRequest)
 activate BE
 
-BE -> BE : Vérifier JWT et rôles\n(USER / ADMIN)
+BE -> BE : Vérifier JWT et rôles\n(ROLE_USER / ROLE_ADMIN)
 BE -> BE : Valider les features crédit
 
 BE -> DB : INSERT Decision (BROUILLON)\n+ DecisionHistory CREATED / ML_STARTED

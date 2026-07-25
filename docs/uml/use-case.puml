@@ -26,21 +26,31 @@ skinparam rectangle {
 
 title Cas d'utilisation — Traçabilité IA
 
-actor "Utilisateur" as User
+actor "Agent de crédit" as User
 actor "Validateur" as Validator
 actor "Auditeur" as Auditor
 actor "Administrateur" as Admin
 actor "Service ML" as ML
 actor "Agents IA Groq" as Groq
 
+note left of User
+  Employé interne (ex. agent de crédit,
+  chargé de dossier, analyste métier).
+  Rôle technique dans le code :
+  UTILISATEUR → Spring ROLE_USER
+  Le client (demandeur de crédit)
+  n'a pas de compte applicatif.
+end note
+
 Validator --|> User
 Auditor --|> User
 Admin --|> User
 
 rectangle "Application Traçabilité IA" {
-  usecase "Login / Logout" as UC_Login
+  usecase "Se connecter / Se déconnecter" as UC_Login
   usecase "Consulter le dashboard" as UC_Dashboard
   usecase "Créer une décision" as UC_Create
+  usecase "Saisir les données du client" as UC_ClientData
   usecase "Consulter ses décisions" as UC_List
   usecase "Consulter le détail d'une décision" as UC_Detail
   usecase "Modifier une décision (BROUILLON uniquement)" as UC_Update
@@ -50,6 +60,12 @@ rectangle "Application Traçabilité IA" {
   usecase "Supprimer une source" as UC_DelSource
   usecase "Consulter l'historique" as UC_History
   usecase "Soumettre à validation" as UC_Submit
+  usecase "Suivre le statut du dossier" as UC_Status
+  usecase "Lancer l'analyse IA" as UC_Analyze
+  usecase "Consulter la prédiction ML" as UC_ViewML
+  usecase "Consulter les facteurs SHAP" as UC_ViewSHAP
+  usecase "Consulter les analyses Groq" as UC_ViewAgents
+  usecase "Consulter le consensus" as UC_ViewConsensus
   usecase "Obtenir une prédiction ML" as UC_ML
   usecase "Générer une explication SHAP" as UC_SHAP
   usecase "Interroger les agents IA" as UC_Agents
@@ -77,10 +93,11 @@ rectangle "Application Traçabilité IA" {
   usecase "Modifier le statut d'un message support" as UC_SupportStatus
 }
 
-' --- Utilisateur ---
+' --- Agent de crédit (UTILISATEUR / ROLE_USER) ---
 User --> UC_Login
 User --> UC_Dashboard
 User --> UC_Create
+User --> UC_ClientData
 User --> UC_List
 User --> UC_Detail
 User --> UC_Update
@@ -90,6 +107,12 @@ User --> UC_ListSources
 User --> UC_DelSource
 User --> UC_History
 User --> UC_Submit
+User --> UC_Status
+User --> UC_Analyze
+User --> UC_ViewML
+User --> UC_ViewSHAP
+User --> UC_ViewAgents
+User --> UC_ViewConsensus
 
 ' --- Validateur ---
 Validator --> UC_Pending
@@ -121,11 +144,18 @@ ML --> UC_SHAP
 Groq --> UC_Agents
 
 ' --- Includes création ---
-UC_Create ..> UC_ML : <<include>>
-UC_Create ..> UC_SHAP : <<include>>
-UC_Create ..> UC_Agents : <<include>>
-UC_Create ..> UC_Consensus : <<include>>
+UC_Create ..> UC_ClientData : <<include>>
+UC_Create ..> UC_Analyze : <<include>>
+UC_Analyze ..> UC_ML : <<include>>
+UC_Analyze ..> UC_SHAP : <<include>>
+UC_Analyze ..> UC_Agents : <<include>>
+UC_Analyze ..> UC_Consensus : <<include>>
 UC_ML ..> UC_SHAP : <<include>>
+UC_Detail ..> UC_ViewML : <<include>>
+UC_Detail ..> UC_ViewSHAP : <<include>>
+UC_Detail ..> UC_ViewAgents : <<include>>
+UC_Detail ..> UC_ViewConsensus : <<include>>
+UC_Detail ..> UC_Status : <<include>>
 
 ' --- Includes gestion utilisateurs ---
 UC_Users ..> UC_CreateUser : <<include>>

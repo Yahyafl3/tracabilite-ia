@@ -6,7 +6,7 @@ Documentation visuelle alignée sur le code source du dépôt (`backend`, `front
 
 | Fichier | Description |
 | --- | --- |
-| [`use-case.puml`](use-case.puml) | Cas d’utilisation : acteurs métier et système (Utilisateur, Validateur, Administrateur, Auditeur, Service ML, Agents Groq). |
+| [`use-case.puml`](use-case.puml) | Cas d’utilisation : acteurs métier et système (Agent de crédit / `UTILISATEUR`, Validateur, Administrateur, Auditeur, Service ML, Agents Groq). |
 | [`sequence-creation-decision.puml`](sequence-creation-decision.puml) | Séquence de création d’une décision via `POST /api/decisions/analyze` (ML + SHAP, agents Groq, consensus, hashes, PostgreSQL). |
 | [`sequence-validation-humaine.puml`](sequence-validation-humaine.puml) | Séquence de validation humaine : file `EN_ATTENTE`, consultation du dossier, approuver / rejeter / modifier / review. |
 | [`class-diagram.puml`](class-diagram.puml) | Classes JPA principales du domaine décisionnel (`Decision`, `ExplanationFactor`, `ReponseAgentIA`, `ValidationAction`, etc.). |

@@ -65,7 +65,7 @@ export function roleLabel(role: UserRole | string): string {
     [UserRole.ADMINISTRATEUR]: 'Administrateur',
     [UserRole.VALIDATEUR]: 'Validateur',
     [UserRole.AUDITEUR]: 'Auditeur',
-    [UserRole.UTILISATEUR]: 'Utilisateur',
+    [UserRole.UTILISATEUR]: 'Agent de crédit',
   };
   return map[String(role)] ?? String(role);
 }

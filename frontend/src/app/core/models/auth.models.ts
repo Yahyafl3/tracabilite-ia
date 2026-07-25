@@ -48,10 +48,12 @@ export interface User {
   derniereConnexion?: Date;
 }
 
+/** Rôles des comptes internes. UTILISATEUR = Agent de crédit (pas le client). */
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
   VALIDATEUR = 'VALIDATEUR',
   AUDITEUR = 'AUDITEUR',
+  /** Agent de crédit — valeur technique backend inchangée. */
   UTILISATEUR = 'UTILISATEUR',
 }
 

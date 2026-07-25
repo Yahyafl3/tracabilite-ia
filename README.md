@@ -18,7 +18,8 @@ Traçabilité IA est une application web permettant d’analyser des demandes de
 ## Fonctionnalités principales
 
 - authentification JWT ;
-- rôles : Administrateur, Utilisateur, Validateur, Auditeur ;
+- rôles internes : Administrateur, Agent de crédit (`UTILISATEUR`), Validateur, Auditeur ;
+- le client (demandeur de crédit) n’a **pas** de compte applicatif ;
 - création et consultation des décisions ;
 - analyse de demandes de crédit ;
 - prédiction ML (régression logistique) ;
@@ -100,7 +101,7 @@ Le projet utilise des empreintes **SHA-256** et un **chaînage d’intégrité**
 ### Schéma simplifié
 
 ```text
-Utilisateur
+Agent de crédit (compte interne)
    ↓
 Frontend Angular (Nginx :80)
    ↓
@@ -112,19 +113,28 @@ Backend Spring Boot (:8080)
 
 ---
 
+## Agent de crédit vs client
+
+**L’Agent de crédit** est un utilisateur interne de l’application (rôle technique `UTILISATEUR`, autorité Spring `ROLE_USER`). Il saisit et suit les dossiers des clients. Exemples de profils : agent de crédit, chargé de dossier, analyste métier.
+
+**Le client** (demandeur de crédit) est uniquement la personne dont les données sont saisies dans une décision. Il n’accède pas à l’application et ne possède pas de compte. Aucun rôle `CLIENT` n’existe.
+
+---
+
 ## Workflow principal
 
-1. L’utilisateur s’authentifie (JWT).
-2. Il saisit une demande de crédit.
-3. Le backend appelle le service ML.
-4. Le service ML retourne la prédiction et les facteurs SHAP.
-5. Le backend interroge les trois agents Groq.
-6. Le système calcule un consensus informatif.
-7. Le dossier complet est enregistré avec ses hashes SHA-256.
-8. La décision passe en attente de validation (`EN_ATTENTE`).
-9. Le validateur humain consulte le **dossier complet** (ML, SHAP, agents, sources, historique).
-10. La décision humaine finale est enregistrée (`APPROUVEE`, `REJETEE`, `MODIFIEE`, etc.).
-11. L’audit et l’historique restent consultables.
+1. L’administrateur crée le compte de l’agent de crédit (ou utilisation du compte de démo).
+2. L’agent de crédit s’authentifie (JWT).
+3. Il crée une décision et saisit les données du **dossier client**.
+4. Le backend appelle le service ML.
+5. Le service ML retourne la prédiction et les facteurs SHAP.
+6. Le backend interroge les trois agents Groq.
+7. Le système calcule un consensus informatif.
+8. Le dossier complet est enregistré avec ses hashes SHA-256.
+9. La décision passe en attente de validation (`EN_ATTENTE`).
+10. Le validateur humain consulte le **dossier complet** (ML, SHAP, agents, sources, historique) et prend la **décision finale**.
+11. L’auditeur contrôle l’historique et l’intégrité.
+12. L’agent de crédit peut suivre le statut de ses dossiers (sans valider définitivement).
 
 La validation humaine porte sur le **dossier complet**, et non sur chaque agent séparément.
 
@@ -176,14 +186,16 @@ OpenRouter reste présent dans la configuration pour la compatibilité avec l’
 
 ## Rôles utilisateurs
 
-| Rôle | Accès principaux |
-|------|------------------|
-| **Administrateur** | Utilisateurs, supervision Groq, support, audit, décisions, dashboard, validation |
-| **Utilisateur** | Création et consultation des décisions, comparaison, dashboard |
-| **Validateur** | File de validation, consultation du dossier, décision humaine finale |
-| **Auditeur** | Module d’audit et éléments d’intégrité |
+| Rôle affiché | Valeur technique | Accès principaux |
+|--------------|------------------|------------------|
+| **Administrateur** | `ADMINISTRATEUR` → `ROLE_ADMIN` | Comptes internes, supervision Groq, support, audit, décisions, dashboard, validation |
+| **Agent de crédit** | `UTILISATEUR` → `ROLE_USER` | Dashboard, création / consultation de ses décisions, saisie dossier client, analyse IA (consultation), soumission à validation |
+| **Validateur** | `VALIDATEUR` → `ROLE_VALIDATOR` | File de validation, consultation du dossier, **décision humaine finale** |
+| **Auditeur** | `AUDITEUR` → `ROLE_AUDITOR` | Module d’audit et éléments d’intégrité |
 
-Les garde-fous d’accès sont définis côté frontend (`roleGuard`) et côté backend (Spring Security).
+L’Agent de crédit **ne peut pas** gérer les comptes, accéder à `/admin/*`, modifier ML/SHAP/Groq, ni valider définitivement une décision.
+
+Les garde-fous d’accès sont définis côté frontend (`roleGuard`) et côté backend (Spring Security / `@PreAuthorize`).
 
 ---
 
@@ -310,7 +322,7 @@ Si la base contient déjà des utilisateurs, le seed ne recrée pas les comptes 
 | Email | Mot de passe (dev) | Rôle |
 |-------|--------------------|------|
 | `admin@tracabilite.ia` | `admin123` | Administrateur |
-| `user@tracabilite.ia` | `user123` | Utilisateur |
+| `user@tracabilite.ia` | `user123` | Agent de crédit (`UTILISATEUR`) |
 | `validateur@tracabilite.ia` | `validateur123` | Validateur |
 | `auditeur@tracabilite.ia` | `auditor123` | Auditeur |
 
@@ -349,8 +361,8 @@ Il n’y a pas de pipeline CI/CD ni de suite E2E automatisée dans le dépôt à
 
 ## Scénario de démonstration recommandé
 
-1. Connexion avec le compte **Utilisateur**.
-2. Création d’une demande de crédit.
+1. Connexion avec le compte **Agent de crédit** (`user@tracabilite.ia`).
+2. Création d’une décision pour un **dossier client**.
 3. Affichage de la prédiction ML et des facteurs SHAP.
 4. Affichage des réponses des agents Groq (si clé configurée).
 5. Affichage du consensus multi-agents.

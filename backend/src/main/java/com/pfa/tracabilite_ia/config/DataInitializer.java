@@ -102,12 +102,12 @@ public class DataInitializer {
         String email = "user@tracabilite.ia";
         if (!utilisateurRepository.existsByEmail(email)) {
             Utilisateur user = new Utilisateur();
-            user.setNom("Utilisateur");
+            user.setNom("Agent de crédit");
             user.setEmail(email);
             user.setMotDePasseHash(passwordEncoder.encode("user123"));
             user.setRole(RoleEnum.UTILISATEUR);
             utilisateurRepository.save(user);
-            log.info(">>> Utilisateur user cree : {} / user123", email);
+            log.info(">>> Agent de credit (UTILISATEUR) cree : {} / user123", email);
         }
     }
 

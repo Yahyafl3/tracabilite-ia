@@ -37,10 +37,12 @@ describe('AppMenuComponent', () => {
       .map((item) => item.label);
 
     expect(labels).toContain('Dashboard');
+    expect(labels).toContain('Mes décisions');
     expect(labels).toContain('Audit');
     expect(labels).toContain('Utilisateurs');
     expect(labels).toContain('Agents Groq');
     expect(labels).toContain('Support');
+    expect(labels).toContain('Comparaison IA');
     expect(labels).not.toContain('Consensus OpenRouter');
   });
 
@@ -55,5 +57,21 @@ describe('AppMenuComponent', () => {
     expect(labels).not.toContain('Utilisateurs');
     expect(labels).not.toContain('Agents Groq');
     expect(labels).not.toContain('Support');
+  });
+
+  it('shows only Agent de crédit menus for UTILISATEUR role', async () => {
+    const fixture = await create(UserRole.UTILISATEUR);
+    const labels = fixture.componentInstance
+      .model()
+      .flatMap((group) => group.items ?? [])
+      .map((item) => item.label);
+
+    expect(labels).toEqual(['Dashboard', 'Mes décisions', 'Nouvelle décision']);
+    expect(labels).not.toContain('Utilisateurs');
+    expect(labels).not.toContain('Agents Groq');
+    expect(labels).not.toContain('Support');
+    expect(labels).not.toContain('File de validation');
+    expect(labels).not.toContain('Comparaison IA');
+    expect(labels).not.toContain('Audit');
   });
 });

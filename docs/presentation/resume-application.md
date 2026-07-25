@@ -28,9 +28,10 @@ L’objectif est de garantir la transparence, l’explicabilité, l’intégrit�
 
 ## Acteurs principaux
 
-- **Utilisateur** : s’authentifie, crée et consulte les décisions (analyse crédit).
+- **Agent de crédit** (rôle technique `UTILISATEUR` / Spring `ROLE_USER`) : employé interne qui s’authentifie, saisit et suit les dossiers des clients. Il n’est pas le client final.
+- **Client / demandeur de crédit** : personne dont les données sont saisies dans une décision ; **pas de compte** dans l’application.
 - **Validateur humain** : analyse le dossier complet (ML, SHAP, agents, sources) et prend la décision finale (approuver, rejeter, modifier, review).
-- **Administrateur** : gère les utilisateurs, consulte l’audit et le statut des agents Groq.
+- **Administrateur** : gère les comptes internes, consulte l’audit et le statut des agents Groq.
 - **Auditeur** : consulte l’audit des décisions et le résumé d’intégrité (rôle distinct dans l’application).
 - **Service ML** : produit la prédiction et l’explication SHAP via un seul appel `/predict`.
 - **Agents IA Groq** : fournissent des recommandations complémentaires et alimentent le consensus ; ils ne prennent pas la décision finale.

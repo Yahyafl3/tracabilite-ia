@@ -50,12 +50,14 @@ export class AppMenuComponent {
         label: 'Application',
         items: [
           { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
-          { label: 'Décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+          { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
           { label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
         ],
       },
     ];
 
+    // Analyse : réservée aux rôles effectivement autorisés côté API
+    // (ComparaisonController = ADMIN / VALIDATOR / AUDITOR — pas ROLE_USER).
     const analysisItems: AppMenuItem[] = [];
     if (canValidate) {
       analysisItems.push({
@@ -64,16 +66,18 @@ export class AppMenuComponent {
         routerLink: '/validation',
       });
     }
-    analysisItems.push({
-      label: 'Comparaison IA',
-      icon: 'pi pi-chart-bar',
-      routerLink: '/comparaison',
-    });
     if (isAdmin) {
+      analysisItems.push({
+        label: 'Comparaison IA',
+        icon: 'pi pi-chart-bar',
+        routerLink: '/comparaison',
+      });
       analysisItems.push({ label: 'Audit', icon: 'pi pi-shield', routerLink: '/audit' });
     }
 
-    items.push({ label: 'Analyse', items: analysisItems });
+    if (analysisItems.length > 0) {
+      items.push({ label: 'Analyse', items: analysisItems });
+    }
 
     if (isAdmin) {
       items.push({

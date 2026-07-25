@@ -85,7 +85,9 @@ export const routes: Routes = [
       },
       {
         path: 'comparaison',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
+        canActivate: [
+          roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR, UserRole.AUDITEUR]),
+        ],
         loadComponent: () =>
           import('./features/comparaison/comparaison.component').then((m) => m.ComparaisonComponent),
       },
