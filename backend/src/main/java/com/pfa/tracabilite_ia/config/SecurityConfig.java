@@ -149,6 +149,7 @@ public class SecurityConfig {
         Set<String> origins = new LinkedHashSet<>();
         origins.add("http://localhost");
         origins.add("http://localhost:4200");
+        origins.add("https://tracabilite-ia.vercel.app");
         String normalizedFrontend = normalizeOrigin(frontendUrl);
         if (normalizedFrontend != null) {
             origins.add(normalizedFrontend);

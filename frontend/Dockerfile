@@ -12,6 +12,9 @@ RUN npm ci --legacy-peer-deps
 # Copier le code source
 COPY . .
 
+# Docker local : appels relatifs (/api → Nginx → backend). Vercel utilise le défaut Render.
+ENV API_URL=
+
 # Build l'application Angular pour production
 RUN npm run build
 

@@ -461,8 +461,19 @@ Lien reset-password construit ainsi : `${FRONTEND_URL}/auth/reset-password?token
 1. Importer le monorepo, **Root Directory** = `frontend`.
 2. Build : `npm run build` (injecte `API_URL` puis `ng build`).
 3. Output : `dist/frontend/browser` (voir `frontend/vercel.json`).
-4. Variable de build : `API_URL=https://votre-backend.onrender.com` (sans slash final).
+4. Variable de build (optionnelle) : `API_URL=https://tracabilite-ia-backend.onrender.com`  
+   (si absente, ce défaut est injecté automatiquement au build).
 5. Les rewrites SPA renvoient `index.html` pour `/auth/login`, `/dashboard`, etc.
+
+URLs de référence actuelles :
+
+| Composant | URL |
+|-----------|-----|
+| Frontend | https://tracabilite-ia.vercel.app |
+| Backend | https://tracabilite-ia-backend.onrender.com |
+| ML | https://tracabilite-ia.onrender.com |
+
+Sur Render (backend), définir aussi `FRONTEND_URL=https://tracabilite-ia.vercel.app` et `ML_SERVICE_URL=https://tracabilite-ia.onrender.com`.
 
 ### 5. Ordre de mise en ligne
 
