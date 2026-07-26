@@ -59,7 +59,7 @@ class PasswordResetServiceImplTest {
 
     @Test
     void forgotPassword_unknownEmail_returnsSameGenericMessage_andDoesNotSendMail() {
-        when(utilisateurRepository.findByEmail("inconnu@test.fr")).thenReturn(Optional.empty());
+        when(utilisateurRepository.findByEmailIgnoreCase("inconnu@test.fr")).thenReturn(Optional.empty());
 
         ForgotPasswordRequest request = new ForgotPasswordRequest();
         request.setEmail("inconnu@test.fr");
@@ -73,9 +73,32 @@ class PasswordResetServiceImplTest {
     }
 
     @Test
+    void forgotPassword_adminGmail_caseInsensitiveLookup_sendsMail() {
+        Utilisateur admin = sampleUser();
+        admin.setEmail("0629378510a@gmail.com");
+        admin.setRole(RoleEnum.ADMINISTRATEUR);
+        when(utilisateurRepository.findByEmailIgnoreCase("0629378510a@gmail.com"))
+                .thenReturn(Optional.of(admin));
+        when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<String> linkCaptor = ArgumentCaptor.forClass(String.class);
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setEmail("  0629378510A@Gmail.com ");
+
+        MessageResponse response = service.forgotPassword(request);
+
+        assertThat(response.getMessage())
+                .isEqualTo("Si un compte correspond à cette adresse, un lien de réinitialisation a été envoyé.");
+        verify(utilisateurRepository).findByEmailIgnoreCase("0629378510a@gmail.com");
+        verify(mailService).sendPasswordResetEmail(eq("0629378510a@gmail.com"), linkCaptor.capture());
+        assertThat(linkCaptor.getValue()).contains("token=");
+        assertThat(response.getMessage()).doesNotContain("token=");
+    }
+
+    @Test
     void forgotPassword_knownEmail_sendsMailWithToken_andStoresOnlyHash() {
         Utilisateur user = sampleUser();
-        when(utilisateurRepository.findByEmail("user@test.fr")).thenReturn(Optional.of(user));
+        when(utilisateurRepository.findByEmailIgnoreCase("user@test.fr")).thenReturn(Optional.of(user));
         when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ArgumentCaptor<String> linkCaptor = ArgumentCaptor.forClass(String.class);
@@ -111,7 +134,7 @@ class PasswordResetServiceImplTest {
                 20
         );
         Utilisateur user = sampleUser();
-        when(utilisateurRepository.findByEmail("user@test.fr")).thenReturn(Optional.of(user));
+        when(utilisateurRepository.findByEmailIgnoreCase("user@test.fr")).thenReturn(Optional.of(user));
         when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ArgumentCaptor<String> linkCaptor = ArgumentCaptor.forClass(String.class);
@@ -131,7 +154,7 @@ class PasswordResetServiceImplTest {
     @Test
     void forgotPassword_mailFailure_stillReturnsGenericMessage() {
         Utilisateur user = sampleUser();
-        when(utilisateurRepository.findByEmail("user@test.fr")).thenReturn(Optional.of(user));
+        when(utilisateurRepository.findByEmailIgnoreCase("user@test.fr")).thenReturn(Optional.of(user));
         when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
         org.mockito.Mockito.doThrow(new IllegalStateException("SMTP blocked"))
                 .when(mailService).sendPasswordResetEmail(anyString(), anyString());

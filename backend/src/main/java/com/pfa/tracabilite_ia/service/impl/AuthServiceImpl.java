@@ -28,7 +28,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Utilisateur login(String email, String motDePasse) {
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+        Utilisateur utilisateur = utilisateurRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(motDePasse, utilisateur.getMotDePasseHash())) {
             throw new InvalidCredentialsException();

@@ -20,7 +20,8 @@ public class DataInitializer {
     public CommandLineRunner seedDemoData(
             UtilisateurRepository utilisateurRepository,
             PasswordEncoder passwordEncoder,
-            JdbcTemplate jdbcTemplate
+            JdbcTemplate jdbcTemplate,
+            AdminDemoAccountSynchronizer adminDemoAccountSynchronizer
     ) {
         return args -> {
             updateRoleCheckConstraint(jdbcTemplate);
@@ -39,6 +40,9 @@ public class DataInitializer {
                 ensureAtLeastOneAdmin(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed utilisateurs ignore (base deja initialisee, {} compte(s))", userCount);
             }
+
+            // Bases Neon / Postgres deja initialisees : migrer l'email admin sans recreer le compte.
+            adminDemoAccountSynchronizer.syncAdminEmail();
         };
     }
 
@@ -86,21 +90,24 @@ public class DataInitializer {
     }
 
     private void seedAdmin(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
-        String email = "admin@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmail(email)) {
+        String email = AdminDemoAccountSynchronizer.normalizeEmail(
+                AdminDemoAccountSynchronizer.TARGET_ADMIN_EMAIL
+        );
+        if (!utilisateurRepository.existsByEmailIgnoreCase(email)
+                && !utilisateurRepository.existsByEmailIgnoreCase(AdminDemoAccountSynchronizer.LEGACY_ADMIN_EMAIL)) {
             Utilisateur admin = new Utilisateur();
             admin.setNom("Administrateur");
             admin.setEmail(email);
             admin.setMotDePasseHash(passwordEncoder.encode("admin123"));
             admin.setRole(RoleEnum.ADMINISTRATEUR);
             utilisateurRepository.save(admin);
-            log.info(">>> Utilisateur admin cree : {} / admin123", email);
+            log.info(">>> Utilisateur admin cree (mot de passe demo conservé)");
         }
     }
 
     private void seedUser(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         String email = "user@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmail(email)) {
+        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
             Utilisateur user = new Utilisateur();
             user.setNom("Agent de crédit");
             user.setEmail(email);
@@ -113,9 +120,9 @@ public class DataInitializer {
 
     private void seedAuditeur(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         String email = "auditeur@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmail(email)) {
+        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
             // Compat: ancien seed utilisait auditor@...
-            if (utilisateurRepository.existsByEmail("auditor@tracabilite.ia")) {
+            if (utilisateurRepository.existsByEmailIgnoreCase("auditor@tracabilite.ia")) {
                 return;
             }
             Utilisateur auditor = new Utilisateur();
@@ -130,7 +137,7 @@ public class DataInitializer {
 
     private void seedValidateur(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         String email = "validateur@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmail(email)) {
+        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
             Utilisateur validateur = new Utilisateur();
             validateur.setNom("Validateur");
             validateur.setEmail(email);

@@ -332,7 +332,7 @@ Si la base contient déjà des utilisateurs, le seed ne recrée pas les comptes 
 
 | Email | Mot de passe (dev) | Rôle |
 |-------|--------------------|------|
-| `admin@tracabilite.ia` | `admin123` | Administrateur |
+| `0629378510a@gmail.com` | `admin123` | Administrateur |
 | `user@tracabilite.ia` | `user123` | Agent de crédit (`UTILISATEUR`) |
 | `validateur@tracabilite.ia` | `validateur123` | Validateur |
 | `auditeur@tracabilite.ia` | `auditor123` | Auditeur |

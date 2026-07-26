@@ -59,7 +59,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     @Transactional
     public MessageResponse forgotPassword(ForgotPasswordRequest request) {
         String email = request.getEmail() == null ? "" : request.getEmail().trim().toLowerCase();
-        Optional<Utilisateur> userOpt = utilisateurRepository.findByEmail(email);
+        Optional<Utilisateur> userOpt = utilisateurRepository.findByEmailIgnoreCase(email);
 
         if (userOpt.isPresent()) {
             Utilisateur user = userOpt.get();
