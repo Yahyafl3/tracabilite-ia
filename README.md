@@ -312,13 +312,12 @@ Les noms suivants sont définis dans `.env.example` (à adapter localement) :
 - `DATABASE_USERNAME`
 - `DATABASE_PASSWORD`
 
-**SMTP / support**
+**Email / support**
 
-- `MAIL_HOST`
-- `MAIL_PORT`
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
+- `EMAIL_PROVIDER` (`smtp` local, `resend` sur Render Free)
+- `RESEND_API_KEY` (si `EMAIL_PROVIDER=resend`)
 - `MAIL_FROM`
+- `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` (si `EMAIL_PROVIDER=smtp`)
 - `SUPPORT_EMAIL`
 
 > **Sécurité :** ne jamais committer le fichier `.env`, ni partager les clés API, mots de passe SMTP ou secrets JWT.
@@ -445,14 +444,18 @@ PORT                  # fourni par Render
 DATABASE_URL
 DATABASE_USERNAME
 DATABASE_PASSWORD
-FRONTEND_URL          # ex. https://votre-app.vercel.app
+FRONTEND_URL          # https://tracabilite-ia.vercel.app
 ML_SERVICE_URL        # URL publique du service ML Render
 JWT_SECRET
 GROQ_API_KEY
-MAIL_HOST / MAIL_PORT / MAIL_USERNAME / MAIL_PASSWORD / MAIL_FROM   # si reset-password
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=
+MAIL_FROM=            # ex. Traçabilité IA <onboarding@resend.dev>
 ```
 
-CORS autorise uniquement `http://localhost`, `http://localhost:4200` et `FRONTEND_URL` (pas de wildcard avec credentials).
+> Render Free bloque SMTP (25/465/587). Utiliser **Resend** (HTTPS) pour le reset-password.
+
+CORS autorise uniquement `http://localhost`, `http://localhost:4200` et `FRONTEND_URL` / Vercel (pas de wildcard avec credentials).
 
 Lien reset-password construit ainsi : `${FRONTEND_URL}/auth/reset-password?token=…` (override possible via `FRONTEND_RESET_PASSWORD_URL`).
 

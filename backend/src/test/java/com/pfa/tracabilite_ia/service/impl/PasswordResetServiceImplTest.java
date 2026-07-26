@@ -101,6 +101,52 @@ class PasswordResetServiceImplTest {
     }
 
     @Test
+    void forgotPassword_buildsResetLinkFromFrontendUrl() {
+        PasswordResetServiceImpl cloudService = new PasswordResetServiceImpl(
+                utilisateurRepository,
+                tokenRepository,
+                passwordEncoder,
+                mailService,
+                "https://tracabilite-ia.vercel.app/auth/reset-password",
+                20
+        );
+        Utilisateur user = sampleUser();
+        when(utilisateurRepository.findByEmail("user@test.fr")).thenReturn(Optional.of(user));
+        when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<String> linkCaptor = ArgumentCaptor.forClass(String.class);
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setEmail("user@test.fr");
+
+        MessageResponse response = cloudService.forgotPassword(request);
+
+        verify(mailService).sendPasswordResetEmail(eq("user@test.fr"), linkCaptor.capture());
+        assertThat(linkCaptor.getValue())
+                .startsWith("https://tracabilite-ia.vercel.app/auth/reset-password?token=");
+        assertThat(response.getMessage())
+                .isEqualTo("Si un compte correspond à cette adresse, un lien de réinitialisation a été envoyé.");
+        assertThat(response.getMessage()).doesNotContain("token=");
+    }
+
+    @Test
+    void forgotPassword_mailFailure_stillReturnsGenericMessage() {
+        Utilisateur user = sampleUser();
+        when(utilisateurRepository.findByEmail("user@test.fr")).thenReturn(Optional.of(user));
+        when(tokenRepository.save(any(PasswordResetToken.class))).thenAnswer(inv -> inv.getArgument(0));
+        org.mockito.Mockito.doThrow(new IllegalStateException("SMTP blocked"))
+                .when(mailService).sendPasswordResetEmail(anyString(), anyString());
+
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setEmail("user@test.fr");
+
+        MessageResponse response = service.forgotPassword(request);
+
+        assertThat(response.getMessage())
+                .isEqualTo("Si un compte correspond à cette adresse, un lien de réinitialisation a été envoyé.");
+        verify(tokenRepository).save(any(PasswordResetToken.class));
+    }
+
+    @Test
     void resetPassword_validToken_encodesNewPassword_andMarksTokenUsed() {
         Utilisateur user = sampleUser();
         String rawToken = "raw-token-value";

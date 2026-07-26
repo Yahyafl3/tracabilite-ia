@@ -1,6 +1,7 @@
 package com.pfa.tracabilite_ia.service.impl;
 
 import com.pfa.tracabilite_ia.entities.SupportMessage;
+import com.pfa.tracabilite_ia.mail.ResendEmailClient;
 import com.pfa.tracabilite_ia.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -23,16 +24,22 @@ public class MailServiceImpl implements MailService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final JavaMailSender mailSender;
+    private final ResendEmailClient resendEmailClient;
+    private final String provider;
     private final String fromAddress;
     private final String supportEmail;
 
     public MailServiceImpl(
             JavaMailSender mailSender,
+            ResendEmailClient resendEmailClient,
+            @Value("${app.mail.provider:smtp}") String provider,
             @Value("${app.mail.from:}") String fromAddress,
             @Value("${spring.mail.username:}") String mailUsername,
             @Value("${app.support.email:}") String supportEmail
     ) {
         this.mailSender = mailSender;
+        this.resendEmailClient = resendEmailClient;
+        this.provider = provider == null ? "smtp" : provider.trim().toLowerCase();
         this.fromAddress = (fromAddress == null || fromAddress.isBlank()) ? mailUsername : fromAddress;
         this.supportEmail = (supportEmail == null || supportEmail.isBlank()) ? this.fromAddress : supportEmail;
     }
@@ -40,27 +47,14 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
         String maskedTo = maskEmail(toEmail);
-        log.info("Password reset email send attempt to={}", maskedTo);
+        log.info("Password reset email send attempt to={} provider={}", maskedTo, provider);
         if (fromAddress == null || fromAddress.isBlank()) {
             log.error("Password reset email aborted: sender not configured");
             throw new IllegalStateException("Impossible d'envoyer l'email de réinitialisation.");
         }
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress);
-            helper.setTo(toEmail);
-            helper.setSubject("Réinitialisation de votre mot de passe — Traçabilité IA");
-            helper.setText(buildPasswordResetHtml(resetLink), true);
-            mailSender.send(message);
-            log.info("Password reset email sent successfully to={}", maskedTo);
-        } catch (MessagingException | MailException ex) {
-            log.error("Failed to send password reset email to={} errorType={} detail={}",
-                    maskedTo,
-                    ex.getClass().getSimpleName(),
-                    safeMailError(ex));
-            throw new IllegalStateException("Impossible d'envoyer l'email de réinitialisation.");
-        }
+        String html = buildPasswordResetHtml(resetLink);
+        String subject = "Réinitialisation de votre mot de passe — Traçabilité IA";
+        sendHtml(toEmail, subject, html, maskedTo, "password-reset");
     }
 
     @Override
@@ -69,21 +63,47 @@ public class MailServiceImpl implements MailService {
             log.error("Support notification skipped: destination not configured");
             throw new IllegalStateException("Destinataire support non configuré.");
         }
+        String subject = "Nouvelle demande de support — Traçabilité IA";
+        String html = buildSupportHtml(supportMessage);
+        sendHtml(supportEmail, subject, html, maskEmail(supportEmail), "support");
+        log.info("Support notification email dispatched for messageId={}", supportMessage.getId());
+    }
+
+    private void sendHtml(String to, String subject, String html, String maskedTo, String purpose) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress);
-            helper.setTo(supportEmail);
-            helper.setSubject("Nouvelle demande de support — Traçabilité IA");
-            helper.setText(buildSupportText(supportMessage), buildSupportHtml(supportMessage));
-            mailSender.send(message);
-            log.info("Support notification email dispatched for messageId={}", supportMessage.getId());
+            if ("resend".equals(provider)) {
+                resendEmailClient.sendHtml(fromAddress, to, subject, html);
+                log.info("Email sent successfully purpose={} to={} provider=resend", purpose, maskedTo);
+                return;
+            }
+            sendViaSmtp(to, subject, html);
+            log.info("Email sent successfully purpose={} to={} provider=smtp", purpose, maskedTo);
         } catch (MessagingException | MailException ex) {
-            log.error("Failed to send support notification email: {} - {}",
+            log.error("Failed to send email purpose={} to={} provider={} errorType={} detail={}",
+                    purpose,
+                    maskedTo,
+                    provider,
                     ex.getClass().getSimpleName(),
                     safeMailError(ex));
-            throw new IllegalStateException("Impossible d'envoyer la notification de support.");
+            throw new IllegalStateException("Impossible d'envoyer l'email.");
+        } catch (RuntimeException ex) {
+            log.error("Failed to send email purpose={} to={} provider={} errorType={}",
+                    purpose,
+                    maskedTo,
+                    provider,
+                    ex.getClass().getSimpleName());
+            throw ex;
         }
+    }
+
+    private void sendViaSmtp(String to, String subject, String html) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom(fromAddress);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(html, true);
+        mailSender.send(message);
     }
 
     private static String safeMailError(Throwable ex) {
@@ -110,7 +130,8 @@ public class MailServiceImpl implements MailService {
         return first + "***@" + trimmed.substring(at + 1);
     }
 
-    private String buildPasswordResetHtml(String resetLink) {
+    /** Bouton HTML uniquement — le lien brut n'est pas affiché dans le corps. */
+    static String buildPasswordResetHtml(String resetLink) {
         String safeLink = HtmlUtils.htmlEscape(resetLink == null ? "" : resetLink);
         return """
                 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #0f172a;">
@@ -124,13 +145,11 @@ public class MailServiceImpl implements MailService {
                       Réinitialiser mon mot de passe
                     </a>
                   </p>
-                  <p>Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :</p>
-                  <p style="word-break: break-all; color: #334155;">%s</p>
                   <p style="color: #64748b; font-size: 0.9rem;">
                     Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
                   </p>
                 </div>
-                """.formatted(safeLink, safeLink);
+                """.formatted(safeLink);
     }
 
     private String buildSupportHtml(SupportMessage msg) {
@@ -153,29 +172,6 @@ public class MailServiceImpl implements MailService {
                 HtmlUtils.htmlEscape(nullToEmpty(msg.getSubject())),
                 HtmlUtils.htmlEscape(created),
                 HtmlUtils.htmlEscape(nullToEmpty(msg.getMessage()))
-        );
-    }
-
-    private String buildSupportText(SupportMessage msg) {
-        String created = msg.getCreatedAt() != null ? DATE_FORMAT.format(msg.getCreatedAt()) : "";
-        return """
-                Nouvelle demande de support — Traçabilité IA
-
-                ID: %s
-                Nom: %s
-                Email: %s
-                Sujet: %s
-                Date: %s
-
-                Message:
-                %s
-                """.formatted(
-                msg.getId(),
-                nullToEmpty(msg.getName()),
-                nullToEmpty(msg.getEmail()),
-                nullToEmpty(msg.getSubject()),
-                created,
-                nullToEmpty(msg.getMessage())
         );
     }
 
