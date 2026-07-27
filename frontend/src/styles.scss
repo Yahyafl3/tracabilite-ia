@@ -116,6 +116,12 @@
   color-scheme: light;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --nav-h: 64px;
+  }
+}
+
 /* ============================================================
    Thème sombre — moderne et cohérent
    ============================================================ */
@@ -205,18 +211,25 @@ html.app-dark {
 
 html {
   scroll-behavior: smooth;
-  font-size: 17px;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
 }
 
 @media (min-width: 1440px) {
   html {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
 
 html,
 body {
   min-height: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -228,6 +241,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: clip;
 }
 
 h1,
@@ -274,11 +288,11 @@ button {
   width: 100%;
   max-width: var(--container);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(1rem, 3vw, 1.5rem);
 }
 
 .section {
-  padding: 72px 0;
+  padding: clamp(2.5rem, 6vw, 4.5rem) 0;
 }
 
 .section--soft {
@@ -287,7 +301,7 @@ button {
 
 .section-head {
   max-width: 720px;
-  margin: 0 auto 56px;
+  margin: 0 auto clamp(1.75rem, 4vw, 3.5rem);
   text-align: center;
 }
 
@@ -307,13 +321,15 @@ button {
 }
 
 .section-title {
-  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-size: clamp(1.5rem, 4.2vw, 3rem);
   color: var(--ink);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .section-subtitle {
   margin-top: 16px;
-  font-size: 1.125rem;
+  font-size: clamp(0.95rem, 2.2vw, 1.125rem);
   color: var(--muted);
   line-height: 1.7;
 }
@@ -954,5 +970,31 @@ html.app-dark {
         }
       }
     }
+  }
+}
+
+/* ============================================================
+   Responsive utilities (tables, charts)
+   ============================================================ */
+.table-scroll,
+.table-wrap,
+.ui-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.p-chart,
+canvas.p-chart,
+.chart-svg {
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .p-dialog {
+    width: min(100vw - 1.5rem, 28rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    margin: 0.75rem;
   }
 }

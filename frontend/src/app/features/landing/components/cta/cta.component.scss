@@ -3,14 +3,14 @@
 }
 
 .cta {
-  padding-bottom: 110px;
+  padding-bottom: clamp(3rem, 8vw, 110px);
 }
 
 .cta__card {
   display: grid;
   grid-template-columns: 1.2fr 0.9fr;
-  gap: 48px;
-  padding: 56px;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 5vw, 3.5rem);
   border-radius: var(--radius-lg);
   background: radial-gradient(800px 400px at 100% 0%, rgba(139, 92, 246, 0.4), transparent 55%),
     linear-gradient(155deg, #4f46e5 0%, #6d28d9 100%);
@@ -25,9 +25,10 @@
 }
 
 .cta__title {
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
   color: #fff;
   margin-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 
 .cta__subtitle {
@@ -99,7 +100,13 @@
 @media (max-width: 900px) {
   .cta__card {
     grid-template-columns: 1fr;
-    padding: 36px 26px;
-    gap: 32px;
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cta__buttons .btn {
+    width: 100%;
   }
 }

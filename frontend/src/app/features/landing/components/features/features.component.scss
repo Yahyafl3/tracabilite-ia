@@ -65,14 +65,22 @@
   background: linear-gradient(135deg, #e11d48, #f43f5e);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 480px) {
   .features-grid {
     grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: 1.25rem;
+  }
+
+  .feature-card__title {
+    font-size: 1.1rem;
   }
 }

@@ -471,20 +471,58 @@
 
   .login-main {
     min-height: 100dvh;
+    padding: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .login-main__content {
+    max-width: min(100%, 420px);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .login-header h1 {
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+  }
+
+  .login-side__hero h2 {
+    font-size: clamp(1.35rem, 4vw, 2rem);
+  }
+
+  .form-extras {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
   .login-main {
-    padding: 1.5rem;
+    padding: 1rem;
+    align-items: flex-start;
   }
 
   .login-main__content {
     max-width: 100%;
+    padding-top: 0.5rem;
+  }
+
+  .login-back {
+    margin-bottom: 1.25rem;
+  }
+
+  .login-header {
+    margin-bottom: 1.25rem;
   }
 
   .login-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    overflow-wrap: anywhere;
+  }
+
+  :host ::ng-deep .form-field .p-inputtext,
+  :host ::ng-deep .password-field .p-password-input,
+  :host ::ng-deep .login-submit {
+    min-height: 2.875rem;
+    height: 2.875rem;
+    font-size: 1rem;
   }
 }
 
