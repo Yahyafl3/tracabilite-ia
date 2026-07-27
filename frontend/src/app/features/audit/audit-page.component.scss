@@ -227,7 +227,7 @@
 }
 
 // ── Responsive ──────────────────────────────────────────────
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .toolbar {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -237,9 +237,10 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .page-header {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .toolbar,
@@ -252,6 +253,13 @@
   }
 
   .page-header h1 {
-    font-size: 1.375rem;
+    font-size: clamp(1.2rem, 4vw, 1.375rem);
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  .copy-row {
+    flex-wrap: wrap;
   }
 }

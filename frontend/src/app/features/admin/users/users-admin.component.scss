@@ -136,11 +136,23 @@
 :host ::ng-deep .mb-2 { margin-bottom: 0.5rem; }
 :host ::ng-deep .p-password { width: 100%; }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
   .page-header,
   .toolbar {
     flex-direction: column;
     grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
   }
 }
 

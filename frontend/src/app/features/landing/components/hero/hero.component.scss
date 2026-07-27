@@ -4,7 +4,7 @@
 
 .hero {
   position: relative;
-  padding: calc(var(--nav-h) + 72px) 0 96px;
+  padding: calc(var(--nav-h) + clamp(2rem, 5vw, 4.5rem)) 0 clamp(2.5rem, 6vw, 6rem);
   background: var(--grad-hero), var(--bg);
   overflow: hidden;
 }
@@ -13,34 +13,37 @@
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   align-items: center;
-  gap: 56px;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
 }
 
 .hero__title {
-  font-size: clamp(2.5rem, 5.5vw, 4rem);
-  line-height: 1.08;
+  font-size: clamp(1.75rem, 6.5vw, 4rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .hero__subtitle {
-  margin-top: 22px;
+  margin-top: clamp(0.85rem, 2vw, 1.375rem);
   max-width: 620px;
-  font-size: 1.2rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 34px;
+  gap: 12px;
+  margin-top: clamp(1.25rem, 3vw, 2.125rem);
 }
 
 .hero__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 22px;
-  margin-top: 34px;
+  gap: clamp(0.75rem, 2vw, 1.375rem);
+  margin-top: clamp(1.25rem, 3vw, 2.125rem);
 
   li {
     display: inline-flex;
@@ -141,7 +144,7 @@
 @media (max-width: 960px) {
   .hero__grid {
     grid-template-columns: 1fr;
-    gap: 44px;
+    gap: 2rem;
     text-align: center;
   }
 
@@ -155,9 +158,46 @@
   }
 }
 
+@media (max-width: 480px) {
+  .hero {
+    padding-top: calc(var(--nav-h) + 1.5rem);
+    padding-bottom: 2.25rem;
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    > * {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .hero__badges {
+    justify-content: center;
+    gap: 0.75rem 1rem;
+  }
+
+  .float-chip {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+  }
+
+  .float-chip--tl {
+    left: 4px;
+    top: 12px;
+  }
+
+  .float-chip--br {
+    right: 4px;
+    bottom: 12px;
+  }
+}
+
 @media (max-width: 560px) {
   .hero {
-    padding-top: calc(var(--nav-h) + 40px);
+    padding-top: calc(var(--nav-h) + 2rem);
   }
 
   .float-chip--tl {

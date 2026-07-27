@@ -146,16 +146,23 @@
   margin-bottom: 0.75rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .support-page {
     padding: 1rem;
   }
 
   .support-intro h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 5vw, 1.5rem);
+    overflow-wrap: anywhere;
   }
 
   .support-card__header {
     padding: 1rem 1rem 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .support-page {
+    padding: 0.75rem;
   }
 }
