@@ -101,8 +101,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - name: Build images
+      - name: Create temporary CI .env for compose
         run: |
-          docker compose build backend frontend ml-service
+          cat > .env <<'EOF'
+          SPRING_PROFILES_ACTIVE=test
+          POSTGRES_DB=tracabilite_ia_test
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tracabilite_ia_test
+          SPRING_DATASOURCE_USERNAME=postgres
+          SPRING_DATASOURCE_PASSWORD=postgres
+          JWT_SECRET=ci-test-jwt-secret-at-least-32-characters-long
+          ML_SERVICE_URL=http://ml-service:5000
+          ML_SERVICE_TOKEN=ci-test-ml-token-at-least-24-characters
+          FRONTEND_URL=http://localhost
+          APP_DEMO_SEED_ENABLED=false
+          SPRING_FLYWAY_ENABLED=true
+          EMAIL_PROVIDER=none
+          GROQ_API_KEY=
+          OPENROUTER_API_KEY=
+          EOF
+      - name: Validate compose config
+        run: docker compose config >/dev/null
+      - name: Build images
+        run: docker compose build backend frontend ml-service
+      - name: Remove temporary CI .env
+        if: always()
+        run: rm -f .env
       - name: No automatic production deploy
         run: echo "Deploy production requires manual approval — never from PR."
