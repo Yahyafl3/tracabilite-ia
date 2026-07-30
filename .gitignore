@@ -2,6 +2,7 @@
 .env
 backend/settings.xml
 backend/avast-root.crt
+backend/Dockerfile.local-avast
 backend/compile_output.txt
 compile_output.txt
 
