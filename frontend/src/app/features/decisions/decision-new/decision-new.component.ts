@@ -1,11 +1,8 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Card } from 'primeng/card';
-import { Textarea } from 'primeng/textarea';
-import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
@@ -22,15 +19,13 @@ import { DecisionService } from '../../../core/services/decision.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
 import {
-  buildAnalyzePayload,
-  ML_FEATURE_KEYS,
-  ML_SCHEMA_INFO,
-  Sector,
-  SectorFieldConfig,
-  sectorFields,
-  SECTORS,
-  validatorsForField,
-} from '../../../core/config/sector-fields.config';
+  DECISION_DOMAINS,
+  DecisionDomain,
+  DOMAIN_META,
+} from '../../../core/config/domains/domain.config';
+import { CreditDecisionFormComponent } from '../forms/credit-decision-form.component';
+import { MedicalDecisionFormComponent } from '../forms/medical-decision-form.component';
+import { EducationDecisionFormComponent } from '../forms/education-decision-form.component';
 
 @Component({
   selector: 'app-decision-new',
@@ -40,8 +35,6 @@ import {
     ReactiveFormsModule,
     RouterModule,
     Card,
-    Textarea,
-    InputNumber,
     Select,
     Button,
     Message,
@@ -51,64 +44,89 @@ import {
     Tag,
     ConsensusCardComponent,
     AgentResponseCardComponent,
+    CreditDecisionFormComponent,
+    MedicalDecisionFormComponent,
+    EducationDecisionFormComponent,
   ],
   templateUrl: './decision-new.component.html',
   styleUrl: './decision-new.component.scss',
 })
-export class DecisionNewComponent implements OnInit {
+export class DecisionNewComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly decisionService = inject(DecisionService);
+  private readonly decisions = inject(DecisionService);
   private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
 
-  readonly sectors = SECTORS.map((sector) => ({ label: sector, value: sector }));
-  readonly schemaInfo = ML_SCHEMA_INFO;
+  readonly domains = DECISION_DOMAINS;
   readonly multiAgentLabels = MULTI_AGENT_UI_LABELS;
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly result = signal<DecisionResponse | null>(null);
-  readonly activeFields = signal<SectorFieldConfig[]>(sectorFields.SERVICES);
-  readonly showValidationSummary = signal(false);
-  readonly validationErrors = signal<string[]>([]);
+  readonly childValid = signal(false);
+  readonly childValue = signal<Record<string, unknown>>({});
 
-  readonly form: FormGroup = this.fb.group({
-    sector: ['SERVICES' as Sector, Validators.required],
-    description: ['Demande de crédit professionnelle'],
+  readonly creditForm = viewChild(CreditDecisionFormComponent);
+  readonly medicalForm = viewChild(MedicalDecisionFormComponent);
+  readonly educationForm = viewChild(EducationDecisionFormComponent);
+
+  readonly shellForm: FormGroup = this.fb.group({
+    domaine: ['CREDIT' as DecisionDomain, Validators.required],
     includeOpenRouter: [true],
   });
 
-  ngOnInit(): void {
-    this.rebuildMlControls(this.form.get('sector')!.value as Sector);
-    this.form
-      .get('sector')!
-      .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((sector) => this.rebuildMlControls(sector as Sector));
+  get selectedDomain(): DecisionDomain {
+    return this.shellForm.get('domaine')!.value as DecisionDomain;
+  }
+
+  get domainMeta() {
+    return DOMAIN_META[this.selectedDomain];
+  }
+
+  get domainDescription(): string {
+    return DECISION_DOMAINS.find((d) => d.value === this.selectedDomain)?.description ?? '';
+  }
+
+  onChildForm(event: { valid: boolean; value: Record<string, unknown> }): void {
+    this.childValid.set(event.valid);
+    this.childValue.set(event.value);
+  }
+
+  onDomainChange(): void {
+    this.result.set(null);
+    this.error.set(null);
+    this.childValid.set(false);
+    this.childValue.set({});
   }
 
   submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.showValidationSummary.set(true);
-      this.validationErrors.set(this.collectValidationErrors());
+    if (!this.childValid()) {
+      this.error.set('Veuillez corriger les champs du formulaire avant de lancer l’analyse.');
       return;
     }
 
-    this.showValidationSummary.set(false);
-    this.validationErrors.set([]);
     this.loading.set(true);
     this.error.set(null);
     this.result.set(null);
 
-    const sector = this.form.get('sector')!.value as Sector;
-    const payload = buildAnalyzePayload(this.form.getRawValue(), sector);
+    const payload = {
+      ...this.childValue(),
+      includeAgents: !!this.shellForm.get('includeOpenRouter')?.value,
+    };
 
-    this.decisionService.analyze(payload).subscribe({
+    const domain = this.selectedDomain;
+    const request$ =
+      domain === 'CREDIT'
+        ? this.decisions.createCredit(payload)
+        : domain === 'MEDICAL'
+          ? this.decisions.createMedical(payload)
+          : this.decisions.createEducation(payload);
+
+    request$.subscribe({
       next: (response) => {
         this.result.set(response);
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Erreur lors de l\'analyse de la décision.'));
+        this.error.set(resolveHttpErrorMessage(err, 'Erreur lors de l’analyse de la décision.'));
         this.loading.set(false);
       },
     });
@@ -121,56 +139,41 @@ export class DecisionNewComponent implements OnInit {
     }
   }
 
+  submitForValidation(): void {
+    const id = this.result()?.decisionId;
+    if (!id) return;
+    this.loading.set(true);
+    this.decisions.submitForValidation(id).subscribe({
+      next: (response) => {
+        this.result.set(response);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(resolveHttpErrorMessage(err, 'Soumission à validation impossible.'));
+        this.loading.set(false);
+      },
+    });
+  }
+
   goBack(): void {
     void this.router.navigate(['/decisions']);
   }
 
-  mlSeverity(decision: string | undefined): 'success' | 'danger' | 'secondary' {
+  mlSeverity(decision: string | undefined): 'success' | 'danger' | 'warn' | 'secondary' {
+    if (!decision) return 'secondary';
+    if (decision.includes('FAIBLE')) return 'success';
+    if (decision.includes('MOYEN') || decision.includes('MODERE')) return 'warn';
+    if (decision.includes('ELEVE') || decision === 'REJETER') return 'danger';
     if (decision === 'APPROUVER') return 'success';
-    if (decision === 'REJETER') return 'danger';
     return 'secondary';
   }
 
   riskSeverity(risk: string | undefined): 'success' | 'warn' | 'danger' | 'secondary' {
-    if (risk === 'LOW') return 'success';
-    if (risk === 'MEDIUM') return 'warn';
-    if (risk === 'HIGH') return 'danger';
+    if (!risk) return 'secondary';
+    const r = risk.toUpperCase();
+    if (r.includes('FAIBLE') || r === 'LOW') return 'success';
+    if (r.includes('MOYEN') || r.includes('MODERE') || r === 'MEDIUM') return 'warn';
+    if (r.includes('ELEVE') || r === 'HIGH') return 'danger';
     return 'secondary';
-  }
-
-  private rebuildMlControls(sector: Sector): void {
-    for (const key of ML_FEATURE_KEYS) {
-      if (this.form.contains(key)) {
-        this.form.removeControl(key);
-      }
-    }
-
-    const fields = sectorFields[sector];
-    for (const field of fields) {
-      this.form.addControl(
-        field.key,
-        this.fb.control(field.defaultValue, validatorsForField(field)),
-      );
-    }
-
-    this.activeFields.set(fields);
-  }
-
-  private collectValidationErrors(): string[] {
-    const messages: string[] = [];
-    for (const [key, control] of Object.entries(this.form.controls)) {
-      if (!control.invalid) continue;
-      if (key === 'sector') {
-        messages.push('Le secteur est obligatoire.');
-        continue;
-      }
-      if (key === 'description') {
-        messages.push('La description est invalide.');
-        continue;
-      }
-      const field = this.activeFields().find((f) => f.key === key);
-      messages.push(`${field?.label ?? key} est invalide ou hors bornes.`);
-    }
-    return messages;
   }
 }

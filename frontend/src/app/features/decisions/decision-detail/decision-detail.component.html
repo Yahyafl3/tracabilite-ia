@@ -16,14 +16,21 @@
     <header class="page-header">
       <div>
         <p class="page-eyebrow">Accueil / Décisions / {{ reference(item) }}</p>
-        <h1>{{ item.prompt }}</h1>
+        <h1>{{ item.dossierReference || item.prompt }}</h1>
         <p class="page-subtitle">{{ item.contexte }}</p>
       </div>
-      <p-tag
-        [value]="statutLabel(item.statutValidation)"
-        [severity]="item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'"
-      />
+      <div class="page-header__tags">
+        <p-tag [value]="item.domaine || 'CREDIT'" severity="info" />
+        <p-tag
+          [value]="statutLabel(item.statutValidation)"
+          [severity]="item.statutValidation === 'VALIDEE' || item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'"
+        />
+      </div>
     </header>
+
+    @if (domainWarning(); as warn) {
+      <p-message severity="warn" [text]="warn" styleClass="w-full mb-3" />
+    }
 
     <p-card styleClass="meta-card">
       <dl class="metadata-grid" aria-label="Métadonnées de la décision">
@@ -32,28 +39,68 @@
           <dd class="metadata-grid__value"><code>{{ reference(item) }}</code></dd>
         </div>
         <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Domaine</dt>
+          <dd class="metadata-grid__value">{{ item.domaine || 'CREDIT' }}</dd>
+        </div>
+        <div class="metadata-grid__item">
           <dt class="metadata-grid__label">Date / heure</dt>
           <dd class="metadata-grid__value">
             {{ formatDate(item.timestamp) }} · {{ formatTime(item.timestamp) }}
           </dd>
         </div>
         <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Secteur</dt>
-          <dd class="metadata-grid__value">{{ formatFeature(featureValue(item, 'sector')) }}</dd>
+          <dt class="metadata-grid__label">Statut</dt>
+          <dd class="metadata-grid__value">{{ statutLabel(item.statutValidation) }}</dd>
         </div>
         <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Montant</dt>
-          <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'amount')) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Revenu mensuel</dt>
-          <dd class="metadata-grid__value">{{ formatCurrency(featureValue(item, 'monthlyIncome')) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Créateur / validateur</dt>
+          <dt class="metadata-grid__label">Créateur</dt>
           <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
         </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Validateur</dt>
+          <dd class="metadata-grid__value">{{ validatorLabel(item) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Rôle validateur</dt>
+          <dd class="metadata-grid__value">{{ displayOrDash(item.validateurRole) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Date de validation</dt>
+          <dd class="metadata-grid__value">
+            @if (item.validatedAt) {
+              {{ formatDate(item.validatedAt) }} · {{ formatTime(item.validatedAt) }}
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Modèle</dt>
+          <dd class="metadata-grid__value">{{ displayOrDash(item.modelName) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Version modèle</dt>
+          <dd class="metadata-grid__value">{{ displayOrDash(item.modelVersion) }}</dd>
+        </div>
+        <div class="metadata-grid__item">
+          <dt class="metadata-grid__label">Version dataset</dt>
+          <dd class="metadata-grid__value">{{ displayOrDash(item.datasetVersion || domainMeta().datasetVersion) }}</dd>
+        </div>
       </dl>
+    </p-card>
+
+    <p-card styleClass="dossier-card mb-3">
+      @switch (domain()) {
+        @case ('MEDICAL') {
+          <app-medical-decision-details [decision]="item" />
+        }
+        @case ('EDUCATION') {
+          <app-education-decision-details [decision]="item" />
+        }
+        @default {
+          <app-credit-decision-details [decision]="item" />
+        }
+      }
     </p-card>
 
     <p-tabs
@@ -76,14 +123,14 @@
           @case ('resume') {
             <div class="summary-grid">
               <div class="summary-item">
-                <span class="label">Décision ML</span>
+                <span class="label">{{ domainMeta().riskLabel }} (ML)</span>
                 <app-status-badge
                   [label]="mlDecision(item) || 'N/A'"
                   [chipClass]="decisionChipClass(mlDecision(item))"
                 />
               </div>
               <div class="summary-item">
-                <span class="label">Confiance ML</span>
+                <span class="label">Confiance / probabilité</span>
                 <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
               </div>
               <div class="summary-item">
@@ -91,24 +138,38 @@
                 <app-risk-badge [riskLevel]="item.riskLevel" />
               </div>
               <div class="summary-item">
-                <span class="label">Modèle</span>
-                <span class="value">{{ item.modelName }} {{ item.modelVersion }}</span>
+                <span class="label">Statut</span>
+                <span class="value">{{ statutLabel(item.statutValidation) }}</span>
               </div>
               <div class="summary-item">
-                <span class="label">Consensus</span>
-                <span class="value">{{ consensusLabel(item) }}</span>
+                <span class="label">Décision humaine</span>
+                <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Accord avec l'IA</span>
+                <span class="value">
+                  @if (item.accordAvecIa == null) { — }
+                  @else if (item.accordAvecIa) { Oui }
+                  @else { Non (désaccord) }
+                </span>
               </div>
               <div class="summary-item summary-item--full">
-                <span class="label">Hash courant</span>
-                @if (item.currentHash) {
-                  <app-copy-hash [hash]="item.currentHash" label="Hash" />
-                } @else {
-                  <span class="value value--muted">—</span>
-                }
-              </div>
-              <div class="summary-item summary-item--full">
-                <span class="label">Réponse</span>
+                <span class="label">Recommandation</span>
                 <p class="value value--text">{{ item.reponse }}</p>
+              </div>
+              <div class="summary-item summary-item--full">
+                <span class="label">Facteurs principaux</span>
+                <ul class="factor-list">
+                  @for (f of item.factors ?? []; track f.rank) {
+                    <li>{{ factorLabel(f.name) }} ({{ f.impact }})</li>
+                  } @empty {
+                    <li class="muted">Aucun facteur disponible</li>
+                  }
+                </ul>
+              </div>
+              <div class="summary-item summary-item--full">
+                <span class="label">Validateur attendu</span>
+                <span class="value">{{ domainMeta().validatorRole }}</span>
               </div>
             </div>
           }
@@ -181,7 +242,7 @@
               @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
                 <div class="shap-factor-row">
                   <div class="shap-factor-row__meta">
-                    <span class="shap-factor-row__name">#{{ factor.rank }} {{ factor.name }}</span>
+                    <span class="shap-factor-row__name">#{{ factor.rank }} {{ factorLabel(factor.name) }}</span>
                     <span
                       class="shap-factor-row__impact"
                       [class.shap-factor-row__impact--positive]="factor.impact === 'POSITIVE'"
@@ -210,6 +271,13 @@
           }
 
           @case ('agents') {
+            @if (domain() === 'MEDICAL') {
+              <p-message
+                severity="info"
+                text="Les avis générés ne remplacent pas l’évaluation d’un professionnel de santé."
+                styleClass="w-full mb-3"
+              />
+            }
             @if (isAdmin() && hasRetryableAgents()) {
               <div class="agent-retry-bar">
                 <button
@@ -238,7 +306,12 @@
               @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
                 <app-agent-response-card [agent]="agent" />
               } @empty {
-                <app-empty-state icon="bar-chart" message="Aucune réponse agent enregistrée." />
+                <app-empty-state
+                  icon="bar-chart"
+                  [message]="agentsConsulted()
+                    ? 'Avis complémentaires indisponibles. L’analyse ML reste valide.'
+                    : 'Agents IA non consultés pour cette décision.'"
+                />
               }
             </div>
           }
@@ -409,7 +482,7 @@
                   <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
                   <p-select
                     inputId="decisionHumaine"
-                    [options]="humanDecisionOptions"
+                    [options]="humanDecisionOptions()"
                     optionLabel="label"
                     optionValue="value"
                     [formControl]="validationForm.controls.decisionHumaine"
@@ -512,8 +585,23 @@
                 <app-error-state [message]="sourceError()!" />
               }
 
+              @if (item.sourcesMeta; as meta) {
+                <div class="summary-grid mb-3">
+                  <div class="summary-item"><span class="label">Source données</span><span class="value">{{ meta.sourceDonnees || '—' }}</span></div>
+                  <div class="summary-item"><span class="label">Dataset</span><span class="value">{{ meta.datasetVersion || domainMeta().datasetVersion }}</span></div>
+                  <div class="summary-item"><span class="label">Pipeline</span><span class="value">{{ meta.pipelineName || domainMeta().modelLabel }}</span></div>
+                  <div class="summary-item"><span class="label">Modèle</span><span class="value">{{ meta.modelVersion || item.modelVersion || '—' }}</span></div>
+                  <div class="summary-item"><span class="label">Type</span><span class="value">{{ meta.dataType || domainMeta().sourceMeta.dataType }}</span></div>
+                  <div class="summary-item"><span class="label">Synthétique</span><span class="value">{{ meta.synthetic !== false ? 'Oui' : 'Non' }}</span></div>
+                  <div class="summary-item summary-item--full"><span class="label">Usage</span><span class="value">{{ domainMeta().sourceMeta.usage }}</span></div>
+                  <div class="summary-item summary-item--full"><span class="label">Limite</span><span class="value">{{ meta.usageLimit || domainMeta().sourceMeta.limit }}</span></div>
+                  <div class="summary-item summary-item--full"><span class="label">Disclaimer</span><span class="value">{{ meta.disclaimer || domainMeta().disclaimer || '—' }}</span></div>
+                  <div class="summary-item"><span class="label">Nb features</span><span class="value">{{ meta.featureCount || domainMeta().featureCount }}</span></div>
+                </div>
+              }
+
               @if (sources().length === 0) {
-                <app-empty-state icon="link" message="Aucune source documentaire associée à cette décision." />
+                <p class="muted">Aucune source documentaire additionnelle enregistrée (métadonnées modèle/dataset ci-dessus).</p>
               } @else {
                 <div class="table-scroll">
                   <table class="decisions-table sources-table" aria-label="Sources documentaires">
@@ -649,13 +737,24 @@
               }
 
               <div class="integrity-card__body">
+                <p class="muted mb-3">
+                  {{ item.integrity?.explanation || 'Le hash SHA-256 permet de vérifier l’intégrité du snapshot de la décision. Il ne bloque pas directement les modifications.' }}
+                </p>
                 <div class="integrity-card__row">
                   <span class="label">Hash courant</span>
-                  @if (item.currentHash) {
-                    <app-copy-hash [hash]="item.currentHash" label="Hash courant" />
+                  @if (item.currentHash || item.integrity?.currentHash) {
+                    <app-copy-hash [hash]="(item.currentHash || item.integrity?.currentHash)!" label="Hash courant" />
                   } @else {
                     <span class="value value--muted">—</span>
                   }
+                </div>
+                <div class="integrity-card__row">
+                  <span class="label">Hash précédent</span>
+                  <span class="value">{{ displayOrDash(item.integrity?.previousHash) }}</span>
+                </div>
+                <div class="integrity-card__row">
+                  <span class="label">Hash agents</span>
+                  <span class="value">{{ displayOrDash(item.integrity?.agentResponsesHash) }}</span>
                 </div>
 
                 @if (canAudit()) {

@@ -21,16 +21,16 @@
 
    • attendre-et-demarrer.ps1
      → Surveillance automatique + demarrage des services
-     
+
    • verifier-progression.ps1
      → Verification rapide de l'etat du telechargement
-     
+
    • GUIDE_DEMARRAGE_RAPIDE.md
      → Guide complet avec checklist etape par etape
-     
+
    • ETAT_ACTUEL.md
      → Etat detaille du projet avec architecture
-     
+
    • README.md
      → Mis a jour avec les nouvelles instructions
 

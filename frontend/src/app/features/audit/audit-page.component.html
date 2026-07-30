@@ -138,17 +138,17 @@
         </div>
 
         <div class="field field--actions">
-          <p-button 
-            type="submit" 
-            label="Filtrer" 
-            icon="pi pi-filter" 
-            [outlined]="true" 
+          <p-button
+            type="submit"
+            label="Filtrer"
+            icon="pi pi-filter"
+            [outlined]="true"
           />
           @if (hasActiveFilters) {
-            <p-button 
+            <p-button
               type="button"
-              label="Réinitialiser" 
-              icon="pi pi-filter-slash" 
+              label="Réinitialiser"
+              icon="pi pi-filter-slash"
               [text]="true"
               severity="secondary"
               (onClick)="resetFilters()"

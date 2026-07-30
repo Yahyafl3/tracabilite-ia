@@ -1,6 +1,7 @@
 package com.pfa.tracabilite_ia.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.util.HashUtils;
 import jakarta.persistence.*;
@@ -101,6 +102,50 @@ public class Decision {
     @Column(length = 255)
     private String validatorEmail;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "domaine", length = 32)
+    private DecisionDomain domaine = DecisionDomain.CREDIT;
+
+    @Column(length = 64)
+    private String dossierReference;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 128)
+    private String datasetVersion;
+
+    @Column(length = 128)
+    private String sourceDonnees;
+
+    private Boolean accordAvecIa;
+
+    @Column(columnDefinition = "TEXT")
+    private String justificationHumaine;
+
+    private UUID validateurId;
+
+    @Column(length = 64)
+    private String validateurRole;
+
+    private LocalDateTime submittedAt;
+
+    private LocalDateTime validatedAt;
+
+    @Column(length = 255)
+    private String createdBy;
+
+    private LocalDateTime updatedAt;
+
+    @OneToOne(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private CreditDecisionData creditData;
+
+    @OneToOne(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private MedicalDecisionData medicalData;
+
+    @OneToOne(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private EducationDecisionData educationData;
+
     @OneToMany(mappedBy = "decision", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<DecisionSource> sources = new java.util.ArrayList<>();
 
@@ -110,6 +155,7 @@ public class Decision {
     public String calculerHash() {
         String payload = String.join("|",
                 decisionId != null ? decisionId.toString() : "",
+                domaine != null ? domaine.name() : "",
                 decisionId != null ? decisionId.toString() : "",
                 prompt != null ? prompt : "",
                 contexte != null ? contexte : "",
@@ -119,10 +165,13 @@ public class Decision {
                 confidenceScore != null ? confidenceScore.toString() : "",
                 modelName != null ? modelName : "",
                 modelVersion != null ? modelVersion : "",
+                datasetVersion != null ? datasetVersion : "",
                 agentResponsesHash != null ? agentResponsesHash : "",
                 consensusJson != null ? consensusJson : "",
                 humanDecision != null ? humanDecision : "",
                 validatorEmail != null ? validatorEmail : "",
+                validateurRole != null ? validateurRole : "",
+                validatedAt != null ? validatedAt.toString() : "",
                 statutValidation != null ? statutValidation.name() : "",
                 previousHash != null ? previousHash : "");
         return HashUtils.sha256(payload);

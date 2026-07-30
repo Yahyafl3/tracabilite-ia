@@ -3,10 +3,16 @@ import type { AgentResponse, ConsensusResponse } from './openrouter.models';
 
 export enum StatutDecisionEnum {
   BROUILLON = 'BROUILLON',
+  EN_ANALYSE = 'EN_ANALYSE',
+  ANALYSEE = 'ANALYSEE',
+  EN_ATTENTE_VALIDATION = 'EN_ATTENTE_VALIDATION',
   EN_ATTENTE = 'EN_ATTENTE',
+  VALIDEE = 'VALIDEE',
   APPROUVEE = 'APPROUVEE',
   MODIFIEE = 'MODIFIEE',
+  A_REVOIR = 'A_REVOIR',
   REJETEE = 'REJETEE',
+  ARCHIVEE = 'ARCHIVEE',
 }
 
 export interface MlPredictionView {
@@ -33,6 +39,16 @@ export interface ExplanationFactor {
 export interface DecisionResponse {
   decisionId: string;
   reference?: string;
+  domaine?: string;
+  dossierReference?: string;
+  description?: string;
+  datasetVersion?: string;
+  sourceDonnees?: string;
+  accordAvecIa?: boolean;
+  justificationHumaine?: string;
+  validateurRole?: string;
+  validateurId?: string;
+  createdBy?: string;
   prompt: string;
   contexte: string;
   modelName: string;
@@ -56,8 +72,89 @@ export interface DecisionResponse {
   humanFinalAction?: 'APPROUVER' | 'REJETER' | 'MODIFIER' | 'REVIEW';
   validatorEmail?: string;
   validatedAt?: string;
+  submittedAt?: string;
   timestamp: string;
   currentHash?: string;
+  creditData?: CreditDecisionData;
+  medicalData?: MedicalDecisionData;
+  educationData?: EducationDecisionData;
+  integrity?: DecisionIntegrityView;
+  sourcesMeta?: DecisionSourcesMetaView;
+}
+
+export interface CreditDecisionData {
+  secteurActivite?: string;
+  region?: string;
+  ageDemandeur?: number;
+  statutProfessionnel?: string;
+  revenuMensuelMad?: number;
+  chargesMensuellesMad?: number;
+  montantDemandeMad?: number;
+  dureeCreditMois?: number;
+  ancienneteProfessionnelleAnnees?: number;
+  creditsExistants?: number;
+  incidentsPaiement24Mois?: number;
+  ratioEndettement?: number;
+  typeGarantie?: string;
+  typeCredit?: string;
+}
+
+export interface MedicalDecisionData {
+  region?: string;
+  age?: number;
+  sexe?: string;
+  imc?: number;
+  niveauActivitePhysique?: string;
+  antecedentsFamiliauxDiabete?: string;
+  hypertension?: string;
+  glycemie?: number;
+  polyurie?: string;
+  polydipsie?: string;
+  pertePoidsSoudaine?: string;
+  faiblesse?: string;
+  obesite?: string;
+  suiviMedical?: string;
+}
+
+export interface EducationDecisionData {
+  region?: string;
+  typeEtablissement?: string;
+  filiere?: string;
+  niveauEtude?: string;
+  moyenneSemestre1?: number;
+  moyenneSemestre2?: number;
+  tauxAbsence?: number;
+  modulesNonValides?: number;
+  participation?: string;
+  bourse?: string;
+  distanceLogementKm?: number;
+  accesInternet?: string;
+  activiteProfessionnelle?: string;
+  historiqueRedoublement?: string;
+  situationAcademique?: string;
+}
+
+export interface DecisionIntegrityView {
+  currentHash?: string;
+  previousHash?: string;
+  businessDataHash?: string;
+  sourcesHash?: string;
+  agentResponsesHash?: string;
+  explanation?: string;
+}
+
+export interface DecisionSourcesMetaView {
+  sourceDonnees?: string;
+  datasetVersion?: string;
+  modelVersion?: string;
+  modelName?: string;
+  pipelineName?: string;
+  featureCount?: number;
+  features?: string[];
+  dataType?: string;
+  synthetic?: boolean;
+  disclaimer?: string;
+  usageLimit?: string;
 }
 
 export interface DecisionPageResponse {

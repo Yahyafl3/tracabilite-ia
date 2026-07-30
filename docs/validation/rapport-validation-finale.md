@@ -1,9 +1,9 @@
 # Rapport de validation finale
 
-**Projet :** Traçabilité IA  
-**Branche :** `main` (`c5c6f11` — merge `feat/sakai-primeng-migration`)  
-**Date :** 2026-07-23  
-**Périmètre :** validation pré-soutenance (code, tests, build, Docker, parcours API, documentation)  
+**Projet :** Traçabilité IA
+**Branche :** `main` (`c5c6f11` — merge `feat/sakai-primeng-migration`)
+**Date :** 2026-07-23
+**Périmètre :** validation pré-soutenance (code, tests, build, Docker, parcours API, documentation)
 **Méthode :** commandes automatisées + sondes HTTP/API ; UI navigateur non exercée pixel-par-pixel (couverture partielle via tests unitaires frontend).
 
 ---
@@ -260,14 +260,14 @@ Ces points restent **recommandés** en smoke test humain 15–20 min avant la so
 
 ## Scénario soutenance (≈ 8 minutes)
 
-1. **Landing** (`http://localhost/`) — valeur produit, CTA connexion.  
-2. **Login admin** — formulaire vide, puis connexion.  
-3. **Nouvelle décision crédit** — saisie réelle → ML + SHAP.  
-4. **Agents Groq** — 3 réponses, provider GROQ, modèles configurés.  
-5. **Consensus** — informatif, ML inchangé.  
-6. **Validation humaine** — approuver / rejeter sur dossier global.  
-7. **Audit** — historique, hash, intégrité.  
-8. **Admin Groq + users + support** — supervision et demande support publique.  
+1. **Landing** (`http://localhost/`) — valeur produit, CTA connexion.
+2. **Login admin** — formulaire vide, puis connexion.
+3. **Nouvelle décision crédit** — saisie réelle → ML + SHAP.
+4. **Agents Groq** — 3 réponses, provider GROQ, modèles configurés.
+5. **Consensus** — informatif, ML inchangé.
+6. **Validation humaine** — approuver / rejeter sur dossier global.
+7. **Audit** — historique, hash, intégrité.
+8. **Admin Groq + users + support** — supervision et demande support publique.
 9. *(Optionnel)* Forgot-password si SMTP validé.
 
 **Avant le jour J :** quotas Groq, SMTP, comptes demo (user / validateur / auditeur).
@@ -278,12 +278,12 @@ Ces points restent **recommandés** en smoke test humain 15–20 min avant la so
 
 **Prêt sous réserve.**
 
-Le produit sur `main` est cohérent : tests verts, build frontend OK, stack Docker saine, parcours décision AI (ML + Groq + consensus + validation + audit) **prouvé par API**.  
+Le produit sur `main` est cohérent : tests verts, build frontend OK, stack Docker saine, parcours décision AI (ML + Groq + consensus + validation + audit) **prouvé par API**.
 
 Réserves à lever avant soutenance :
 
-1. Recréer / documenter les **comptes multi-rôles** de démonstration.  
-2. Confirmer **SMTP** si le reset password est montré.  
+1. Recréer / documenter les **comptes multi-rôles** de démonstration.
+2. Confirmer **SMTP** si le reset password est montré.
 3. Smoke UI humain (responsive / dark / charts).
 
 Aucun correctif applicatif n’a été introduit durant cette campagne (documentation de validation uniquement).

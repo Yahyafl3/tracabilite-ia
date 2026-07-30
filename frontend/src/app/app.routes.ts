@@ -61,7 +61,17 @@ export const routes: Routes = [
       },
       {
         path: 'decisions',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
+        canActivate: [
+          roleGuard([
+            UserRole.ADMINISTRATEUR,
+            UserRole.UTILISATEUR,
+            UserRole.AUDITEUR,
+            UserRole.VALIDATEUR,
+            UserRole.RESPONSABLE_CREDIT,
+            UserRole.PROFESSIONNEL_SANTE,
+            UserRole.RESPONSABLE_PEDAGOGIQUE,
+          ]),
+        ],
         loadComponent: () =>
           import('./features/decisions/decision-list/decision-list.component').then(
             (m) => m.DecisionListComponent,
@@ -77,7 +87,17 @@ export const routes: Routes = [
       },
       {
         path: 'decisions/:id',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR, UserRole.UTILISATEUR])],
+        canActivate: [
+          roleGuard([
+            UserRole.ADMINISTRATEUR,
+            UserRole.VALIDATEUR,
+            UserRole.UTILISATEUR,
+            UserRole.AUDITEUR,
+            UserRole.RESPONSABLE_CREDIT,
+            UserRole.PROFESSIONNEL_SANTE,
+            UserRole.RESPONSABLE_PEDAGOGIQUE,
+          ]),
+        ],
         loadComponent: () =>
           import('./features/decisions/decision-detail/decision-detail.component').then(
             (m) => m.DecisionDetailComponent,
@@ -99,7 +119,15 @@ export const routes: Routes = [
       },
       {
         path: 'validation',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR])],
+        canActivate: [
+          roleGuard([
+            UserRole.ADMINISTRATEUR,
+            UserRole.VALIDATEUR,
+            UserRole.RESPONSABLE_CREDIT,
+            UserRole.PROFESSIONNEL_SANTE,
+            UserRole.RESPONSABLE_PEDAGOGIQUE,
+          ]),
+        ],
         loadComponent: () =>
           import('./features/validation/validation-queue.component').then(
             (m) => m.ValidationQueueComponent,

@@ -58,7 +58,7 @@ cd c:\Users\yahya\Downloads\tracabilite-ia\ml-service
 python app.py
 ```
 
-> **Python 3.14** : utilisez `--only-binary=:all:` (inclus dans `setup.ps1`).  
+> **Python 3.14** : utilisez `--only-binary=:all:` (inclus dans `setup.ps1`).
 > Ne pas lancer `cd ml-service` si vous êtes déjà dans ce dossier.
 
 ### Manuel

@@ -3,14 +3,36 @@
     <div>
       <p class="page-eyebrow">Accueil / Décisions</p>
       <h1>Décisions</h1>
-      <p class="page-subtitle">Liste paginée des décisions analysées et enregistrées.</p>
+      <p class="page-subtitle">Liste paginée — filtres par domaine, statut, risque et validateur.</p>
     </div>
-    <p-button
-      label="Nouvelle décision"
-      icon="pi pi-plus"
-      (onClick)="goToNew()"
-      ariaLabel="Créer une nouvelle décision"
-    />
+    <div class="header-actions">
+      @if (canExport()) {
+        <p-button
+          label="Exporter CSV"
+          icon="pi pi-download"
+          [outlined]="true"
+          [loading]="exporting()"
+          (onClick)="export('csv')"
+          ariaLabel="Exporter les décisions en CSV"
+        />
+        <p-button
+          label="Exporter Excel"
+          icon="pi pi-file-excel"
+          [outlined]="true"
+          [loading]="exporting()"
+          (onClick)="export('xlsx')"
+          ariaLabel="Exporter les décisions en Excel"
+        />
+      }
+      @if (canCreate()) {
+        <p-button
+          label="Nouvelle décision"
+          icon="pi pi-plus"
+          (onClick)="goToNew()"
+          ariaLabel="Créer une nouvelle décision"
+        />
+      }
+    </div>
   </header>
 
   <p-card>
@@ -21,39 +43,47 @@
       </div>
     </ng-template>
 
-    <form class="toolbar" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <form class="toolbar toolbar--grid" [formGroup]="filters" (ngSubmit)="applyFilters()">
       <div class="field">
         <label for="search">Recherche</label>
-        <input
-          pInputText
-          id="search"
-          formControlName="search"
-          placeholder="Prompt, contexte, décision…"
-          class="w-full"
-          aria-label="Rechercher une décision"
-        />
+        <input pInputText id="search" formControlName="search" placeholder="Référence, prompt…" class="w-full" />
       </div>
-
+      <div class="field">
+        <label for="domaine">Domaine</label>
+        <p-select inputId="domaine" formControlName="domaine" [options]="domaineOptions"
+          optionLabel="label" optionValue="value" styleClass="w-full" />
+      </div>
       <div class="field">
         <label for="statut">Statut</label>
-        <p-select
-          inputId="statut"
-          formControlName="statut"
-          [options]="statutOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Tous"
-          styleClass="w-full"
-          ariaLabel="Filtrer par statut"
-        />
+        <p-select inputId="statut" formControlName="statut" [options]="statutOptions"
+          optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
-
+      <div class="field">
+        <label for="riskLevel">Niveau de risque</label>
+        <p-select inputId="riskLevel" formControlName="riskLevel" [options]="riskOptions"
+          optionLabel="label" optionValue="value" styleClass="w-full" />
+      </div>
+      <div class="field">
+        <label for="decisionFinale">Décision finale</label>
+        <input pInputText id="decisionFinale" formControlName="decisionFinale" placeholder="ACCEPTEE…" class="w-full" />
+      </div>
+      <div class="field">
+        <label for="validateur">Validateur</label>
+        <input pInputText id="validateur" formControlName="validateur" placeholder="email ou rôle" class="w-full" />
+      </div>
+      <div class="field">
+        <label for="fromDate">Du</label>
+        <input pInputText type="date" id="fromDate" formControlName="fromDate" class="w-full" />
+      </div>
+      <div class="field">
+        <label for="toDate">Au</label>
+        <input pInputText type="date" id="toDate" formControlName="toDate" class="w-full" />
+      </div>
       <p-button type="submit" label="Filtrer" icon="pi pi-filter" [outlined]="true" />
     </form>
 
     @if (loading()) {
-      <div class="state-block" aria-label="Chargement des décisions">
-        <p-skeleton height="3rem" styleClass="mb-2" />
+      <div class="state-block">
         <p-skeleton height="3rem" styleClass="mb-2" />
         <p-skeleton height="3rem" styleClass="mb-2" />
         <p-skeleton height="3rem" />
@@ -64,8 +94,7 @@
       <div class="empty-state" role="status">
         <i class="pi pi-inbox empty-state__icon" aria-hidden="true"></i>
         <h2>Aucune décision trouvée</h2>
-        <p>Aucune décision ne correspond à vos critères de recherche ou de filtre.</p>
-        <p-button label="Nouvelle décision" icon="pi pi-plus" (onClick)="goToNew()" />
+        <p>Aucune décision ne correspond à vos critères.</p>
       </div>
     } @else {
       <div class="table-scroll">
@@ -73,19 +102,19 @@
           [value]="decisions()"
           [sortMode]="'single'"
           styleClass="p-datatable-sm p-datatable-striped"
-          [tableStyle]="{ 'min-width': '48rem' }"
-          ariaLabel="Liste des décisions"
+          [tableStyle]="{ 'min-width': '64rem' }"
         >
           <ng-template #header>
             <tr>
-              <th pSortableColumn="timestamp">Date <p-sortIcon field="timestamp" /></th>
+              <th pSortableColumn="timestamp">Création <p-sortIcon field="timestamp" /></th>
               <th>Référence</th>
-              <th>Demande</th>
-              <th>Décision ML</th>
-              <th>Consensus</th>
-              <th>Décision humaine</th>
+              <th>Domaine</th>
+              <th>Recommandation IA</th>
               <th>Confiance</th>
               <th>Risque</th>
+              <th>Décision finale</th>
+              <th>Validateur</th>
+              <th>Validation</th>
               <th pSortableColumn="statutValidation">Statut <p-sortIcon field="statutValidation" /></th>
               <th>Actions</th>
             </tr>
@@ -99,21 +128,29 @@
                 </div>
               </td>
               <td><code class="ref-code">{{ reference(row) }}</code></td>
-              <td class="td-prompt">{{ row.prompt }}</td>
+              <td>
+                <p-tag [value]="domainBadge(row)" [severity]="domainSeverity(domainBadge(row))" />
+              </td>
               <td>
                 <p-tag
                   [value]="mlDecisionLabel(row) || 'N/A'"
                   [severity]="mlSeverity(mlDecisionLabel(row))"
                 />
               </td>
-              <td>{{ consensusText(row) }}</td>
-              <td>{{ humanFinal(row) || '—' }}</td>
               <td>
                 <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="percent" />
               </td>
               <td>
                 <app-risk-badge [riskLevel]="riskLevel(row)" />
               </td>
+              <td>{{ humanFinal(row) || '—' }}</td>
+              <td>
+                <div class="td-time">
+                  <span>{{ row.validatorEmail || '—' }}</span>
+                  <span class="muted">{{ row.validateurRole || '' }}</span>
+                </div>
+              </td>
+              <td>{{ formatDate(row.validatedAt) }}</td>
               <td>
                 <p-tag
                   [value]="statutLabel(row.statutValidation)"
@@ -126,7 +163,6 @@
                   [rounded]="true"
                   [text]="true"
                   (onClick)="openRowMenu($event, row)"
-                  [attr.aria-label]="'Actions pour ' + reference(row)"
                 />
               </td>
             </tr>
@@ -144,7 +180,6 @@
           [totalRecords]="totalElements()"
           [rowsPerPageOptions]="pageSizeOptions"
           (onPageChange)="onPageChange($event)"
-          [showCurrentPageReport]="false"
         />
       </div>
     }

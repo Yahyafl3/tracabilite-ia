@@ -81,12 +81,18 @@ describe('UsersAdminComponent', () => {
     expect(roles).toEqual([
       UserRole.UTILISATEUR,
       UserRole.VALIDATEUR,
+      UserRole.RESPONSABLE_CREDIT,
+      UserRole.PROFESSIONNEL_SANTE,
+      UserRole.RESPONSABLE_PEDAGOGIQUE,
       UserRole.AUDITEUR,
       UserRole.ADMINISTRATEUR,
     ]);
     expect(fixture.componentInstance.roleOptions.map((o) => o.label)).toEqual([
       'Agent de crédit',
       'Validateur',
+      'Responsable crédit',
+      'Professionnel de santé',
+      'Responsable pédagogique',
       'Auditeur',
       'Administrateur',
     ]);

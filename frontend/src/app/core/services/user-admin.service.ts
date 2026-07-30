@@ -31,6 +31,9 @@ export interface UpdateManagedUserRequest {
 export const MANAGED_USER_ROLES: UserRole[] = [
   UserRole.UTILISATEUR,
   UserRole.VALIDATEUR,
+  UserRole.RESPONSABLE_CREDIT,
+  UserRole.PROFESSIONNEL_SANTE,
+  UserRole.RESPONSABLE_PEDAGOGIQUE,
   UserRole.AUDITEUR,
   UserRole.ADMINISTRATEUR,
 ];

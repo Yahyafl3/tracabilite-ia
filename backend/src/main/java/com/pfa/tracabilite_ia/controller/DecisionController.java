@@ -7,15 +7,24 @@ import com.pfa.tracabilite_ia.dto.request.ValidationRequest;
 import com.pfa.tracabilite_ia.dto.response.DecisionPageResponse;
 import com.pfa.tracabilite_ia.dto.response.DecisionResponse;
 import com.pfa.tracabilite_ia.entities.Decision;
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.service.AuthService;
+import com.pfa.tracabilite_ia.service.DecisionExportService;
 import com.pfa.tracabilite_ia.service.DecisionService;
 import com.pfa.tracabilite_ia.service.ValidationService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,13 +36,16 @@ public class DecisionController {
     private final DecisionService decisionService;
     private final ValidationService validationService;
     private final AuthService authService;
+    private final DecisionExportService decisionExportService;
 
     public DecisionController(DecisionService decisionService,
                               ValidationService validationService,
-                              AuthService authService) {
+                              AuthService authService,
+                              DecisionExportService decisionExportService) {
         this.decisionService = decisionService;
         this.validationService = validationService;
         this.authService = authService;
+        this.decisionExportService = decisionExportService;
     }
 
     @PostMapping
@@ -54,11 +66,52 @@ public class DecisionController {
     }
 
     @GetMapping
-    public DecisionPageResponse lister(@RequestParam(required = false) String search,
-                                       @RequestParam(required = false) StatutDecisionEnum statut,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "10") int size) {
-        return decisionService.rechercher(search, statut, page, size);
+    public DecisionPageResponse lister(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) StatutDecisionEnum statut,
+            @RequestParam(required = false) DecisionDomain domaine,
+            @RequestParam(required = false) String riskLevel,
+            @RequestParam(required = false) String decisionFinale,
+            @RequestParam(required = false) String validateur,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
+        LocalDateTime to = toDate != null ? toDate.atTime(LocalTime.MAX) : null;
+        return decisionService.rechercher(
+                search, statut, domaine, riskLevel, decisionFinale, validateur, from, to, page, size);
+    }
+
+    @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
+    public ResponseEntity<byte[]> export(
+            @RequestParam(defaultValue = "csv") String format,
+            @RequestParam(required = false) DecisionDomain domaine,
+            @RequestParam(required = false) StatutDecisionEnum statut,
+            @RequestParam(required = false) String validateur,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+        LocalDateTime from = fromDate != null ? fromDate.atStartOfDay() : null;
+        LocalDateTime to = toDate != null ? toDate.atTime(LocalTime.MAX) : null;
+        var user = authService.getCurrentUser();
+
+        boolean excel = "xlsx".equalsIgnoreCase(format) || "xls".equalsIgnoreCase(format) || "excel".equalsIgnoreCase(format);
+        byte[] body = excel
+                ? decisionExportService.exportExcelXml(domaine, statut, from, to, validateur, user)
+                : decisionExportService.exportCsv(domaine, statut, from, to, validateur, user);
+
+        String filename = excel ? "decisions-export.xls" : "decisions-export.csv";
+        MediaType mediaType = excel
+                ? MediaType.parseMediaType("application/vnd.ms-excel")
+                : new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(mediaType)
+                .body(body);
     }
 
     @GetMapping("/{id}")

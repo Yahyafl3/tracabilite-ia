@@ -342,7 +342,7 @@ export class AuditPageComponent {
     const items = this.filteredItems();
     const summary = this.integrity();
     const filters = this.appliedFilters();
-    
+
     if (!summary) {
       return;
     }

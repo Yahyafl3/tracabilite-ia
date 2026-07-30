@@ -19,6 +19,15 @@ import java.util.UUID;
 public class DecisionResponse {
     private UUID decisionId;
     private String reference;
+    private String domaine;
+    private String dossierReference;
+    private String description;
+    private String datasetVersion;
+    private String sourceDonnees;
+    private Boolean accordAvecIa;
+    private String justificationHumaine;
+    private String validateurRole;
+    private String createdBy;
     private String prompt;
     private String contexte;
     private String modelName;
@@ -41,9 +50,19 @@ public class DecisionResponse {
     private String humanFinalDecision;
     private TypeActionEnum humanFinalAction;
     private String validatorEmail;
+    private UUID validateurId;
     private LocalDateTime validatedAt;
+    private LocalDateTime submittedAt;
     private LocalDateTime timestamp;
     private String currentHash;
+
+    /** Données spécialisées — une seule non-null selon domaine. */
+    private CreditDecisionDataResponse creditData;
+    private MedicalDecisionDataResponse medicalData;
+    private EducationDecisionDataResponse educationData;
+
+    private DecisionIntegrityView integrity;
+    private DecisionSourcesMetaView sourcesMeta;
 
     @Data
     @Builder

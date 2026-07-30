@@ -1,0 +1,226 @@
+[
+  {
+    "name": "unauthenticated list",
+    "expected": "401",
+    "observed": "401",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "login user",
+    "expected": "token",
+    "observed": "ok",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "login credit validator",
+    "expected": "token",
+    "observed": "ok",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "login medical validator",
+    "expected": "token",
+    "observed": "ok",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "login education validator",
+    "expected": "token",
+    "observed": "ok",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "user accessing admin users",
+    "expected": "403",
+    "observed": "403",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT create+ML",
+    "expected": "201/200 + decisionId",
+    "observed": "201",
+    "status": "PASS",
+    "detail": "{'decisionId': 'e48df46d-1549-4a4e-af85-7baaa21ef4bc', 'reference': 'E48DF46D', 'domaine': 'CREDIT', 'dossierReference': 'CREDIT-D09B66BB', 'description': 'Dossier E2E crédit synthétique pour tests au"
+  },
+  {
+    "name": "CREDIT submit",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT validate",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT detail",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT integrity endpoint",
+    "expected": "200 + status field",
+    "observed": "200 {'integrityValid': True, 'decisionId': 'e48df46d-1549-4a4e-af85-7baaa21ef4bc', 'status': 'VALID'}",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT integrity VALID",
+    "expected": "VALID",
+    "observed": "VALID",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "CREDIT history",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL create+ML",
+    "expected": "201/200 + decisionId",
+    "observed": "201",
+    "status": "PASS",
+    "detail": "{'decisionId': 'd4d02673-f099-44da-9cb2-57d62ef3c231', 'reference': 'D4D02673', 'domaine': 'MEDICAL', 'dossierReference': 'MEDICAL-C97CFCFC', 'description': 'Dossier E2E médical synthétique — pas un d"
+  },
+  {
+    "name": "MEDICAL submit",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL validate",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL detail",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL integrity endpoint",
+    "expected": "200 + status field",
+    "observed": "200 {'integrityValid': True, 'decisionId': 'd4d02673-f099-44da-9cb2-57d62ef3c231', 'status': 'VALID'}",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL integrity VALID",
+    "expected": "VALID",
+    "observed": "VALID",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "MEDICAL history",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION create+ML",
+    "expected": "201/200 + decisionId",
+    "observed": "201",
+    "status": "PASS",
+    "detail": "{'decisionId': '395acfdf-bcc4-476b-9fac-6bbffd39b05f', 'reference': '395ACFDF', 'domaine': 'EDUCATION', 'dossierReference': 'EDUCATION-CD1DAC13', 'description': 'Dossier E2E éducation synthétique — ac"
+  },
+  {
+    "name": "EDUCATION submit",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION validate",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION detail",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION integrity endpoint",
+    "expected": "200 + status field",
+    "observed": "200 {'integrityValid': True, 'decisionId': '395acfdf-bcc4-476b-9fac-6bbffd39b05f', 'status': 'VALID'}",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION integrity VALID",
+    "expected": "VALID",
+    "observed": "VALID",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "EDUCATION history",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "author self-validate",
+    "expected": "403/409/400",
+    "observed": "403",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "export CSV",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "export XLSX",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "list paginated",
+    "expected": "200",
+    "observed": "200",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "name": "backend health",
+    "expected": "200 UP",
+    "observed": "200 {'status': 'UP', 'groups': ['liveness', 'readiness']}",
+    "status": "PASS",
+    "detail": ""
+  }
+]

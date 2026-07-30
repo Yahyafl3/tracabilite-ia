@@ -40,6 +40,9 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache curl \
+ && addgroup -S app && adduser -S app -G app
+
 # Même confiance Avast au runtime (SMTP Gmail STARTTLS / HTTPS).
 COPY avast-root.crt /tmp/avast-root.crt
 RUN keytool -importcert -noprompt -trustcacerts -alias avast-ssl-scan \
@@ -48,9 +51,15 @@ RUN keytool -importcert -noprompt -trustcacerts -alias avast-ssl-scan \
 
 # Copier le JAR depuis l'étape de build
 COPY --from=build /app/target/*.jar app.jar
+RUN chown -R app:app /app
+
+USER app
 
 # Render injecte PORT ; local / compose = 8080 (voir server.port=${PORT:8080})
 ENV PORT=8080
 EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=10 \
+  CMD curl -fsS "http://127.0.0.1:${PORT}/actuator/health" || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -72,7 +72,7 @@ export class ExportService {
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    
+
     // Wait for content to load
     printWindow.onload = () => {
       printWindow.focus();
@@ -423,12 +423,12 @@ export class ExportService {
   private getStatusBadge(statut: StatutDecisionEnum): string {
     const label = statutLabel(statut);
     let className = 'status ';
-    
+
     if (statut === StatutDecisionEnum.APPROUVEE) className += 'status-success';
     else if (statut === StatutDecisionEnum.REJETEE) className += 'status-danger';
     else if (statut === StatutDecisionEnum.EN_ATTENTE) className += 'status-warn';
     else if (statut === StatutDecisionEnum.MODIFIEE) className += 'status-info';
-    
+
     return `<span class="${className}">${label}</span>`;
   }
 

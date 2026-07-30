@@ -27,6 +27,9 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private static final Set<RoleEnum> MANAGED_ROLES = EnumSet.of(
             RoleEnum.UTILISATEUR,
             RoleEnum.VALIDATEUR,
+            RoleEnum.RESPONSABLE_CREDIT,
+            RoleEnum.PROFESSIONNEL_SANTE,
+            RoleEnum.RESPONSABLE_PEDAGOGIQUE,
             RoleEnum.AUDITEUR,
             RoleEnum.ADMINISTRATEUR
     );

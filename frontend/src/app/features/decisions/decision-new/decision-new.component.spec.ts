@@ -7,10 +7,10 @@ import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels'
 
 describe('DecisionNewComponent', () => {
   let fixture: ComponentFixture<DecisionNewComponent>;
-  let analyzeSubject: Subject<unknown>;
+  let createSubject: Subject<unknown>;
 
   beforeEach(async () => {
-    analyzeSubject = new Subject();
+    createSubject = new Subject();
     await TestBed.configureTestingModule({
       imports: [DecisionNewComponent],
       providers: [
@@ -18,7 +18,10 @@ describe('DecisionNewComponent', () => {
         {
           provide: DecisionService,
           useValue: {
-            analyze: () => analyzeSubject.asObservable(),
+            analyze: () => of({}),
+            createCredit: () => createSubject.asObservable(),
+            createMedical: () => createSubject.asObservable(),
+            createEducation: () => createSubject.asObservable(),
           },
         },
       ],
@@ -28,21 +31,45 @@ describe('DecisionNewComponent', () => {
     fixture.detectChanges();
   });
 
-  it('disables submit button while loading', () => {
+  it('affiche le sélecteur de domaine', () => {
+    expect(fixture.componentInstance.selectedDomain).toBe('CREDIT');
+    expect(fixture.nativeElement.textContent).toContain('Domaine de décision');
+  });
+
+  it('affiche le formulaire crédit par défaut', () => {
+    expect(fixture.nativeElement.querySelector('app-credit-decision-form')).toBeTruthy();
+  });
+
+  it('bascule vers le formulaire médical', () => {
+    fixture.componentInstance.shellForm.patchValue({ domaine: 'MEDICAL' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-medical-decision-form')).toBeTruthy();
+  });
+
+  it('bascule vers le formulaire éducation', () => {
+    fixture.componentInstance.shellForm.patchValue({ domaine: 'EDUCATION' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-education-decision-form')).toBeTruthy();
+  });
+
+  it('disables submit while loading after valid child form', () => {
+    fixture.componentInstance.onChildForm({
+      valid: true,
+      value: { secteurActivite: 'SERVICES', ratioEndettement: 0.2 },
+    });
     fixture.componentInstance.submit();
     fixture.detectChanges();
 
     expect(fixture.componentInstance.loading()).toBe(true);
-    const button = fixture.nativeElement.querySelector('button[type="submit"], .p-button') as HTMLButtonElement | null;
-    expect(button?.disabled || fixture.componentInstance.loading()).toBe(true);
 
-    analyzeSubject.next({
+    createSubject.next({
       decisionId: 'd1',
-      suggestedDecision: 'APPROUVER',
-      confidenceScore: 80,
+      suggestedDecision: 'RISQUE_FAIBLE',
+      confidenceScore: 0.8,
+      domaine: 'CREDIT',
       agentResponses: [],
     });
-    analyzeSubject.complete();
+    createSubject.complete();
     fixture.detectChanges();
     expect(fixture.componentInstance.loading()).toBe(false);
   });

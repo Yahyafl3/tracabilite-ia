@@ -70,15 +70,19 @@ public class ValidationServiceImpl implements ValidationService {
     @Transactional(readOnly = true)
     public DecisionPageResponse listerEnAttente(int page, int size) {
         assertValidateur();
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
-        Page<Decision> result = decisionRepository.search(null, StatutDecisionEnum.EN_ATTENTE, pageable);
+        assertValidateur();
+        var pending = decisionRepository.findByStatutValidationInOrderByTimestampDesc(
+                List.of(StatutDecisionEnum.EN_ATTENTE_VALIDATION, StatutDecisionEnum.EN_ATTENTE));
+        int from = Math.min(page * size, pending.size());
+        int to = Math.min(from + size, pending.size());
+        var slice = pending.subList(from, to);
         return DecisionPageResponse.builder()
-                .content(decisionMapper.toResponseList(result.getContent()))
-                .page(result.getNumber())
-                .size(result.getSize())
-                .totalElements(result.getTotalElements())
-                .totalPages(result.getTotalPages())
-                .last(result.isLast())
+                .content(decisionMapper.toResponseList(slice))
+                .page(page)
+                .size(size)
+                .totalElements((long) pending.size())
+                .totalPages((int) Math.ceil(pending.size() / (double) Math.max(size, 1)))
+                .last(to >= pending.size())
                 .build();
     }
 

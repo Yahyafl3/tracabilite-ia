@@ -3,17 +3,27 @@ import { UserRole } from '../models/auth.models';
 import type { DecisionHistoryAction } from '../services/decision-trace.service';
 
 const STATUT_LABELS: Record<StatutDecisionEnum, string> = {
+  [StatutDecisionEnum.BROUILLON]: 'Brouillon',
+  [StatutDecisionEnum.EN_ANALYSE]: 'En analyse',
+  [StatutDecisionEnum.ANALYSEE]: 'Analysée',
+  [StatutDecisionEnum.EN_ATTENTE_VALIDATION]: 'En attente de validation',
+  [StatutDecisionEnum.EN_ATTENTE]: 'En attente',
+  [StatutDecisionEnum.VALIDEE]: 'Validée',
   [StatutDecisionEnum.APPROUVEE]: 'Approuvée',
   [StatutDecisionEnum.MODIFIEE]: 'Modifiée',
+  [StatutDecisionEnum.A_REVOIR]: 'À revoir',
   [StatutDecisionEnum.REJETEE]: 'Rejetée',
-  [StatutDecisionEnum.EN_ATTENTE]: 'En attente',
-  [StatutDecisionEnum.BROUILLON]: 'Brouillon',
+  [StatutDecisionEnum.ARCHIVEE]: 'Archivée',
 };
 
 const RISK_LABELS: Record<string, string> = {
   HIGH: 'Élevé',
   MEDIUM: 'Modéré',
   LOW: 'Faible',
+  ELEVE: 'Élevé',
+  MOYEN: 'Moyen',
+  MODERE: 'Modéré',
+  FAIBLE: 'Faible',
 };
 
 const HISTORY_ACTION_LABELS: Record<string, string> = {
@@ -66,6 +76,9 @@ export function roleLabel(role: UserRole | string): string {
     [UserRole.VALIDATEUR]: 'Validateur',
     [UserRole.AUDITEUR]: 'Auditeur',
     [UserRole.UTILISATEUR]: 'Agent de crédit',
+    [UserRole.RESPONSABLE_CREDIT]: 'Responsable crédit',
+    [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de santé',
+    [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable pédagogique',
   };
   return map[String(role)] ?? String(role);
 }
@@ -76,6 +89,9 @@ export function roleChipClass(role: UserRole | string): string {
     case UserRole.ADMINISTRATEUR:
       return 'chip--info';
     case UserRole.VALIDATEUR:
+    case UserRole.RESPONSABLE_CREDIT:
+    case UserRole.PROFESSIONNEL_SANTE:
+    case UserRole.RESPONSABLE_PEDAGOGIQUE:
       return 'chip--approved';
     case UserRole.AUDITEUR:
       return 'chip--modified';

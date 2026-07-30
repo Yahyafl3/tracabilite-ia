@@ -8,6 +8,7 @@ import com.pfa.tracabilite_ia.jwt.JwtProvider;
 import com.pfa.tracabilite_ia.security.CustomAccessDeniedHandler;
 import com.pfa.tracabilite_ia.security.CustomAuthenticationEntryPoint;
 import com.pfa.tracabilite_ia.service.AuthService;
+import com.pfa.tracabilite_ia.service.DecisionExportService;
 import com.pfa.tracabilite_ia.service.DecisionService;
 import com.pfa.tracabilite_ia.service.ValidationService;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class DecisionControllerUserSecurityTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private DecisionExportService decisionExportService;
 
     @MockitoBean
     private JwtProvider jwtProvider;

@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TracabiliteIaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TracabiliteIaApplication.class, args);
+		SpringApplication app = new SpringApplication(TracabiliteIaApplication.class);
+		app.addListeners(new com.pfa.tracabilite_ia.config.ProductionEnvironmentValidator.EarlyProdGuard());
+		app.run(args);
 	}
 
 }

@@ -1,0 +1,22 @@
+<section class="domain-details" aria-label="Données éducation">
+  <p-message severity="info" [text]="warning" styleClass="w-full mb-3" />
+  <h2 class="domain-details__title">Dossier pédagogique</h2>
+  <dl class="domain-details__grid">
+    <div><dt>Région</dt><dd>{{ text(data.region) }}</dd></div>
+    <div><dt>Type d'établissement</dt><dd>{{ text(data.typeEtablissement) }}</dd></div>
+    <div><dt>Filière</dt><dd>{{ text(data.filiere) }}</dd></div>
+    <div><dt>Niveau d'étude</dt><dd>{{ text(data.niveauEtude) }}</dd></div>
+    <div><dt>Moyenne semestre 1</dt><dd>{{ data.moyenneSemestre1 != null ? data.moyenneSemestre1 + ' /20' : '—' }}</dd></div>
+    <div><dt>Moyenne semestre 2</dt><dd>{{ data.moyenneSemestre2 != null ? data.moyenneSemestre2 + ' /20' : '—' }}</dd></div>
+    <div><dt>Taux d'absence</dt><dd>{{ data.tauxAbsence != null ? data.tauxAbsence + ' %' : '—' }}</dd></div>
+    <div><dt>Modules non validés</dt><dd>{{ text(data.modulesNonValides) }}</dd></div>
+    <div><dt>Participation</dt><dd>{{ text(data.participation) }}</dd></div>
+    <div><dt>Bourse</dt><dd>{{ text(data.bourse) }}</dd></div>
+    <div><dt>Distance logement</dt><dd>{{ data.distanceLogementKm != null ? data.distanceLogementKm + ' km' : '—' }}</dd></div>
+    <div><dt>Accès Internet</dt><dd>{{ text(data.accesInternet) }}</dd></div>
+    <div><dt>Activité professionnelle</dt><dd>{{ text(data.activiteProfessionnelle) }}</dd></div>
+    <div><dt>Historique de redoublement</dt><dd>{{ text(data.historiqueRedoublement) }}</dd></div>
+    <div><dt>Situation académique</dt><dd>{{ text(data.situationAcademique) }}</dd></div>
+    <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
+  </dl>
+</section>

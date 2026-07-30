@@ -27,7 +27,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  
+
   private readonly API_URL = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'auth_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
@@ -94,7 +94,7 @@ export class AuthService {
    */
   logout(): void {
     const token = this.getToken();
-    
+
     if (token) {
       // Notify backend (fire and forget)
       this.http.post(`${this.API_URL}/logout`, {}).subscribe({

@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-07-30T14:59:51.521338+00:00",
+  "seed": 42,
+  "version": "1.0.0",
+  "credit": {
+    "rows": 10000,
+    "columns": [
+      "secteur_activite",
+      "region",
+      "age_demandeur",
+      "statut_professionnel",
+      "revenu_mensuel_mad",
+      "charges_mensuelles_mad",
+      "montant_demande_mad",
+      "duree_credit_mois",
+      "anciennete_professionnelle_annees",
+      "credits_existants",
+      "incidents_paiement_24_mois",
+      "ratio_endettement",
+      "type_garantie",
+      "type_credit",
+      "defaut_paiement"
+    ],
+    "target_distribution": {
+      "0": 5702,
+      "1": 4298
+    },
+    "target_rate": 0.4298,
+    "checksum_sha256": "c03dd1498caae953a95b1c140dcf7b136be8877e6b4f15dd88013be2052a2d5d"
+  },
+  "medical": {
+    "rows": 7997,
+    "columns": [
+      "region",
+      "age",
+      "sexe",
+      "imc",
+      "niveau_activite_physique",
+      "antecedents_familiaux_diabete",
+      "hypertension",
+      "glycemie",
+      "polyurie",
+      "polydipsie",
+      "perte_poids_soudaine",
+      "faiblesse",
+      "obesite",
+      "suivi_medical",
+      "risque_diabete"
+    ],
+    "target_distribution": {
+      "0": 5088,
+      "1": 2909
+    },
+    "target_rate": 0.3638,
+    "checksum_sha256": "1f6b931b5530299c88f51f1d952a5ab4bf558f1fa1a7a2825c2dff20bbc7d048"
+  },
+  "education": {
+    "rows": 10000,
+    "columns": [
+      "region",
+      "type_etablissement",
+      "filiere",
+      "niveau_etude",
+      "moyenne_semestre_1",
+      "moyenne_semestre_2",
+      "taux_absence",
+      "modules_non_valides",
+      "participation",
+      "bourse",
+      "distance_logement_km",
+      "acces_internet",
+      "activite_professionnelle",
+      "historique_redoublement",
+      "situation_academique",
+      "decrochage"
+    ],
+    "target_distribution": {
+      "0": 5784,
+      "1": 4216
+    },
+    "target_rate": 0.4216,
+    "checksum_sha256": "522e9809c557d8b70b6e58dafd2433a937b2184f5e58dcda611fd2a69356efbb"
+  },
+  "disclaimer": "Données synthétiques contextualisées au Maroc. Pas de données réelles de banques, hôpitaux ou universités."
+}

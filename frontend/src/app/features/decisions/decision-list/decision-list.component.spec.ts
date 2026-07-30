@@ -3,7 +3,9 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DecisionListComponent } from './decision-list.component';
 import { DecisionService } from '../../../core/services/decision.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { StatutDecisionEnum } from '../../../core/models/decision.models';
+import { UserRole } from '../../../core/models/auth.models';
 
 describe('DecisionListComponent', () => {
   const populated = {
@@ -12,47 +14,38 @@ describe('DecisionListComponent', () => {
         decisionId: 'dec-1',
         prompt: 'Crédit test',
         contexte: 'Contexte',
-        reponse: 'APPROUVER',
-        statutValidation: StatutDecisionEnum.EN_ATTENTE,
+        reponse: 'RISQUE_FAIBLE',
+        suggestedDecision: 'RISQUE_FAIBLE',
+        statutValidation: StatutDecisionEnum.EN_ATTENTE_VALIDATION,
         timestamp: '2026-07-18T10:00:00.000Z',
         modelName: 'LogisticRegression',
         modelVersion: '1.0.0',
-        riskLevel: 'LOW',
-        confidenceScore: 82,
+        riskLevel: 'FAIBLE',
+        confidenceScore: 0.82,
+        domaine: 'CREDIT',
+        dossierReference: 'CREDIT-TEST01',
+      },
+      {
+        decisionId: 'dec-2',
+        prompt: 'Médical',
+        contexte: 'Indicatif',
+        reponse: 'RISQUE_ELEVE',
+        suggestedDecision: 'RISQUE_ELEVE',
+        statutValidation: StatutDecisionEnum.ANALYSEE,
+        timestamp: '2026-07-18T11:00:00.000Z',
+        modelName: 'LogisticRegression',
+        riskLevel: 'ELEVE',
+        confidenceScore: 0.7,
+        domaine: 'MEDICAL',
+        dossierReference: 'MEDICAL-TEST01',
       },
     ],
-    totalElements: 1,
+    totalElements: 2,
     page: 0,
     size: 10,
   };
 
-  it('shows loading then empty state', async () => {
-    await TestBed.configureTestingModule({
-      imports: [DecisionListComponent],
-      providers: [
-        provideRouter([]),
-        {
-          provide: DecisionService,
-          useValue: {
-            search: () => of({ content: [], totalElements: 0, page: 0, size: 10 }),
-          },
-        },
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(DecisionListComponent);
-    fixture.componentInstance.loading.set(true);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('p-skeleton') || fixture.nativeElement.textContent).toBeTruthy();
-
-    fixture.componentInstance.loading.set(false);
-    fixture.componentInstance.decisions.set([]);
-    fixture.componentInstance.totalElements.set(0);
-    fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Aucune décision trouvée');
-  });
-
-  it('renders populated decisions with confidence percent scale', async () => {
+  async function setup(role: UserRole = UserRole.UTILISATEUR) {
     await TestBed.configureTestingModule({
       imports: [DecisionListComponent],
       providers: [
@@ -61,16 +54,45 @@ describe('DecisionListComponent', () => {
           provide: DecisionService,
           useValue: {
             search: () => of(populated),
+            exportDecisions: () => of(new Blob(['csv'])),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            get currentUser() {
+              return { id: '1', email: 'u@test.com', nom: 'U', role };
+            },
           },
         },
       ],
     }).compileComponents();
-
     const fixture = TestBed.createComponent(DecisionListComponent);
     fixture.detectChanges();
+    return fixture;
+  }
 
+  it('affiche les badges de domaine', async () => {
+    const fixture = await setup();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text).toContain('Crédit test');
-    expect(text).toContain('dec-1'.slice(0, 8).toUpperCase() === 'DEC-1' ? 'DEC-1' : 'Crédit');
+    expect(text).toContain('CREDIT');
+    expect(text).toContain('MEDICAL');
+  });
+
+  it('expose les filtres domaine et risque', async () => {
+    const fixture = await setup();
+    expect(fixture.componentInstance.domaineOptions.some((o) => o.value === 'EDUCATION')).toBe(true);
+    expect(fixture.componentInstance.riskOptions.some((o) => o.value === 'ELEVE')).toBe(true);
+  });
+
+  it('montre le bouton export pour AUDITEUR', async () => {
+    const fixture = await setup(UserRole.AUDITEUR);
+    expect(fixture.componentInstance.canExport()).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Exporter');
+  });
+
+  it('cache le bouton export pour UTILISATEUR', async () => {
+    const fixture = await setup(UserRole.UTILISATEUR);
+    expect(fixture.componentInstance.canExport()).toBe(false);
   });
 });

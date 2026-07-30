@@ -19,13 +19,13 @@ Write-Host ""
 
 try {
     Write-Host "Envoi de la requête à Ollama..." -ForegroundColor Yellow
-    
+
     $response = Invoke-RestMethod -Uri "http://localhost:8080/api/ai/analyze-decision" `
         -Method Post `
         -Body $body `
         -Headers $headers `
         -TimeoutSec 30
-    
+
     Write-Host "✅ Analyse reçue avec succès !" -ForegroundColor Green
     Write-Host ""
     Write-Host "Modèle utilisé: $($response.model)" -ForegroundColor Yellow
@@ -33,24 +33,24 @@ try {
     Write-Host "=== Analyse générée par Ollama ===" -ForegroundColor Cyan
     Write-Host $response.analysis -ForegroundColor White
     Write-Host ""
-    
+
     if ($response.timestamp) {
         Write-Host "Timestamp: $($response.timestamp)" -ForegroundColor Gray
     }
     if ($response.tokensUsed) {
         Write-Host "Tokens utilisés: $($response.tokensUsed)" -ForegroundColor Gray
     }
-    
+
 } catch {
     Write-Host "❌ Erreur lors de l'appel à l'API" -ForegroundColor Red
     Write-Host ""
     Write-Host "Message: $($_.Exception.Message)" -ForegroundColor Yellow
-    
+
     if ($_.Exception.Response) {
         Write-Host "Code HTTP: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Yellow
         Write-Host "Description: $($_.Exception.Response.StatusDescription)" -ForegroundColor Yellow
     }
-    
+
     Write-Host ""
     Write-Host "Détails techniques:" -ForegroundColor Gray
     Write-Host $_.Exception -ForegroundColor DarkGray

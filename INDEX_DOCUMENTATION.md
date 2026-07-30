@@ -4,6 +4,20 @@
 
 ---
 
+## Documentation multidomain (2026)
+
+| Fichier | Description |
+|---------|-------------|
+| `docs/ARCHITECTURE_MULTIDOMAINE.md` | Architecture CREDIT / MEDICAL / EDUCATION |
+| `docs/DATASETS.md` | Datasets synthétiques marocains |
+| `docs/MODEL_TRAINING.md` | Entraînement et sélection des modèles |
+| `docs/API_MULTIDOMAINE.md` | Endpoints Flask et Spring Boot |
+| `docs/MIGRATION_GUIDE.md` | Migration progressive + rollback |
+| `docs/SECURITY_AND_PRIVACY.md` | Sécurité et confidentialité |
+| `docs/LIMITATIONS.md` | Limites métier et biais |
+
+---
+
 ## 🚀 Démarrage Rapide
 
 ### Pour commencer immédiatement
@@ -341,6 +355,6 @@ Vous avez maintenant accès à une documentation complète pour :
 
 ---
 
-*Index créé le 14 juillet 2026*  
-*Application Traçabilité IA - Version 1.0*  
+*Index créé le 14 juillet 2026*
+*Application Traçabilité IA - Version 1.0*
 *Documentation complète et structurée*

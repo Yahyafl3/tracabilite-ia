@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.ArrayList;
@@ -71,12 +70,15 @@ public class GroqMultiAgentService {
         this.decisionHistoryService = decisionHistoryService;
     }
 
-    @Transactional
+    /**
+     * Pas de {@code @Transactional} dédié : s'exécute dans la transaction appelante
+     * (après persist de {@link Decision}). Une exception capturée par le service
+     * de consultation ne doit pas marquer la TX externe rollback-only via un proxy imbriqué.
+     */
     public GroqAnalysisBundle analyzeDecisionAgents(Decision decision, String prompt, String contexte) {
         return analyzeDecisionAgents(decision, prompt, contexte, null);
     }
 
-    @Transactional
     public GroqAnalysisBundle analyzeDecisionAgents(Decision decision, String prompt, String contexte,
                                                     Utilisateur user) {
         decision.getReponsesAgents().clear();

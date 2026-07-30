@@ -2,12 +2,9 @@ package com.pfa.tracabilite_ia.mapper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pfa.tracabilite_ia.dto.response.ConsensusResponse;
-import com.pfa.tracabilite_ia.dto.response.DecisionResponse;
-import com.pfa.tracabilite_ia.dto.response.MlPredictionView;
-import com.pfa.tracabilite_ia.dto.response.ValidationActionResponse;
-import com.pfa.tracabilite_ia.entities.Decision;
-import com.pfa.tracabilite_ia.entities.ExplanationFactor;
+import com.pfa.tracabilite_ia.dto.response.*;
+import com.pfa.tracabilite_ia.entities.*;
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.TypeActionEnum;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +26,21 @@ public class DecisionMapper {
 
     public DecisionResponse toResponse(Decision decision) {
         ConsensusResponse consensus = readConsensus(decision.getConsensusJson());
-        return DecisionResponse.builder()
+        DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
+
+        DecisionResponse.DecisionResponseBuilder builder = DecisionResponse.builder()
                 .decisionId(decision.getDecisionId())
                 .reference(formatReference(decision.getDecisionId()))
+                .domaine(domain.name())
+                .dossierReference(decision.getDossierReference())
+                .description(decision.getDescription())
+                .datasetVersion(decision.getDatasetVersion())
+                .sourceDonnees(decision.getSourceDonnees())
+                .accordAvecIa(decision.getAccordAvecIa())
+                .justificationHumaine(maskMedicalJustification(domain, decision.getJustificationHumaine()))
+                .validateurRole(decision.getValidateurRole())
+                .validateurId(decision.getValidateurId())
+                .createdBy(decision.getCreatedBy())
                 .prompt(decision.getPrompt())
                 .contexte(decision.getContexte())
                 .modelName(decision.getModelName())
@@ -52,8 +61,115 @@ public class DecisionMapper {
                 .factors(mapFactors(decision.getExplanationFactors()))
                 .humanFinalDecision(decision.getHumanDecision())
                 .validatorEmail(decision.getValidatorEmail())
+                .validatedAt(decision.getValidatedAt())
+                .submittedAt(decision.getSubmittedAt())
                 .timestamp(decision.getTimestamp())
                 .currentHash(decision.getCurrentHash())
+                .integrity(buildIntegrity(decision))
+                .sourcesMeta(buildSourcesMeta(decision, domain));
+
+        attachDomainData(builder, decision, domain);
+        return builder.build();
+    }
+
+    public void applyDomainData(
+            DecisionResponse response,
+            CreditDecisionData credit,
+            MedicalDecisionData medical,
+            EducationDecisionData education
+    ) {
+        DecisionDomain domain = response.getDomaine() != null
+                ? DecisionDomain.valueOf(response.getDomaine())
+                : DecisionDomain.CREDIT;
+        if (domain == DecisionDomain.CREDIT && credit != null) {
+            response.setCreditData(mapCredit(credit));
+            response.setMedicalData(null);
+            response.setEducationData(null);
+        } else if (domain == DecisionDomain.MEDICAL && medical != null) {
+            response.setMedicalData(mapMedical(medical));
+            response.setCreditData(null);
+            response.setEducationData(null);
+        } else if (domain == DecisionDomain.EDUCATION && education != null) {
+            response.setEducationData(mapEducation(education));
+            response.setCreditData(null);
+            response.setMedicalData(null);
+        }
+    }
+
+    private void attachDomainData(
+            DecisionResponse.DecisionResponseBuilder builder,
+            Decision decision,
+            DecisionDomain domain
+    ) {
+        // Prefer already-initialized associations when present (avoid LazyInitializationException).
+        try {
+            if (domain == DecisionDomain.CREDIT && decision.getCreditData() != null) {
+                builder.creditData(mapCredit(decision.getCreditData()));
+            } else if (domain == DecisionDomain.MEDICAL && decision.getMedicalData() != null) {
+                builder.medicalData(mapMedical(decision.getMedicalData()));
+            } else if (domain == DecisionDomain.EDUCATION && decision.getEducationData() != null) {
+                builder.educationData(mapEducation(decision.getEducationData()));
+            }
+        } catch (org.hibernate.LazyInitializationException ignored) {
+            // Loaded later via applyDomainData in DecisionServiceImpl
+        }
+    }
+
+    public CreditDecisionDataResponse mapCredit(CreditDecisionData d) {
+        return CreditDecisionDataResponse.builder()
+                .secteurActivite(d.getSecteurActivite())
+                .region(d.getRegion())
+                .ageDemandeur(d.getAgeDemandeur())
+                .statutProfessionnel(d.getStatutProfessionnel())
+                .revenuMensuelMad(d.getRevenuMensuelMad())
+                .chargesMensuellesMad(d.getChargesMensuellesMad())
+                .montantDemandeMad(d.getMontantDemandeMad())
+                .dureeCreditMois(d.getDureeCreditMois())
+                .ancienneteProfessionnelleAnnees(d.getAncienneteProfessionnelleAnnees())
+                .creditsExistants(d.getCreditsExistants())
+                .incidentsPaiement24Mois(d.getIncidentsPaiement24Mois())
+                .ratioEndettement(d.getRatioEndettement())
+                .typeGarantie(d.getTypeGarantie())
+                .typeCredit(d.getTypeCredit())
+                .build();
+    }
+
+    public MedicalDecisionDataResponse mapMedical(MedicalDecisionData d) {
+        return MedicalDecisionDataResponse.builder()
+                .region(d.getRegion())
+                .age(d.getAge())
+                .sexe(d.getSexe())
+                .imc(d.getImc())
+                .niveauActivitePhysique(d.getNiveauActivitePhysique())
+                .antecedentsFamiliauxDiabete(d.getAntecedentsFamiliauxDiabete())
+                .hypertension(d.getHypertension())
+                .glycemie(d.getGlycemie())
+                .polyurie(d.getPolyurie())
+                .polydipsie(d.getPolydipsie())
+                .pertePoidsSoudaine(d.getPertePoidsSoudaine())
+                .faiblesse(d.getFaiblesse())
+                .obesite(d.getObesite())
+                .suiviMedical(d.getSuiviMedical())
+                .build();
+    }
+
+    public EducationDecisionDataResponse mapEducation(EducationDecisionData d) {
+        return EducationDecisionDataResponse.builder()
+                .region(d.getRegion())
+                .typeEtablissement(d.getTypeEtablissement())
+                .filiere(d.getFiliere())
+                .niveauEtude(d.getNiveauEtude())
+                .moyenneSemestre1(d.getMoyenneSemestre1())
+                .moyenneSemestre2(d.getMoyenneSemestre2())
+                .tauxAbsence(d.getTauxAbsence())
+                .modulesNonValides(d.getModulesNonValides())
+                .participation(d.getParticipation())
+                .bourse(d.getBourse())
+                .distanceLogementKm(d.getDistanceLogementKm())
+                .accesInternet(d.getAccesInternet())
+                .activiteProfessionnelle(d.getActiviteProfessionnelle())
+                .historiqueRedoublement(d.getHistoriqueRedoublement())
+                .situationAcademique(d.getSituationAcademique())
                 .build();
     }
 
@@ -63,7 +179,9 @@ public class DecisionMapper {
             return;
         }
         ValidationActionResponse latest = validations.get(0);
-        response.setValidatedAt(latest.getTimestamp());
+        if (response.getValidatedAt() == null) {
+            response.setValidatedAt(latest.getTimestamp());
+        }
         response.setHumanFinalAction(latest.getTypeAction());
         if (latest.getTypeAction() == TypeActionEnum.MODIFIER) {
             response.setHumanFinalDecision(latest.getDecisionHumaine());
@@ -76,6 +194,71 @@ public class DecisionMapper {
 
     public List<DecisionResponse> toResponseList(List<Decision> decisions) {
         return decisions.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    private String maskMedicalJustification(DecisionDomain domain, String justification) {
+        if (domain == DecisionDomain.MEDICAL && justification != null && !justification.isBlank()) {
+            // Detail view for authorized roles still shows justification; export masks separately.
+            return justification;
+        }
+        return justification;
+    }
+
+    private DecisionIntegrityView buildIntegrity(Decision decision) {
+        return DecisionIntegrityView.builder()
+                .currentHash(decision.getCurrentHash())
+                .previousHash(decision.getPreviousHash())
+                .businessDataHash(decision.getBusinessDataHash())
+                .sourcesHash(decision.getSourcesHash())
+                .agentResponsesHash(decision.getAgentResponsesHash())
+                .explanation("Le hash SHA-256 permet de vérifier l'intégrité du snapshot de la décision. "
+                        + "Il ne bloque pas directement les modifications.")
+                .build();
+    }
+
+    private DecisionSourcesMetaView buildSourcesMeta(Decision decision, DecisionDomain domain) {
+        return switch (domain) {
+            case CREDIT -> DecisionSourcesMetaView.builder()
+                    .sourceDonnees(nvl(decision.getSourceDonnees(), "credit-maroc-synthetic"))
+                    .datasetVersion(nvl(decision.getDatasetVersion(), "credit-maroc-synthetic-v1.0.0"))
+                    .modelVersion(decision.getModelVersion())
+                    .modelName(decision.getModelName())
+                    .pipelineName("credit_pipeline")
+                    .featureCount(14)
+                    .dataType("Données synthétiques contextualisées au Maroc")
+                    .synthetic(true)
+                    .disclaimer("Dataset synthétique — pas un modèle bancaire officiel.")
+                    .usageLimit("Démonstration du risque de défaut uniquement.")
+                    .build();
+            case MEDICAL -> DecisionSourcesMetaView.builder()
+                    .sourceDonnees(nvl(decision.getSourceDonnees(), "medical-diabetes-maroc-synthetic"))
+                    .datasetVersion(nvl(decision.getDatasetVersion(), "medical-diabetes-maroc-synthetic-v1.0.0"))
+                    .modelVersion(decision.getModelVersion())
+                    .modelName(decision.getModelName())
+                    .pipelineName("medical_pipeline")
+                    .featureCount(14)
+                    .dataType("Données synthétiques contextualisées au Maroc")
+                    .synthetic(true)
+                    .disclaimer("Estimation indicative uniquement. Ne remplace pas un diagnostic médical.")
+                    .usageLimit("Aide à l'évaluation du risque — pas un diagnostic.")
+                    .build();
+            case EDUCATION -> DecisionSourcesMetaView.builder()
+                    .sourceDonnees(nvl(decision.getSourceDonnees(), "students-maroc-dropout-synthetic"))
+                    .datasetVersion(nvl(decision.getDatasetVersion(), "students-maroc-dropout-synthetic-v1.0.0"))
+                    .modelVersion(decision.getModelVersion())
+                    .modelName(decision.getModelName())
+                    .pipelineName("education_pipeline")
+                    .featureCount(15)
+                    .dataType("Données synthétiques contextualisées au Maroc")
+                    .synthetic(true)
+                    .disclaimer("Aide à l'accompagnement pédagogique. Pas une sanction automatique.")
+                    .usageLimit("Accompagnement pédagogique uniquement.")
+                    .build();
+        };
+    }
+
+    private static String nvl(String value, String fallback) {
+        return value != null && !value.isBlank() ? value : fallback;
     }
 
     private MlPredictionView buildMlPrediction(Decision decision) {
@@ -133,7 +316,9 @@ public class DecisionMapper {
             return Collections.emptyList();
         }
         return factors.stream()
-                .sorted((left, right) -> Integer.compare(left.getRank(), right.getRank()))
+                .sorted((left, right) -> Integer.compare(
+                        left.getRank() != null ? left.getRank() : 99,
+                        right.getRank() != null ? right.getRank() : 99))
                 .map(factor -> DecisionResponse.ExplanationFactorResponse.builder()
                         .factorId(factor.getFactorId())
                         .name(factor.getName())

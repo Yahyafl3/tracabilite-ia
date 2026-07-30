@@ -12,14 +12,13 @@ import { Skeleton } from 'primeng/skeleton';
 import { Divider } from 'primeng/divider';
 import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
-import { Tooltip } from 'primeng/tooltip';
-import { ValidationService } from '../../core/services/validation.service';
-import { DecisionResponse, consensusLabel, mlDecision, mlConfidence } from '../../core/models/decision.models';
+import { Checkbox } from 'primeng/checkbox';
+import { DecisionService } from '../../core/services/decision.service';
+import { DecisionResponse, mlDecision, mlConfidence } from '../../core/models/decision.models';
 import { decisionLabel, riskLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { ConfidenceDisplayComponent } from '../../shared/ui';
-
-type ActionType = 'APPROUVER' | 'REJETER' | 'MODIFIER' | 'REVIEW';
+import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.config';
 
 @Component({
   selector: 'app-validation-queue',
@@ -38,98 +37,87 @@ type ActionType = 'APPROUVER' | 'REJETER' | 'MODIFIER' | 'REVIEW';
     Divider,
     Textarea,
     Select,
-    Tooltip,
+    Checkbox,
     ConfidenceDisplayComponent,
   ],
   templateUrl: './validation-queue.component.html',
   styleUrl: './validation-queue.component.scss',
 })
 export class ValidationQueueComponent {
-  private readonly validationService = inject(ValidationService);
+  private readonly decisionService = inject(DecisionService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
-  // ── State ────────────────────────────────────────────────
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly decisions = signal<DecisionResponse[]>([]);
   readonly totalElements = signal(0);
   readonly submitting = signal(false);
   readonly submitError = signal<string | null>(null);
-  readonly submitSuccess = signal<string | null>(null);
 
-  // ── Action Dialog ────────────────────────────────────────
   readonly actionDialogVisible = signal(false);
   readonly actionTarget = signal<DecisionResponse | null>(null);
-  readonly pendingAction = signal<ActionType | null>(null);
 
   readonly actionForm = this.fb.group({
-    commentaire: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(10)]),
-    decisionHumaine: this.fb.nonNullable.control('' as 'APPROUVER' | 'REJETER' | ''),
+    decisionFinale: this.fb.nonNullable.control('', [Validators.required]),
+    justificationHumaine: this.fb.nonNullable.control('', [
+      Validators.required,
+      Validators.minLength(10),
+    ]),
+    accordAvecIa: this.fb.nonNullable.control(true),
   });
 
-  readonly newDecisionOptions = [
-    { label: 'Approuver', value: 'APPROUVER' },
-    { label: 'Rejeter', value: 'REJETER' },
-  ];
-
-  // ── Detail Dialog ────────────────────────────────────────
   readonly detailVisible = signal(false);
   readonly detailTarget = signal<DecisionResponse | null>(null);
 
-  // ── Computed KPIs ────────────────────────────────────────
+  readonly decisionOptions = computed(() => {
+    const row = this.actionTarget();
+    const domain = (row?.domaine || 'CREDIT') as DecisionDomain;
+    return DOMAIN_META[domain]?.humanDecisions ?? [];
+  });
+
+  readonly medicalWarning = computed(() => {
+    const domain = this.actionTarget()?.domaine || this.detailTarget()?.domaine;
+    return domain === 'MEDICAL'
+      ? 'Cette estimation ne constitue pas un diagnostic médical et doit être revue par un professionnel de santé.'
+      : null;
+  });
+
   readonly kpis = computed(() => {
     const all = this.decisions();
-    const high = all.filter((d) => d.riskLevel === 'HIGH').length;
-    const withConsensus = all.filter(
-      (d) => d.consensusDecision && d.consensusDecision !== 'NO_CONSENSUS' && d.consensusDecision !== 'INSUFFICIENT_RESPONSES'
-    ).length;
-    const consensusRate = all.length > 0 ? Math.round((withConsensus / all.length) * 100) : 0;
-
+    const high = all.filter((d) => {
+      const r = (d.riskLevel || '').toUpperCase();
+      return r.includes('ELEVE') || r === 'HIGH';
+    }).length;
     return [
-      {
-        label: 'En attente',
-        value: String(this.totalElements()),
-        icon: 'pi pi-clock',
-        color: 'warn',
-        hint: 'Décisions à valider',
-      },
-      {
-        label: 'Risque élevé',
-        value: String(high),
-        icon: 'pi pi-exclamation-triangle',
-        color: high > 0 ? 'danger' : 'success',
-        hint: 'Nécessitent attention',
-      },
-      {
-        label: 'Avec consensus',
-        value: `${consensusRate}%`,
-        icon: 'pi pi-check-circle',
-        color: 'success',
-        hint: `${withConsensus} / ${all.length} dossiers`,
-      },
-      {
-        label: 'Chargée',
-        value: String(all.length),
-        icon: 'pi pi-list',
-        color: 'info',
-        hint: 'Dossiers dans la file',
-      },
+      { label: 'En attente', value: String(this.totalElements()), icon: 'pi pi-clock', color: 'warn' },
+      { label: 'Risque élevé', value: String(high), icon: 'pi pi-exclamation-triangle', color: high > 0 ? 'danger' : 'success' },
+      { label: 'Crédit', value: String(all.filter((d) => (d.domaine || 'CREDIT') === 'CREDIT').length), icon: 'pi pi-wallet', color: 'info' },
+      { label: 'Médical', value: String(all.filter((d) => d.domaine === 'MEDICAL').length), icon: 'pi pi-heart', color: 'warn' },
+      { label: 'Éducation', value: String(all.filter((d) => d.domaine === 'EDUCATION').length), icon: 'pi pi-book', color: 'success' },
     ];
   });
 
   constructor() {
     this.loadPending();
+    this.actionForm.get('accordAvecIa')?.valueChanges.subscribe((agree) => {
+      const ctrl = this.actionForm.get('justificationHumaine');
+      if (!agree) {
+        ctrl?.setValidators([Validators.required, Validators.minLength(30)]);
+      } else {
+        ctrl?.setValidators([Validators.required, Validators.minLength(10)]);
+      }
+      ctrl?.updateValueAndValidity();
+    });
   }
 
-  // ── Data Loading ─────────────────────────────────────────
   loadPending(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.validationService.getPending(0, 50).subscribe({
-      next: (page) => {
-        this.decisions.set(page.content);
-        this.totalElements.set(page.totalElements);
+    this.decisionService.pendingValidation().subscribe({
+      next: (list) => {
+        this.decisions.set(list);
+        this.totalElements.set(list.length);
         this.loading.set(false);
       },
       error: (err) => {
@@ -139,7 +127,6 @@ export class ValidationQueueComponent {
     });
   }
 
-  // ── Detail Dialog ────────────────────────────────────────
   openDetail(row: DecisionResponse): void {
     this.detailTarget.set(row);
     this.detailVisible.set(true);
@@ -155,20 +142,20 @@ export class ValidationQueueComponent {
     void this.router.navigate(['/decisions', row.decisionId]);
   }
 
-  // ── Action Dialog ────────────────────────────────────────
-  openAction(row: DecisionResponse, action: ActionType): void {
+  openValidate(row: DecisionResponse): void {
     this.actionTarget.set(row);
-    this.pendingAction.set(action);
-    this.actionForm.reset({ commentaire: '', decisionHumaine: '' });
+    this.actionForm.reset({
+      decisionFinale: '',
+      justificationHumaine: '',
+      accordAvecIa: true,
+    });
     this.submitError.set(null);
-    this.submitSuccess.set(null);
     this.actionDialogVisible.set(true);
   }
 
   closeAction(): void {
     this.actionDialogVisible.set(false);
     this.actionTarget.set(null);
-    this.pendingAction.set(null);
   }
 
   submitAction(): void {
@@ -176,90 +163,73 @@ export class ValidationQueueComponent {
       this.actionForm.markAllAsTouched();
       return;
     }
-
     const row = this.actionTarget();
-    const action = this.pendingAction();
-    if (!row || !action) return;
+    if (!row) return;
 
-    const { commentaire, decisionHumaine } = this.actionForm.getRawValue();
-    const request = {
-      commentaire,
-      decisionHumaine: decisionHumaine || undefined,
-    };
-
+    const { decisionFinale, justificationHumaine, accordAvecIa } = this.actionForm.getRawValue();
     this.submitting.set(true);
     this.submitError.set(null);
 
-    let call$;
-    if (action === 'APPROUVER') {
-      call$ = this.validationService.approve(row.decisionId, request);
-    } else if (action === 'REJETER') {
-      call$ = this.validationService.reject(row.decisionId, request);
-    } else if (action === 'MODIFIER') {
-      call$ = this.validationService.modify(row.decisionId, request);
-    } else {
-      call$ = this.validationService.review(row.decisionId, request);
-    }
-
-    call$.subscribe({
-      next: () => {
-        this.submitting.set(false);
-        this.closeAction();
-        // Remove from list
-        this.decisions.update((list) => list.filter((d) => d.decisionId !== row.decisionId));
-        this.totalElements.update((n) => Math.max(0, n - 1));
-      },
-      error: (err) => {
-        this.submitting.set(false);
-        this.submitError.set(resolveHttpErrorMessage(err, 'Erreur lors de la validation.'));
-      },
-    });
+    this.decisionService
+      .validateDomain(row.decisionId, {
+        decisionFinale,
+        justificationHumaine,
+        accordAvecIa,
+      })
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.closeAction();
+          this.decisions.update((list) => list.filter((d) => d.decisionId !== row.decisionId));
+          this.totalElements.update((n) => Math.max(0, n - 1));
+        },
+        error: (err) => {
+          this.submitting.set(false);
+          this.submitError.set(resolveHttpErrorMessage(err, 'Erreur lors de la validation.'));
+        },
+      });
   }
 
-  // ── Helpers ──────────────────────────────────────────────
-  actionLabel(action: ActionType | null): string {
-    if (action === 'APPROUVER') return 'Approuver';
-    if (action === 'REJETER') return 'Rejeter';
-    if (action === 'MODIFIER') return 'Modifier la décision';
-    if (action === 'REVIEW') return 'Demander une revue';
-    return 'Valider';
+  submitForReview(row: DecisionResponse): void {
+    this.openValidate(row);
+    this.actionForm.patchValue({ decisionFinale: 'A_REVOIR', accordAvecIa: false });
   }
 
-  actionSeverity(action: ActionType | null): 'success' | 'danger' | 'warn' | 'secondary' {
-    if (action === 'APPROUVER') return 'success';
-    if (action === 'REJETER') return 'danger';
-    if (action === 'MODIFIER') return 'warn';
+  domainBadge(row: DecisionResponse): string {
+    return row.domaine || 'CREDIT';
+  }
+
+  domainSeverity(domain: string): 'info' | 'success' | 'warn' | 'secondary' {
+    if (domain === 'MEDICAL') return 'warn';
+    if (domain === 'EDUCATION') return 'success';
+    if (domain === 'CREDIT') return 'info';
     return 'secondary';
-  }
-
-  actionIcon(action: ActionType | null): string {
-    if (action === 'APPROUVER') return 'pi pi-check';
-    if (action === 'REJETER') return 'pi pi-times';
-    if (action === 'MODIFIER') return 'pi pi-pencil';
-    return 'pi pi-refresh';
   }
 
   hasError(field: string): boolean {
     const ctrl = this.actionForm.get(field);
     return !!ctrl && ctrl.invalid && ctrl.touched;
   }
+
   decisionLabel = decisionLabel;
   riskLabel = riskLabel;
   mlDecision = mlDecision;
   mlConfidence = mlConfidence;
-  consensusLabel = consensusLabel;
 
   mlSeverity(value: string | undefined): 'success' | 'danger' | 'secondary' | 'warn' {
-    if (value === 'APPROUVER' || value === 'APPROUVEE') return 'success';
-    if (value === 'REJETER' || value === 'REJETEE') return 'danger';
-    if (value === 'REVIEW' || value === 'MODIFIEE') return 'warn';
+    if (!value) return 'secondary';
+    if (value.includes('FAIBLE') || value === 'APPROUVER') return 'success';
+    if (value.includes('MOYEN') || value.includes('MODERE')) return 'warn';
+    if (value.includes('ELEVE') || value === 'REJETER') return 'danger';
     return 'secondary';
   }
 
   riskSeverity(risk: string | undefined): 'success' | 'warn' | 'danger' | 'secondary' {
-    if (risk === 'LOW') return 'success';
-    if (risk === 'MEDIUM') return 'warn';
-    if (risk === 'HIGH') return 'danger';
+    if (!risk) return 'secondary';
+    const r = risk.toUpperCase();
+    if (r.includes('FAIBLE') || r === 'LOW') return 'success';
+    if (r.includes('MOYEN') || r.includes('MODERE') || r === 'MEDIUM') return 'warn';
+    if (r.includes('ELEVE') || r === 'HIGH') return 'danger';
     return 'secondary';
   }
 
@@ -271,5 +241,9 @@ export class ValidationQueueComponent {
       info: 'kpi--info',
     };
     return map[color] ?? 'kpi--info';
+  }
+
+  reference(row: DecisionResponse): string {
+    return row.dossierReference ?? row.reference ?? row.decisionId.slice(0, 8).toUpperCase();
   }
 }

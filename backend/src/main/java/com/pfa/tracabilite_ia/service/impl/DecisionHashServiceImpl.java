@@ -47,8 +47,10 @@ public class DecisionHashServiceImpl implements DecisionHashService {
 
     @Override
     public String computeCanonicalHash(Decision decision) {
+        // Doit rester aligné avec Decision.calculerHash()
         String payload = String.join("|",
                 safe(decision.getDecisionId()),
+                decision.getDomaine() != null ? decision.getDomaine().name() : "",
                 safe(decision.getDecisionId()),
                 safe(decision.getPrompt()),
                 safe(decision.getContexte()),
@@ -58,10 +60,13 @@ public class DecisionHashServiceImpl implements DecisionHashService {
                 safe(decision.getConfidenceScore()),
                 safe(decision.getModelName()),
                 safe(decision.getModelVersion()),
+                safe(decision.getDatasetVersion()),
                 safe(decision.getAgentResponsesHash()),
                 safe(decision.getConsensusJson()),
                 safe(decision.getHumanDecision()),
                 safe(decision.getValidatorEmail()),
+                safe(decision.getValidateurRole()),
+                safe(decision.getValidatedAt()),
                 safe(decision.getStatutValidation()),
                 safe(decision.getPreviousHash()));
         return HashUtils.sha256(payload);
@@ -81,7 +86,8 @@ public class DecisionHashServiceImpl implements DecisionHashService {
         if (decision.getCurrentHash() == null) {
             return false;
         }
-        return decision.getCurrentHash().equals(computeCanonicalHash(decision));
+        // Source de vérité unique : Decision.calculerHash()
+        return decision.getCurrentHash().equals(decision.calculerHash());
     }
 
     private String hashAgentResponse(ReponseAgentIA response) {

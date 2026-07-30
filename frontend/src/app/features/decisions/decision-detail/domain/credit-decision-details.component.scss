@@ -1,0 +1,26 @@
+.domain-details__title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.domain-details__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem 1.25rem;
+  margin: 0;
+}
+
+.domain-details__grid dt {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-bottom: 0.15rem;
+}
+
+.domain-details__grid dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.domain-details__full {
+  grid-column: 1 / -1;
+}
