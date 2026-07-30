@@ -32,6 +32,29 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tracabilite_ia_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d tracabilite_ia_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/tracabilite_ia_test
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_FLYWAY_ENABLED: "true"
+      JWT_SECRET: ci-test-jwt-secret-at-least-32-characters-long
+      ML_SERVICE_TOKEN: ci-test-ml-token-at-least-24-characters
+      APP_DEMO_SEED_ENABLED: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -39,6 +62,18 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 30); do
+            if (echo > /dev/tcp/localhost/5432) >/dev/null 2>&1; then
+              echo "PostgreSQL port is open"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL ($i/30)..."
+            sleep 2
+          done
+          echo "PostgreSQL did not become ready in time" >&2
+          exit 1
       - run: ./mvnw -B test
       - run: ./mvnw -B -DskipTests package
 
