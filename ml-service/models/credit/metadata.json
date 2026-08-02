@@ -1,0 +1,115 @@
+{
+  "domain": "CREDIT",
+  "modelVersion": "credit-model-v2.0.0-public",
+  "datasetVersion": "credit-analysis-public-v2.0.0",
+  "governanceStatus": "DEMO_PUBLIC_DATASET",
+  "approvedForRealDecisions": false,
+  "modelType": "LogisticRegression",
+  "target": "risque_non_approbation",
+  "features": [
+    "age",
+    "duree_mois",
+    "incident_paiement_bam",
+    "montant_demande_mad",
+    "nouvelle_echeance_mad",
+    "revenu_mensuel_mad",
+    "taux_endettement",
+    "type_contrat",
+    "statut_logement"
+  ],
+  "numericFeatures": [
+    "age",
+    "duree_mois",
+    "incident_paiement_bam",
+    "montant_demande_mad",
+    "nouvelle_echeance_mad",
+    "revenu_mensuel_mad",
+    "taux_endettement"
+  ],
+  "categoricalFeatures": [
+    "type_contrat",
+    "statut_logement"
+  ],
+  "transformedFeatureNames": [
+    "num__age",
+    "num__duree_mois",
+    "num__incident_paiement_bam",
+    "num__montant_demande_mad",
+    "num__nouvelle_echeance_mad",
+    "num__revenu_mensuel_mad",
+    "num__taux_endettement",
+    "cat__type_contrat_CDD",
+    "cat__type_contrat_CDI",
+    "cat__type_contrat_FONCTIONNAIRE",
+    "cat__type_contrat_INFORMEL",
+    "cat__statut_logement_LOCATAIRE",
+    "cat__statut_logement_LOGEMENT_DE_FONCTION",
+    "cat__statut_logement_PROPRIETAIRE"
+  ],
+  "outputClasses": [
+    "FAIBLE",
+    "MOYEN",
+    "ELEVE"
+  ],
+  "binaryTargetMeaning": "1 = non approbation (risque crédit)",
+  "riskMapping": "probabilité → FAIBLE (<0.33) / MOYEN / ELEVE (>=0.66)",
+  "metrics": {
+    "accuracy": 0.555,
+    "precision": 0.3505,
+    "recall": 0.5667,
+    "f1": 0.4331,
+    "roc_auc": 0.6323,
+    "confusion_matrix": [
+      [
+        77,
+        63
+      ],
+      [
+        26,
+        34
+      ]
+    ],
+    "class_distribution_test": {
+      "0": 140,
+      "1": 60
+    },
+    "false_negatives": 26,
+    "false_positives": 63,
+    "classification_report": {
+      "0": {
+        "precision": 0.7475728155339806,
+        "recall": 0.55,
+        "f1-score": 0.6337448559670782,
+        "support": 140.0
+      },
+      "1": {
+        "precision": 0.35051546391752575,
+        "recall": 0.5666666666666667,
+        "f1-score": 0.43312101910828027,
+        "support": 60.0
+      },
+      "accuracy": 0.555,
+      "macro avg": {
+        "precision": 0.5490441397257532,
+        "recall": 0.5583333333333333,
+        "f1-score": 0.5334329375376792,
+        "support": 200.0
+      },
+      "weighted avg": {
+        "precision": 0.6284556100490442,
+        "recall": 0.555,
+        "f1-score": 0.5735577049094388,
+        "support": 200.0
+      }
+    },
+    "error_analysis": {
+      "fn_rate": 0.13,
+      "fp_rate": 0.315,
+      "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+    }
+  },
+  "selectionScore": 0.5714,
+  "disclaimer": "Dataset public/recherche — pas un modèle bancaire officiel ni VALIDATED_PRODUCTION.",
+  "savedAt": "2026-08-02T22:06:40.215226+00:00",
+  "pipelinePath": "models/credit/credit_pipeline.joblib"
+}

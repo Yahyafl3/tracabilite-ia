@@ -6,47 +6,26 @@ import lombok.Data;
 @Data
 public class CreateMedicalDecisionRequest {
 
-    @NotBlank
-    private String region;
-
     @NotNull @Min(1) @Max(120)
     private Integer age;
 
-    @NotBlank
-    private String sexe;
+    @NotNull @Min(0)
+    private Integer grossesses;
 
-    @NotNull @DecimalMin("10") @DecimalMax("60")
-    private Double imc;
+    @NotNull @DecimalMin("0")
+    private Double glycemieMgDl;
 
-    @NotBlank
-    private String niveauActivitePhysique;
+    @NotNull @DecimalMin("0")
+    private Double pressionArterielleMmhg;
 
-    @NotBlank
-    private String antecedentsFamiliauxDiabete;
+    @NotNull @DecimalMin("0")
+    private Double epaisseurPliCutaneMm;
 
-    @NotBlank
-    private String hypertension;
+    @NotNull @DecimalMin("0")
+    private Double insulineMicroUMl;
 
-    @NotNull @Positive
-    private Double glycemie;
-
-    @NotBlank
-    private String polyurie;
-
-    @NotBlank
-    private String polydipsie;
-
-    @NotBlank
-    private String pertePoidsSoudaine;
-
-    @NotBlank
-    private String faiblesse;
-
-    @NotBlank
-    private String obesite;
-
-    @NotBlank
-    private String suiviMedical;
+    @NotNull @DecimalMin("10") @DecimalMax("80")
+    private Double imcKgM2;
 
     @Size(max = 4000)
     private String description;

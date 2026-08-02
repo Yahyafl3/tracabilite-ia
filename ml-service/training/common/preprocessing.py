@@ -26,12 +26,10 @@ def build_preprocessor(
             ),
         ]
     )
-    return ColumnTransformer(
-        transformers=[
-            ("num", numeric_transformer, numeric_features),
-            ("cat", categorical_transformer, categorical_features),
-        ]
-    )
+    transformers = [("num", numeric_transformer, numeric_features)]
+    if categorical_features:
+        transformers.append(("cat", categorical_transformer, categorical_features))
+    return ColumnTransformer(transformers=transformers)
 
 
 def build_model_pipeline(

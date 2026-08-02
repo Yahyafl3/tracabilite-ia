@@ -1,4 +1,4 @@
-"""Entraînement du modèle CREDIT (risque de défaut — données synthétiques Maroc)."""
+"""Entraînement CREDIT — dataset public d'analyse crédit."""
 from __future__ import annotations
 
 import os
@@ -23,13 +23,14 @@ from common.evaluation import (  # noqa: E402
 from common.model_registry import save_model  # noqa: E402
 from common.preprocessing import build_model_pipeline  # noqa: E402
 
+
 def _dataset_path() -> Path:
     env = os.environ.get("DATASETS_DIR")
     if env:
-        return Path(env) / "credit" / "credit_maroc_synthetic.csv"
+        return Path(env) / "credit" / "credit_analysis_dataset.csv"
     candidates = [
-        Path(__file__).resolve().parents[2] / "datasets" / "credit" / "credit_maroc_synthetic.csv",
-        Path("/datasets/credit/credit_maroc_synthetic.csv"),
+        Path(__file__).resolve().parents[2] / "datasets" / "credit" / "credit_analysis_dataset.csv",
+        Path("/datasets/credit/credit_analysis_dataset.csv"),
     ]
     for c in candidates:
         if c.exists():
@@ -40,28 +41,20 @@ def _dataset_path() -> Path:
 DATASET = _dataset_path()
 REPORT = ROOT / "reports" / "credit_evaluation.json"
 RANDOM_STATE = 42
-MODEL_VERSION = "credit-model-v1.0.0"
-DATASET_VERSION = "credit-maroc-synthetic-v1.0.0"
+MODEL_VERSION = "credit-model-v2.0.0-public"
+DATASET_VERSION = "credit-analysis-public-v2.0.0"
 
 NUMERIC = [
-    "age_demandeur",
-    "revenu_mensuel_mad",
-    "charges_mensuelles_mad",
+    "age",
+    "duree_mois",
+    "incident_paiement_bam",
     "montant_demande_mad",
-    "duree_credit_mois",
-    "anciennete_professionnelle_annees",
-    "credits_existants",
-    "incidents_paiement_24_mois",
-    "ratio_endettement",
+    "nouvelle_echeance_mad",
+    "revenu_mensuel_mad",
+    "taux_endettement",
 ]
-CATEGORICAL = [
-    "secteur_activite",
-    "region",
-    "statut_professionnel",
-    "type_garantie",
-    "type_credit",
-]
-TARGET = "defaut_paiement"
+CATEGORICAL = ["type_contrat", "statut_logement"]
+TARGET = "risque_non_approbation"
 FEATURES = NUMERIC + CATEGORICAL
 
 
@@ -88,9 +81,7 @@ def candidate_classifiers() -> dict:
 
 def main() -> int:
     if not DATASET.exists():
-        raise FileNotFoundError(
-            f"Dataset manquant: {DATASET}. Exécutez generate_moroccan_datasets.py"
-        )
+        raise FileNotFoundError(f"Dataset manquant: {DATASET}")
     df = pd.read_csv(DATASET)
     x = df[FEATURES]
     y = df[TARGET]
@@ -112,23 +103,24 @@ def main() -> int:
             best_name, best_pipe, best_metrics, best_score = name, pipe, metrics, score
 
     assert best_pipe is not None and best_metrics is not None
-    feature_names = extract_feature_names(best_pipe)
     meta = {
         "domain": "CREDIT",
         "modelVersion": MODEL_VERSION,
         "datasetVersion": DATASET_VERSION,
+        "governanceStatus": "DEMO_PUBLIC_DATASET",
+        "approvedForRealDecisions": False,
         "modelType": best_name,
         "target": TARGET,
         "features": FEATURES,
         "numericFeatures": NUMERIC,
         "categoricalFeatures": CATEGORICAL,
-        "transformedFeatureNames": feature_names,
+        "transformedFeatureNames": extract_feature_names(best_pipe),
         "outputClasses": ["FAIBLE", "MOYEN", "ELEVE"],
-        "binaryTargetMeaning": "1 = défaut de paiement (risque)",
+        "binaryTargetMeaning": "1 = non approbation (risque crédit)",
         "riskMapping": "probabilité → FAIBLE (<0.33) / MOYEN / ELEVE (>=0.66)",
         "metrics": best_metrics,
         "selectionScore": round(best_score, 4),
-        "disclaimer": "Dataset synthétique — pas un modèle bancaire officiel.",
+        "disclaimer": "Dataset public/recherche — pas un modèle bancaire officiel ni VALIDATED_PRODUCTION.",
     }
     save_model("credit", best_pipe, meta)
     write_report(
@@ -141,7 +133,6 @@ def main() -> int:
             "features": FEATURES,
             "comparisons": comparisons,
             "selectedMetrics": best_metrics,
-            "selectionCriterion": "0.50*recall + 0.30*f1 + 0.25*roc_auc",
         },
     )
     print(f"[credit] selected={best_name} → models/credit/")

@@ -55,7 +55,7 @@ describe('DecisionNewComponent', () => {
   it('disables submit while loading after valid child form', () => {
     fixture.componentInstance.onChildForm({
       valid: true,
-      value: { secteurActivite: 'SERVICES', ratioEndettement: 0.2 },
+      value: { typeContrat: 'CDI', tauxEndettement: 0.2 },
     });
     fixture.componentInstance.submit();
     fixture.detectChanges();

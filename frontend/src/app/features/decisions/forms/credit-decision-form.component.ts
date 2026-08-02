@@ -4,7 +4,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
-import { REGIONS_MAROC } from '../../../core/config/domains/domain.config';
 
 @Component({
   selector: 'app-credit-decision-form',
@@ -13,66 +12,43 @@ import { REGIONS_MAROC } from '../../../core/config/domains/domain.config';
   template: `
     <form [formGroup]="form" class="form-grid" (ngSubmit)="onSubmit()">
       <div class="field">
-        <label for="secteurActivite">Secteur économique</label>
-        <p-select inputId="secteurActivite" formControlName="secteurActivite"
-          [options]="secteurs" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="age">Âge</label>
+        <p-inputNumber inputId="age" formControlName="age" [min]="18" [max]="100" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="region">Région</label>
-        <p-select inputId="region" formControlName="region"
-          [options]="regions" styleClass="w-full" />
+        <label for="dureeMois">Durée (mois)</label>
+        <p-inputNumber inputId="dureeMois" formControlName="dureeMois" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="ageDemandeur">Âge du demandeur</label>
-        <p-inputNumber inputId="ageDemandeur" formControlName="ageDemandeur" [min]="18" [max]="80" styleClass="w-full" />
+        <label for="typeContrat">Type de contrat</label>
+        <p-select inputId="typeContrat" formControlName="typeContrat"
+          [options]="typesContrat" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="statutProfessionnel">Statut professionnel</label>
-        <p-select inputId="statutProfessionnel" formControlName="statutProfessionnel"
-          [options]="statuts" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="statutLogement">Statut logement</label>
+        <p-select inputId="statutLogement" formControlName="statutLogement"
+          [options]="statutsLogement" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="revenuMensuelMad">Revenu mensuel (MAD)</label>
-        <p-inputNumber inputId="revenuMensuelMad" formControlName="revenuMensuelMad" [min]="1" styleClass="w-full" />
-      </div>
-      <div class="field">
-        <label for="chargesMensuellesMad">Charges mensuelles (MAD)</label>
-        <p-inputNumber inputId="chargesMensuellesMad" formControlName="chargesMensuellesMad" [min]="0" styleClass="w-full" />
+        <label for="incidentPaiementBam">Incidents paiement BAM</label>
+        <p-inputNumber inputId="incidentPaiementBam" formControlName="incidentPaiementBam" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
         <label for="montantDemandeMad">Montant demandé (MAD)</label>
         <p-inputNumber inputId="montantDemandeMad" formControlName="montantDemandeMad" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="dureeCreditMois">Durée (mois)</label>
-        <p-inputNumber inputId="dureeCreditMois" formControlName="dureeCreditMois" [min]="1" styleClass="w-full" />
+        <label for="nouvelleEcheanceMad">Nouvelle échéance (MAD)</label>
+        <p-inputNumber inputId="nouvelleEcheanceMad" formControlName="nouvelleEcheanceMad" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="ancienneteProfessionnelleAnnees">Ancienneté professionnelle (années)</label>
-        <p-inputNumber inputId="ancienneteProfessionnelleAnnees" formControlName="ancienneteProfessionnelleAnnees" [min]="0" styleClass="w-full" />
+        <label for="revenuMensuelMad">Revenu mensuel (MAD)</label>
+        <p-inputNumber inputId="revenuMensuelMad" formControlName="revenuMensuelMad" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="creditsExistants">Crédits existants</label>
-        <p-inputNumber inputId="creditsExistants" formControlName="creditsExistants" [min]="0" styleClass="w-full" />
-      </div>
-      <div class="field">
-        <label for="incidentsPaiement24Mois">Incidents de paiement (24 mois)</label>
-        <p-inputNumber inputId="incidentsPaiement24Mois" formControlName="incidentsPaiement24Mois" [min]="0" styleClass="w-full" />
-      </div>
-      <div class="field">
-        <label for="ratioEndettement">Ratio d'endettement (0–1)</label>
-        <p-inputNumber inputId="ratioEndettement" formControlName="ratioEndettement"
+        <label for="tauxEndettement">Taux d'endettement (0–1)</label>
+        <p-inputNumber inputId="tauxEndettement" formControlName="tauxEndettement"
           [min]="0" [max]="1" [minFractionDigits]="2" [maxFractionDigits]="2" [step]="0.01" styleClass="w-full" />
-      </div>
-      <div class="field">
-        <label for="typeGarantie">Type de garantie</label>
-        <p-select inputId="typeGarantie" formControlName="typeGarantie"
-          [options]="garanties" optionLabel="label" optionValue="value" styleClass="w-full" />
-      </div>
-      <div class="field">
-        <label for="typeCredit">Type de crédit</label>
-        <p-select inputId="typeCredit" formControlName="typeCredit"
-          [options]="typesCredit" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field field--full">
         <label for="description">Description</label>
@@ -108,50 +84,29 @@ export class CreditDecisionFormComponent {
 
   private readonly fb = inject(FormBuilder);
 
-  readonly regions = [...REGIONS_MAROC];
-  readonly secteurs = [
-    { label: 'Services', value: 'SERVICES' },
-    { label: 'Industrie', value: 'INDUSTRIE' },
-    { label: 'Commerce', value: 'COMMERCE' },
-    { label: 'Tech', value: 'TECH' },
-    { label: 'Agriculture', value: 'AGRICULTURE' },
-  ];
-  readonly statuts = [
-    { label: 'Salarié CDI', value: 'SALARIE_CDI' },
-    { label: 'Salarié CDD', value: 'SALARIE_CDD' },
+  readonly typesContrat = [
+    { label: 'CDI', value: 'CDI' },
+    { label: 'CDD', value: 'CDD' },
     { label: 'Fonctionnaire', value: 'FONCTIONNAIRE' },
-    { label: 'Indépendant', value: 'INDEPENDANT' },
-    { label: 'Retraité', value: 'RETRAITE' },
+    { label: 'Informel', value: 'INFORMEL' },
   ];
-  readonly garanties = [
-    { label: 'Aucune', value: 'AUCUNE' },
-    { label: 'Hypothèque', value: 'HYPOTHEQUE' },
-    { label: 'Caution', value: 'CAUTION' },
-    { label: 'Nantissement', value: 'NANTISSEMENT' },
-  ];
-  readonly typesCredit = [
-    { label: 'Consommation', value: 'CONSOMMATION' },
-    { label: 'Immobilier', value: 'IMMOBILIER' },
-    { label: 'Professionnel', value: 'PROFESSIONNEL' },
-    { label: 'Auto', value: 'AUTO' },
+  readonly statutsLogement = [
+    { label: 'Propriétaire', value: 'PROPRIETAIRE' },
+    { label: 'Locataire', value: 'LOCATAIRE' },
+    { label: 'Logement de fonction', value: 'LOGEMENT_DE_FONCTION' },
   ];
 
   readonly form = this.fb.group({
-    secteurActivite: ['SERVICES', Validators.required],
-    region: ['Casablanca-Settat', Validators.required],
-    ageDemandeur: [35, [Validators.required, Validators.min(18), Validators.max(80)]],
-    statutProfessionnel: ['SALARIE_CDI', Validators.required],
-    revenuMensuelMad: [12000, [Validators.required, Validators.min(1)]],
-    chargesMensuellesMad: [4000, [Validators.required, Validators.min(0)]],
+    age: [35, [Validators.required, Validators.min(18), Validators.max(100)]],
+    dureeMois: [48, [Validators.required, Validators.min(1)]],
+    typeContrat: ['CDI', Validators.required],
+    statutLogement: ['PROPRIETAIRE', Validators.required],
+    incidentPaiementBam: [0, [Validators.required, Validators.min(0)]],
     montantDemandeMad: [80000, [Validators.required, Validators.min(1)]],
-    dureeCreditMois: [48, [Validators.required, Validators.min(1)]],
-    ancienneteProfessionnelleAnnees: [8, [Validators.required, Validators.min(0)]],
-    creditsExistants: [1, [Validators.required, Validators.min(0)]],
-    incidentsPaiement24Mois: [0, [Validators.required, Validators.min(0)]],
-    ratioEndettement: [0.33, [Validators.required, Validators.min(0), Validators.max(1)]],
-    typeGarantie: ['CAUTION', Validators.required],
-    typeCredit: ['CONSOMMATION', Validators.required],
-    description: ['Demande de crédit — données synthétiques de démonstration'],
+    nouvelleEcheanceMad: [2500, [Validators.required, Validators.min(0)]],
+    revenuMensuelMad: [12000, [Validators.required, Validators.min(1)]],
+    tauxEndettement: [0.33, [Validators.required, Validators.min(0), Validators.max(1)]],
+    description: ['Demande de crédit — données de démonstration'],
   });
 
   constructor() {

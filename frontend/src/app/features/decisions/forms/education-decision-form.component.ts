@@ -5,7 +5,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
 import { Message } from 'primeng/message';
-import { DOMAIN_META, REGIONS_MAROC } from '../../../core/config/domains/domain.config';
+import { DOMAIN_META } from '../../../core/config/domains/domain.config';
 
 @Component({
   selector: 'app-education-decision-form',
@@ -15,63 +15,65 @@ import { DOMAIN_META, REGIONS_MAROC } from '../../../core/config/domains/domain.
     <p-message severity="info" [text]="disclaimer" styleClass="mb-3 w-full" />
     <form [formGroup]="form" class="form-grid">
       <div class="field">
-        <label for="region">Région</label>
-        <p-select inputId="region" formControlName="region" [options]="regions" styleClass="w-full" />
+        <label for="ageInscription">Âge à l'inscription</label>
+        <p-inputNumber inputId="ageInscription" formControlName="ageInscription"
+          [min]="15" [max]="80" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="typeEtablissement">Type d'établissement</label>
-        <p-select inputId="typeEtablissement" formControlName="typeEtablissement"
-          [options]="etablissements" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="noteAdmission">Note d'admission</label>
+        <p-inputNumber inputId="noteAdmission" formControlName="noteAdmission"
+          [min]="0" [max]="200" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="filiere">Filière</label>
-        <p-select inputId="filiere" formControlName="filiere"
-          [options]="filieres" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="noteQualificationPrecedente">Note qualification précédente</label>
+        <p-inputNumber inputId="noteQualificationPrecedente" formControlName="noteQualificationPrecedente"
+          [min]="0" [max]="200" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="niveauEtude">Niveau d'étude</label>
-        <p-select inputId="niveauEtude" formControlName="niveauEtude"
-          [options]="niveaux" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="unitesValideesS1">Unités validées S1</label>
+        <p-inputNumber inputId="unitesValideesS1" formControlName="unitesValideesS1" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="moyenneSemestre1">Moyenne semestre 1 (/20)</label>
-        <p-inputNumber inputId="moyenneSemestre1" formControlName="moyenneSemestre1"
+        <label for="moyenneS1">Moyenne S1 (/20)</label>
+        <p-inputNumber inputId="moyenneS1" formControlName="moyenneS1"
           [min]="0" [max]="20" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="moyenneSemestre2">Moyenne semestre 2 (/20)</label>
-        <p-inputNumber inputId="moyenneSemestre2" formControlName="moyenneSemestre2"
+        <label for="unitesValideesS2">Unités validées S2</label>
+        <p-inputNumber inputId="unitesValideesS2" formControlName="unitesValideesS2" [min]="0" styleClass="w-full" />
+      </div>
+      <div class="field">
+        <label for="moyenneS2">Moyenne S2 (/20)</label>
+        <p-inputNumber inputId="moyenneS2" formControlName="moyenneS2"
           [min]="0" [max]="20" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="tauxAbsence">Taux d'absence (%)</label>
-        <p-inputNumber inputId="tauxAbsence" formControlName="tauxAbsence"
-          [min]="0" [max]="100" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
+        <label for="tauxChomage">Taux de chômage (%)</label>
+        <p-inputNumber inputId="tauxChomage" formControlName="tauxChomage"
+          [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="modulesNonValides">Modules non validés</label>
-        <p-inputNumber inputId="modulesNonValides" formControlName="modulesNonValides" [min]="0" styleClass="w-full" />
+        <label for="tauxInflation">Taux d'inflation (%)</label>
+        <p-inputNumber inputId="tauxInflation" formControlName="tauxInflation"
+          [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="participation">Participation</label>
-        <p-select inputId="participation" formControlName="participation"
-          [options]="participations" optionLabel="label" optionValue="value" styleClass="w-full" />
+        <label for="pib">PIB (%)</label>
+        <p-inputNumber inputId="pib" formControlName="pib"
+          [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="distanceLogementKm">Distance logement (km)</label>
-        <p-inputNumber inputId="distanceLogementKm" formControlName="distanceLogementKm" [min]="0" styleClass="w-full" />
+        <label for="sexe">Sexe</label>
+        <p-select inputId="sexe" formControlName="sexe"
+          [options]="sexes" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       @for (f of boolFields; track f.key) {
         <div class="field">
           <label [for]="f.key">{{ f.label }}</label>
-          <p-select [inputId]="f.key" [formControlName]="f.key" [options]="ouiNon" optionLabel="label" optionValue="value" styleClass="w-full" />
+          <p-select [inputId]="f.key" [formControlName]="f.key"
+            [options]="ouiNon" optionLabel="label" optionValue="value" styleClass="w-full" />
         </div>
       }
-      <div class="field">
-        <label for="situationAcademique">Situation académique</label>
-        <p-select inputId="situationAcademique" formControlName="situationAcademique"
-          [options]="situations" optionLabel="label" optionValue="value" styleClass="w-full" />
-      </div>
       <div class="field field--full">
         <label for="description">Description</label>
         <textarea pTextarea id="description" formControlName="description" rows="3" class="w-full"></textarea>
@@ -106,63 +108,41 @@ export class EducationDecisionFormComponent {
 
   private readonly fb = inject(FormBuilder);
   readonly disclaimer = DOMAIN_META.EDUCATION.disclaimer!;
-  readonly regions = [...REGIONS_MAROC];
-  readonly etablissements = [
-    { label: 'Université publique', value: 'UNIVERSITE_PUBLIQUE' },
-    { label: 'Université privée', value: 'UNIVERSITE_PRIVEE' },
-    { label: 'École d’ingénieur', value: 'ECOLE_INGENIEUR' },
-    { label: 'Faculté', value: 'FACULTE' },
-    { label: 'IUT', value: 'IUT' },
-  ];
-  readonly filieres = [
-    { label: 'Sciences', value: 'SCIENCES' },
-    { label: 'Lettres', value: 'LETTRES' },
-    { label: 'Droit', value: 'DROIT' },
-    { label: 'Économie', value: 'ECONOMIE' },
-    { label: 'Ingénierie', value: 'INGENIERIE' },
-    { label: 'Médecine', value: 'MEDECINE' },
-    { label: 'Informatique', value: 'INFORMATIQUE' },
-  ];
-  readonly niveaux = ['L1', 'L2', 'L3', 'M1', 'M2'].map((v) => ({ label: v, value: v }));
-  readonly participations = [
-    { label: 'Faible', value: 'FAIBLE' },
-    { label: 'Moyenne', value: 'MOYENNE' },
-    { label: 'Élevée', value: 'ELEVEE' },
-  ];
-  readonly situations = [
-    { label: 'Normale', value: 'NORMALE' },
-    { label: 'Difficulté', value: 'DIFFICULTE' },
-    { label: 'Redoublement', value: 'REDOUBLEMENT' },
-    { label: 'Réorientation', value: 'REORIENTATION' },
+
+  readonly sexes = [
+    { label: 'Homme', value: 'HOMME' },
+    { label: 'Femme', value: 'FEMME' },
   ];
   readonly ouiNon = [
     { label: 'Oui', value: 'OUI' },
     { label: 'Non', value: 'NON' },
   ];
   readonly boolFields = [
-    { key: 'bourse', label: 'Bourse' },
-    { key: 'accesInternet', label: 'Accès Internet' },
-    { key: 'activiteProfessionnelle', label: 'Activité professionnelle' },
-    { key: 'historiqueRedoublement', label: 'Historique redoublement' },
+    { key: 'boursier', label: 'Boursier' },
+    { key: 'fraisAJour', label: 'Frais à jour' },
+    { key: 'debiteur', label: 'Débiteur' },
+    { key: 'deplace', label: 'Déplacé' },
+    { key: 'international', label: 'International' },
   ] as const;
 
   readonly form = this.fb.group({
-    region: ['Marrakech-Safi', Validators.required],
-    typeEtablissement: ['UNIVERSITE_PUBLIQUE', Validators.required],
-    filiere: ['INFORMATIQUE', Validators.required],
-    niveauEtude: ['L2', Validators.required],
-    moyenneSemestre1: [11.5, [Validators.required, Validators.min(0), Validators.max(20)]],
-    moyenneSemestre2: [11.0, [Validators.required, Validators.min(0), Validators.max(20)]],
-    tauxAbsence: [12, [Validators.required, Validators.min(0), Validators.max(100)]],
-    modulesNonValides: [1, [Validators.required, Validators.min(0)]],
-    participation: ['MOYENNE', Validators.required],
-    bourse: ['OUI', Validators.required],
-    distanceLogementKm: [8, [Validators.required, Validators.min(0)]],
-    accesInternet: ['OUI', Validators.required],
-    activiteProfessionnelle: ['NON', Validators.required],
-    historiqueRedoublement: ['NON', Validators.required],
-    situationAcademique: ['NORMALE', Validators.required],
-    description: ['Évaluation pédagogique — données synthétiques'],
+    ageInscription: [18, [Validators.required, Validators.min(15), Validators.max(80)]],
+    noteAdmission: [120, [Validators.required, Validators.min(0), Validators.max(200)]],
+    noteQualificationPrecedente: [110, [Validators.required, Validators.min(0), Validators.max(200)]],
+    unitesValideesS1: [5, [Validators.required, Validators.min(0)]],
+    moyenneS1: [11.5, [Validators.required, Validators.min(0), Validators.max(20)]],
+    unitesValideesS2: [4, [Validators.required, Validators.min(0)]],
+    moyenneS2: [11.0, [Validators.required, Validators.min(0), Validators.max(20)]],
+    tauxChomage: [10.5, [Validators.required, Validators.min(-50), Validators.max(50)]],
+    tauxInflation: [2.1, [Validators.required, Validators.min(-50), Validators.max(50)]],
+    pib: [1.8, [Validators.required, Validators.min(-50), Validators.max(50)]],
+    sexe: ['HOMME', Validators.required],
+    boursier: ['NON', Validators.required],
+    fraisAJour: ['OUI', Validators.required],
+    debiteur: ['NON', Validators.required],
+    deplace: ['NON', Validators.required],
+    international: ['NON', Validators.required],
+    description: ['Évaluation pédagogique — données de démonstration'],
   });
 
   constructor() {

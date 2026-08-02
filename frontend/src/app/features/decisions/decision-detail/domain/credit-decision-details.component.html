@@ -1,20 +1,15 @@
 <section class="domain-details" aria-label="Données crédit">
   <h2 class="domain-details__title">Dossier crédit</h2>
   <dl class="domain-details__grid">
-    <div><dt>Secteur d'activité</dt><dd>{{ text(data.secteurActivite) }}</dd></div>
-    <div><dt>Région</dt><dd>{{ text(data.region) }}</dd></div>
-    <div><dt>Âge du demandeur</dt><dd>{{ data.ageDemandeur != null ? data.ageDemandeur + ' ans' : '—' }}</dd></div>
-    <div><dt>Statut professionnel</dt><dd>{{ text(data.statutProfessionnel) }}</dd></div>
-    <div><dt>Revenu mensuel</dt><dd>{{ mad(data.revenuMensuelMad) }}</dd></div>
-    <div><dt>Charges mensuelles</dt><dd>{{ mad(data.chargesMensuellesMad) }}</dd></div>
+    <div><dt>Âge</dt><dd>{{ data.age != null ? data.age + ' ans' : '—' }}</dd></div>
+    <div><dt>Durée</dt><dd>{{ data.dureeMois != null ? data.dureeMois + ' mois' : '—' }}</dd></div>
+    <div><dt>Type de contrat</dt><dd>{{ text(data.typeContrat) }}</dd></div>
+    <div><dt>Statut logement</dt><dd>{{ text(data.statutLogement) }}</dd></div>
+    <div><dt>Incidents paiement BAM</dt><dd>{{ text(data.incidentPaiementBam) }}</dd></div>
     <div><dt>Montant demandé</dt><dd>{{ mad(data.montantDemandeMad) }}</dd></div>
-    <div><dt>Durée du crédit</dt><dd>{{ data.dureeCreditMois != null ? data.dureeCreditMois + ' mois' : '—' }}</dd></div>
-    <div><dt>Ancienneté professionnelle</dt><dd>{{ data.ancienneteProfessionnelleAnnees != null ? data.ancienneteProfessionnelleAnnees + ' ans' : '—' }}</dd></div>
-    <div><dt>Crédits existants</dt><dd>{{ text(data.creditsExistants) }}</dd></div>
-    <div><dt>Incidents de paiement (24 mois)</dt><dd>{{ text(data.incidentsPaiement24Mois) }}</dd></div>
-    <div><dt>Ratio d'endettement</dt><dd>{{ pct(data.ratioEndettement) }}</dd></div>
-    <div><dt>Type de garantie</dt><dd>{{ text(data.typeGarantie) }}</dd></div>
-    <div><dt>Type de crédit</dt><dd>{{ text(data.typeCredit) }}</dd></div>
+    <div><dt>Nouvelle échéance</dt><dd>{{ mad(data.nouvelleEcheanceMad) }}</dd></div>
+    <div><dt>Revenu mensuel</dt><dd>{{ mad(data.revenuMensuelMad) }}</dd></div>
+    <div><dt>Taux d'endettement</dt><dd>{{ pct(data.tauxEndettement) }}</dd></div>
     <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
   </dl>
 </section>

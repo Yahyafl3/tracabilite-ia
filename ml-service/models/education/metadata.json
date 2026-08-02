@@ -1,0 +1,136 @@
+{
+  "domain": "EDUCATION",
+  "modelVersion": "education-model-v2.0.0-public",
+  "datasetVersion": "education-portugal-dropout-public-v2.0.0",
+  "governanceStatus": "DEMO_PUBLIC_DATASET",
+  "approvedForRealDecisions": false,
+  "modelType": "LogisticRegression",
+  "target": "decrochage",
+  "features": [
+    "age_inscription",
+    "note_admission",
+    "note_qualification_precedente",
+    "unites_validees_s1",
+    "moyenne_s1",
+    "unites_validees_s2",
+    "moyenne_s2",
+    "taux_chomage",
+    "taux_inflation",
+    "pib",
+    "sexe",
+    "boursier",
+    "frais_a_jour",
+    "debiteur",
+    "deplace",
+    "international"
+  ],
+  "numericFeatures": [
+    "age_inscription",
+    "note_admission",
+    "note_qualification_precedente",
+    "unites_validees_s1",
+    "moyenne_s1",
+    "unites_validees_s2",
+    "moyenne_s2",
+    "taux_chomage",
+    "taux_inflation",
+    "pib"
+  ],
+  "categoricalFeatures": [
+    "sexe",
+    "boursier",
+    "frais_a_jour",
+    "debiteur",
+    "deplace",
+    "international"
+  ],
+  "transformedFeatureNames": [
+    "num__age_inscription",
+    "num__note_admission",
+    "num__note_qualification_precedente",
+    "num__unites_validees_s1",
+    "num__moyenne_s1",
+    "num__unites_validees_s2",
+    "num__moyenne_s2",
+    "num__taux_chomage",
+    "num__taux_inflation",
+    "num__pib",
+    "cat__sexe_FEMME",
+    "cat__sexe_HOMME",
+    "cat__boursier_NON",
+    "cat__boursier_OUI",
+    "cat__frais_a_jour_NON",
+    "cat__frais_a_jour_OUI",
+    "cat__debiteur_NON",
+    "cat__debiteur_OUI",
+    "cat__deplace_NON",
+    "cat__deplace_OUI",
+    "cat__international_NON",
+    "cat__international_OUI"
+  ],
+  "outputClasses": [
+    "FAIBLE",
+    "MOYEN",
+    "ELEVE"
+  ],
+  "binaryTargetMeaning": "1 = décrochage (Dropout)",
+  "metrics": {
+    "accuracy": 0.8588,
+    "precision": 0.7659,
+    "recall": 0.8063,
+    "f1": 0.7856,
+    "roc_auc": 0.9099,
+    "confusion_matrix": [
+      [
+        531,
+        70
+      ],
+      [
+        55,
+        229
+      ]
+    ],
+    "class_distribution_test": {
+      "0": 601,
+      "1": 284
+    },
+    "false_negatives": 55,
+    "false_positives": 70,
+    "classification_report": {
+      "0": {
+        "precision": 0.9061433447098977,
+        "recall": 0.8835274542429284,
+        "f1-score": 0.8946925021061499,
+        "support": 601.0
+      },
+      "1": {
+        "precision": 0.7658862876254181,
+        "recall": 0.8063380281690141,
+        "f1-score": 0.7855917667238422,
+        "support": 284.0
+      },
+      "accuracy": 0.8587570621468926,
+      "macro avg": {
+        "precision": 0.8360148161676579,
+        "recall": 0.8449327412059713,
+        "f1-score": 0.8401421344149961,
+        "support": 885.0
+      },
+      "weighted avg": {
+        "precision": 0.8611343004025618,
+        "recall": 0.8587570621468926,
+        "f1-score": 0.8596816446501326,
+        "support": 885.0
+      }
+    },
+    "error_analysis": {
+      "fn_rate": 0.0621,
+      "fp_rate": 0.0791,
+      "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+    }
+  },
+  "selectionScore": 0.8663,
+  "disclaimer": "Dataset public Portugal (UCI) — DEMO_PUBLIC_DATASET, pas VALIDATED_PRODUCTION.",
+  "savedAt": "2026-08-02T22:07:16.983630+00:00",
+  "pipelinePath": "models/education/education_pipeline.joblib"
+}

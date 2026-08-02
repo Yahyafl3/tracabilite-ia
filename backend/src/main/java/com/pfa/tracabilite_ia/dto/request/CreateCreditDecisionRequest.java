@@ -6,47 +6,32 @@ import lombok.Data;
 @Data
 public class CreateCreditDecisionRequest {
 
-    @NotBlank
-    private String secteurActivite;
-
-    @NotBlank
-    private String region;
-
-    @NotNull @Min(18) @Max(80)
-    private Integer ageDemandeur;
-
-    @NotBlank
-    private String statutProfessionnel;
+    @NotNull @Min(18) @Max(100)
+    private Integer age;
 
     @NotNull @Positive
-    private Double revenuMensuelMad;
+    private Integer dureeMois;
+
+    @NotBlank
+    private String typeContrat;
+
+    @NotBlank
+    private String statutLogement;
 
     @NotNull @Min(0)
-    private Double chargesMensuellesMad;
+    private Integer incidentPaiementBam;
 
     @NotNull @Positive
     private Double montantDemandeMad;
 
+    @NotNull @DecimalMin("0")
+    private Double nouvelleEcheanceMad;
+
     @NotNull @Positive
-    private Integer dureeCreditMois;
-
-    @NotNull @Min(0)
-    private Integer ancienneteProfessionnelleAnnees;
-
-    @NotNull @Min(0)
-    private Integer creditsExistants;
-
-    @NotNull @Min(0)
-    private Integer incidentsPaiement24Mois;
+    private Double revenuMensuelMad;
 
     @NotNull @DecimalMin("0") @DecimalMax("1")
-    private Double ratioEndettement;
-
-    @NotBlank
-    private String typeGarantie;
-
-    @NotBlank
-    private String typeCredit;
+    private Double tauxEndettement;
 
     @Size(max = 4000)
     private String description;

@@ -6,20 +6,15 @@ from domain_schemas import normalize_domain_features
 
 
 CREDIT_PAYLOAD = {
-    "secteurActivite": "SERVICES",
-    "region": "Casablanca-Settat",
-    "ageDemandeur": 35,
-    "statutProfessionnel": "SALARIE_CDI",
-    "revenuMensuelMad": 12000,
-    "chargesMensuellesMad": 4000,
+    "age": 35,
+    "dureeMois": 48,
+    "typeContrat": "CDI",
+    "statutLogement": "PROPRIETAIRE",
+    "incidentPaiementBam": 0,
     "montantDemandeMad": 80000,
-    "dureeCreditMois": 48,
-    "ancienneteProfessionnelleAnnees": 8,
-    "creditsExistants": 1,
-    "incidentsPaiement24Mois": 0,
-    "ratioEndettement": 0.33,
-    "typeGarantie": "CAUTION",
-    "typeCredit": "CONSOMMATION",
+    "nouvelleEcheanceMad": 2500,
+    "revenuMensuelMad": 12000,
+    "tauxEndettement": 0.33,
 }
 
 

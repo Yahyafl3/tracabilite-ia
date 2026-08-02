@@ -22,40 +22,32 @@ public class EducationDecisionData {
     @JoinColumn(name = "decision_id", nullable = false, unique = true)
     private Decision decision;
 
-    @Column(nullable = false, length = 64)
-    private String region;
-
-    @Column(length = 48)
-    private String typeEtablissement;
-
-    @Column(length = 32)
-    private String filiere;
-
-    @Column(length = 8)
-    private String niveauEtude;
-
-    private Double moyenneSemestre1;
-    private Double moyenneSemestre2;
-    private Double tauxAbsence;
-    private Integer modulesNonValides;
+    private Integer ageInscription;
+    private Double noteAdmission;
+    private Double noteQualificationPrecedente;
+    private Integer unitesValideesS1;
+    private Double moyenneS1;
+    private Integer unitesValideesS2;
+    private Double moyenneS2;
+    private Double tauxChomage;
+    private Double tauxInflation;
+    private Double pib;
 
     @Column(length = 16)
-    private String participation;
+    private String sexe;
 
     @Column(length = 8)
-    private String bourse;
-
-    private Double distanceLogementKm;
+    private String boursier;
 
     @Column(length = 8)
-    private String accesInternet;
+    private String fraisAJour;
 
     @Column(length = 8)
-    private String activiteProfessionnelle;
+    private String debiteur;
 
     @Column(length = 8)
-    private String historiqueRedoublement;
+    private String deplace;
 
-    @Column(length = 32)
-    private String situationAcademique;
+    @Column(length = 8)
+    private String international;
 }

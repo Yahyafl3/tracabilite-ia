@@ -72,20 +72,15 @@ public class DecisionOrchestratorService {
 
         CreditDecisionData data = new CreditDecisionData();
         data.setDecision(decision);
-        data.setSecteurActivite(request.getSecteurActivite());
-        data.setRegion(request.getRegion());
-        data.setAgeDemandeur(request.getAgeDemandeur());
-        data.setStatutProfessionnel(request.getStatutProfessionnel());
-        data.setRevenuMensuelMad(request.getRevenuMensuelMad());
-        data.setChargesMensuellesMad(request.getChargesMensuellesMad());
+        data.setAge(request.getAge());
+        data.setDureeMois(request.getDureeMois());
+        data.setTypeContrat(request.getTypeContrat());
+        data.setStatutLogement(request.getStatutLogement());
+        data.setIncidentPaiementBam(request.getIncidentPaiementBam());
         data.setMontantDemandeMad(request.getMontantDemandeMad());
-        data.setDureeCreditMois(request.getDureeCreditMois());
-        data.setAncienneteProfessionnelleAnnees(request.getAncienneteProfessionnelleAnnees());
-        data.setCreditsExistants(request.getCreditsExistants());
-        data.setIncidentsPaiement24Mois(request.getIncidentsPaiement24Mois());
-        data.setRatioEndettement(request.getRatioEndettement());
-        data.setTypeGarantie(request.getTypeGarantie());
-        data.setTypeCredit(request.getTypeCredit());
+        data.setNouvelleEcheanceMad(request.getNouvelleEcheanceMad());
+        data.setRevenuMensuelMad(request.getRevenuMensuelMad());
+        data.setTauxEndettement(request.getTauxEndettement());
         decision.setCreditData(data);
 
         applyPrediction(decision, prediction);
@@ -109,20 +104,13 @@ public class DecisionOrchestratorService {
 
         MedicalDecisionData data = new MedicalDecisionData();
         data.setDecision(decision);
-        data.setRegion(request.getRegion());
         data.setAge(request.getAge());
-        data.setSexe(request.getSexe());
-        data.setImc(request.getImc());
-        data.setNiveauActivitePhysique(request.getNiveauActivitePhysique());
-        data.setAntecedentsFamiliauxDiabete(request.getAntecedentsFamiliauxDiabete());
-        data.setHypertension(request.getHypertension());
-        data.setGlycemie(request.getGlycemie());
-        data.setPolyurie(request.getPolyurie());
-        data.setPolydipsie(request.getPolydipsie());
-        data.setPertePoidsSoudaine(request.getPertePoidsSoudaine());
-        data.setFaiblesse(request.getFaiblesse());
-        data.setObesite(request.getObesite());
-        data.setSuiviMedical(request.getSuiviMedical());
+        data.setGrossesses(request.getGrossesses());
+        data.setGlycemieMgDl(request.getGlycemieMgDl());
+        data.setPressionArterielleMmhg(request.getPressionArterielleMmhg());
+        data.setEpaisseurPliCutaneMm(request.getEpaisseurPliCutaneMm());
+        data.setInsulineMicroUMl(request.getInsulineMicroUMl());
+        data.setImcKgM2(request.getImcKgM2());
         decision.setMedicalData(data);
 
         applyPrediction(decision, prediction);
@@ -145,21 +133,22 @@ public class DecisionOrchestratorService {
 
         EducationDecisionData data = new EducationDecisionData();
         data.setDecision(decision);
-        data.setRegion(request.getRegion());
-        data.setTypeEtablissement(request.getTypeEtablissement());
-        data.setFiliere(request.getFiliere());
-        data.setNiveauEtude(request.getNiveauEtude());
-        data.setMoyenneSemestre1(request.getMoyenneSemestre1());
-        data.setMoyenneSemestre2(request.getMoyenneSemestre2());
-        data.setTauxAbsence(request.getTauxAbsence());
-        data.setModulesNonValides(request.getModulesNonValides());
-        data.setParticipation(request.getParticipation());
-        data.setBourse(request.getBourse());
-        data.setDistanceLogementKm(request.getDistanceLogementKm());
-        data.setAccesInternet(request.getAccesInternet());
-        data.setActiviteProfessionnelle(request.getActiviteProfessionnelle());
-        data.setHistoriqueRedoublement(request.getHistoriqueRedoublement());
-        data.setSituationAcademique(request.getSituationAcademique());
+        data.setAgeInscription(request.getAgeInscription());
+        data.setNoteAdmission(request.getNoteAdmission());
+        data.setNoteQualificationPrecedente(request.getNoteQualificationPrecedente());
+        data.setUnitesValideesS1(request.getUnitesValideesS1());
+        data.setMoyenneS1(request.getMoyenneS1());
+        data.setUnitesValideesS2(request.getUnitesValideesS2());
+        data.setMoyenneS2(request.getMoyenneS2());
+        data.setTauxChomage(request.getTauxChomage());
+        data.setTauxInflation(request.getTauxInflation());
+        data.setPib(request.getPib());
+        data.setSexe(request.getSexe());
+        data.setBoursier(request.getBoursier());
+        data.setFraisAJour(request.getFraisAJour());
+        data.setDebiteur(request.getDebiteur());
+        data.setDeplace(request.getDeplace());
+        data.setInternational(request.getInternational());
         decision.setEducationData(data);
 
         applyPrediction(decision, prediction);

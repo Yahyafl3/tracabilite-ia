@@ -1,4 +1,4 @@
-"""Checksum SHA-256 des pipelines multidomain + registry DEMO_SYNTHETIC."""
+"""Checksum SHA-256 des pipelines multidomain + registry DEMO_PUBLIC_DATASET."""
 from __future__ import annotations
 
 import hashlib
@@ -55,7 +55,7 @@ def verify_domain(domain: str, *, require_checksum: bool = False) -> dict:
         "checksumSha256": digest,
         "expectedChecksum": expected,
         "path": str(path.name),
-        "governanceStatus": "DEMO_SYNTHETIC",
+        "governanceStatus": "DEMO_PUBLIC_DATASET",
     }
 
 
@@ -64,8 +64,8 @@ def verify_all(require_checksum: bool = False) -> dict:
     return {
         "allOk": all(r["ok"] for r in results),
         "models": results,
-        "governance": "DEMO_SYNTHETIC",
-        "note": "Modèles démonstrateurs — non validés pour décisions métier réelles",
+        "governance": "DEMO_PUBLIC_DATASET",
+        "note": "Modèles entraînés sur datasets publics/recherche — non VALIDATED_PRODUCTION",
     }
 
 

@@ -25,6 +25,13 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: tracabilite-backend
+    # DNS publics + fallback hosts : le resolver Docker Windows échoue parfois
+    # (api.groq.com → "bad address") alors que le host résout correctement.
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    extra_hosts:
+      - "api.groq.com:172.64.149.20"
     ports:
       - "8080:8080"
     env_file:

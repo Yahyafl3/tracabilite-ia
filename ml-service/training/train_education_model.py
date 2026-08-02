@@ -1,4 +1,4 @@
-"""Entraînement du modèle EDUCATION (risque de décrochage — accompagnement pédagogique)."""
+"""Entraînement EDUCATION — dataset Portugal (dropout académique)."""
 from __future__ import annotations
 
 import os
@@ -27,10 +27,13 @@ from common.preprocessing import build_model_pipeline  # noqa: E402
 def _dataset_path() -> Path:
     env = os.environ.get("DATASETS_DIR")
     if env:
-        return Path(env) / "education" / "students_maroc_dropout_synthetic.csv"
+        return Path(env) / "education" / "education_portugal_dropout.csv"
     candidates = [
-        Path(__file__).resolve().parents[2] / "datasets" / "education" / "students_maroc_dropout_synthetic.csv",
-        Path("/datasets/education/students_maroc_dropout_synthetic.csv"),
+        Path(__file__).resolve().parents[2]
+        / "datasets"
+        / "education"
+        / "education_portugal_dropout.csv",
+        Path("/datasets/education/education_portugal_dropout.csv"),
     ]
     for c in candidates:
         if c.exists():
@@ -41,27 +44,28 @@ def _dataset_path() -> Path:
 DATASET = _dataset_path()
 REPORT = ROOT / "reports" / "education_evaluation.json"
 RANDOM_STATE = 42
-MODEL_VERSION = "education-model-v1.0.0"
-DATASET_VERSION = "students-maroc-dropout-synthetic-v1.0.0"
+MODEL_VERSION = "education-model-v2.0.0-public"
+DATASET_VERSION = "education-portugal-dropout-public-v2.0.0"
 
 NUMERIC = [
-    "moyenne_semestre_1",
-    "moyenne_semestre_2",
-    "taux_absence",
-    "modules_non_valides",
-    "distance_logement_km",
+    "age_inscription",
+    "note_admission",
+    "note_qualification_precedente",
+    "unites_validees_s1",
+    "moyenne_s1",
+    "unites_validees_s2",
+    "moyenne_s2",
+    "taux_chomage",
+    "taux_inflation",
+    "pib",
 ]
 CATEGORICAL = [
-    "region",
-    "type_etablissement",
-    "filiere",
-    "niveau_etude",
-    "participation",
-    "bourse",
-    "acces_internet",
-    "activite_professionnelle",
-    "historique_redoublement",
-    "situation_academique",
+    "sexe",
+    "boursier",
+    "frais_a_jour",
+    "debiteur",
+    "deplace",
+    "international",
 ]
 TARGET = "decrochage"
 FEATURES = NUMERIC + CATEGORICAL
@@ -90,9 +94,7 @@ def candidate_classifiers() -> dict:
 
 def main() -> int:
     if not DATASET.exists():
-        raise FileNotFoundError(
-            f"Dataset manquant: {DATASET}. Exécutez generate_moroccan_datasets.py"
-        )
+        raise FileNotFoundError(f"Dataset manquant: {DATASET}")
     df = pd.read_csv(DATASET)
     x = df[FEATURES]
     y = df[TARGET]
@@ -107,7 +109,7 @@ def main() -> int:
         pipe = build_model_pipeline(clf, NUMERIC, CATEGORICAL)
         pipe.fit(x_train, y_train)
         metrics = evaluate_binary_classifier(pipe, x_test, y_test)
-        score = selection_score(metrics, recall_weight=0.40)
+        score = selection_score(metrics, recall_weight=0.50)
         comparisons.append({"model": name, "metrics": metrics, "selection_score": round(score, 4)})
         print(f"[education] {name}: recall={metrics['recall']} f1={metrics['f1']} score={score:.4f}")
         if score > best_score:
@@ -118,6 +120,8 @@ def main() -> int:
         "domain": "EDUCATION",
         "modelVersion": MODEL_VERSION,
         "datasetVersion": DATASET_VERSION,
+        "governanceStatus": "DEMO_PUBLIC_DATASET",
+        "approvedForRealDecisions": False,
         "modelType": best_name,
         "target": TARGET,
         "features": FEATURES,
@@ -125,11 +129,10 @@ def main() -> int:
         "categoricalFeatures": CATEGORICAL,
         "transformedFeatureNames": extract_feature_names(best_pipe),
         "outputClasses": ["FAIBLE", "MOYEN", "ELEVE"],
-        "binaryTargetMeaning": "1 = risque de décrochage",
-        "disclaimer": (
-            "Aide à l'accompagnement pédagogique. "
-            "Ne constitue pas une sanction automatique contre l'étudiant. Dataset synthétique."
-        ),
+        "binaryTargetMeaning": "1 = décrochage (Dropout)",
+        "metrics": best_metrics,
+        "selectionScore": round(best_score, 4),
+        "disclaimer": "Dataset public Portugal (UCI) — DEMO_PUBLIC_DATASET, pas VALIDATED_PRODUCTION.",
     }
     save_model("education", best_pipe, meta)
     write_report(
@@ -142,7 +145,6 @@ def main() -> int:
             "features": FEATURES,
             "comparisons": comparisons,
             "selectedMetrics": best_metrics,
-            "selectionCriterion": "0.40*recall + 0.30*f1 + 0.25*roc_auc",
         },
     )
     print(f"[education] selected={best_name} → models/education/")

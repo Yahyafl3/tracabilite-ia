@@ -1,4 +1,4 @@
-"""Entraînement du modèle MEDICAL (risque diabète — aide à la décision, non diagnostique)."""
+"""Entraînement MEDICAL — dataset diabète (public / style clinique)."""
 from __future__ import annotations
 
 import os
@@ -27,10 +27,13 @@ from common.preprocessing import build_model_pipeline  # noqa: E402
 def _dataset_path() -> Path:
     env = os.environ.get("DATASETS_DIR")
     if env:
-        return Path(env) / "medical" / "medical_diabetes_maroc_synthetic.csv"
+        return Path(env) / "medical" / "medical_diabetes_european_dataset.csv"
     candidates = [
-        Path(__file__).resolve().parents[2] / "datasets" / "medical" / "medical_diabetes_maroc_synthetic.csv",
-        Path("/datasets/medical/medical_diabetes_maroc_synthetic.csv"),
+        Path(__file__).resolve().parents[2]
+        / "datasets"
+        / "medical"
+        / "medical_diabetes_european_dataset.csv",
+        Path("/datasets/medical/medical_diabetes_european_dataset.csv"),
     ]
     for c in candidates:
         if c.exists():
@@ -41,23 +44,19 @@ def _dataset_path() -> Path:
 DATASET = _dataset_path()
 REPORT = ROOT / "reports" / "medical_evaluation.json"
 RANDOM_STATE = 42
-MODEL_VERSION = "medical-model-v1.0.0"
-DATASET_VERSION = "medical-diabetes-maroc-synthetic-v1.0.0"
+MODEL_VERSION = "medical-model-v2.0.0-public"
+DATASET_VERSION = "medical-diabetes-european-public-v2.0.0"
 
-NUMERIC = ["age", "imc", "glycemie"]
-CATEGORICAL = [
-    "region",
-    "sexe",
-    "niveau_activite_physique",
-    "antecedents_familiaux_diabete",
-    "hypertension",
-    "polyurie",
-    "polydipsie",
-    "perte_poids_soudaine",
-    "faiblesse",
-    "obesite",
-    "suivi_medical",
+NUMERIC = [
+    "age",
+    "grossesses",
+    "glycemie_mg_dl",
+    "pression_arterielle_mmhg",
+    "epaisseur_pli_cutane_mm",
+    "insuline_micro_u_ml",
+    "imc_kg_m2",
 ]
+CATEGORICAL: list[str] = []
 TARGET = "risque_diabete"
 FEATURES = NUMERIC + CATEGORICAL
 
@@ -85,9 +84,7 @@ def candidate_classifiers() -> dict:
 
 def main() -> int:
     if not DATASET.exists():
-        raise FileNotFoundError(
-            f"Dataset manquant: {DATASET}. Exécutez generate_moroccan_datasets.py"
-        )
+        raise FileNotFoundError(f"Dataset manquant: {DATASET}")
     df = pd.read_csv(DATASET)
     x = df[FEATURES]
     y = df[TARGET]
@@ -113,6 +110,8 @@ def main() -> int:
         "domain": "MEDICAL",
         "modelVersion": MODEL_VERSION,
         "datasetVersion": DATASET_VERSION,
+        "governanceStatus": "DEMO_PUBLIC_DATASET",
+        "approvedForRealDecisions": False,
         "modelType": best_name,
         "target": TARGET,
         "features": FEATURES,
@@ -120,11 +119,10 @@ def main() -> int:
         "categoricalFeatures": CATEGORICAL,
         "transformedFeatureNames": extract_feature_names(best_pipe),
         "outputClasses": ["FAIBLE", "MODERE", "ELEVE"],
-        "binaryTargetMeaning": "1 = risque diabète élevé (indicatif)",
-        "disclaimer": (
-            "Estimation indicative uniquement. Ne remplace pas un diagnostic médical "
-            "ni l'avis d'un professionnel de santé. Dataset synthétique."
-        ),
+        "binaryTargetMeaning": "1 = risque diabète",
+        "metrics": best_metrics,
+        "selectionScore": round(best_score, 4),
+        "disclaimer": "Dataset public/recherche — pas un dispositif médical. DEMO_PUBLIC_DATASET.",
     }
     save_model("medical", best_pipe, meta)
     write_report(
@@ -137,7 +135,6 @@ def main() -> int:
             "features": FEATURES,
             "comparisons": comparisons,
             "selectedMetrics": best_metrics,
-            "selectionCriterion": "0.50*recall + 0.30*f1 + 0.25*roc_auc",
         },
     )
     print(f"[medical] selected={best_name} → models/medical/")

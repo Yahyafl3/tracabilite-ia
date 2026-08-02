@@ -72,7 +72,7 @@ def ready():
             "domainsReady": domains_ready,
             "integrity": integrity,
             "engine": "SKLEARN_MULTIDOMAIN",
-            "governance": "DEMO_SYNTHETIC",
+            "governance": "DEMO_PUBLIC_DATASET",
         }
         return jsonify(payload), (200 if ready_ok else 503)
     except ModelNotReadyError as exc:

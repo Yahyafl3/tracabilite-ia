@@ -10,18 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreditDecisionDataResponse {
-    private String secteurActivite;
-    private String region;
-    private Integer ageDemandeur;
-    private String statutProfessionnel;
-    private Double revenuMensuelMad;
-    private Double chargesMensuellesMad;
+    private Integer age;
+    private Integer dureeMois;
+    private String typeContrat;
+    private String statutLogement;
+    private Integer incidentPaiementBam;
     private Double montantDemandeMad;
-    private Integer dureeCreditMois;
-    private Integer ancienneteProfessionnelleAnnees;
-    private Integer creditsExistants;
-    private Integer incidentsPaiement24Mois;
-    private Double ratioEndettement;
-    private String typeGarantie;
-    private String typeCredit;
+    private Double nouvelleEcheanceMad;
+    private Double revenuMensuelMad;
+    private Double tauxEndettement;
 }

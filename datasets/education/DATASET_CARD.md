@@ -1,68 +1,26 @@
-# Dataset Card — students_maroc_dropout_synthetic
+# Dataset Card — education_portugal_dropout
 
-> **Données synthétiques.** Ce fichier ne contient aucune donnée réelle
-> de banques, d'hôpitaux ou d'universités marocaines.
+> **Dataset public UCI Portugal** (« Predict students' dropout and academic success »).
+> Gouvernance : `DEMO_PUBLIC_DATASET` — non validé pour décisions pédagogiques réelles.
 
-- **Nom** : `students_maroc_dropout_synthetic`
-- **Objectif** : Évaluer le risque de décrochage universitaire et proposer un accompagnement.
+- **Nom** : `education_portugal_dropout`
+- **Source brute** : `education_portugal_raw.csv` (`;`)
+- **Fichier normalisé** : `education_portugal_dropout.csv`
+- **Objectif** : prédire le décrochage (`Dropout`)
 - **Domaine** : EDUCATION
-- **Nombre de lignes** : 10000
-- **Colonne cible** : `decrochage` (binaire 0/1)
-- **Méthode de génération** : Échantillonnage probabiliste multi-facteurs (moyennes, absences, situation socio-académique).
-- **Date de génération** : 2026-07-30
-- **Seed** : `42`
-- **Version** : `students-maroc-dropout-synthetic-v1.0.0`
+- **Lignes** : 4424
+- **Cible** : `decrochage` (1 = Dropout ; Graduate/Enrolled = 0)
+- **Version** : `education-portugal-dropout-public-v2.0.0`
 
-## Colonnes
+## Colonnes modèle
 
-| Colonne | Type |
-|---------|------|
-| `region` | str |
-| `type_etablissement` | str |
-| `filiere` | str |
-| `niveau_etude` | str |
-| `moyenne_semestre_1` | float64 |
-| `moyenne_semestre_2` | float64 |
-| `taux_absence` | float64 |
-| `modules_non_valides` | int64 |
-| `participation` | str |
-| `bourse` | str |
-| `distance_logement_km` | float64 |
-| `acces_internet` | str |
-| `activite_professionnelle` | str |
-| `historique_redoublement` | str |
-| `situation_academique` | str |
-| `decrochage` | int64 |
+Numériques : `age_inscription`, `note_admission`, `note_qualification_precedente`,
+`unites_validees_s1`, `moyenne_s1`, `unites_validees_s2`, `moyenne_s2`,
+`taux_chomage`, `taux_inflation`, `pib`
 
-## Règles probabilistes
+Catégorielles : `sexe`, `boursier`, `frais_a_jour`, `debiteur`, `deplace`, `international`
 
-- Probabilité basée sur absences, modules non validés, moyennes, participation, internet, distance.
-- Bruit aléatoire contrôlé ; pas de sanction automatique simulée.
+## Interdits
 
-## Sources statistiques générales (contexte)
-
-- Indicateurs pédagogiques génériques (absences, moyennes /20).
-- Aucune donnée réelle d'université marocaine.
-
-## Limites
-
-- Ne constitue pas une sanction contre l'étudiant.
-- Contexte synthétique simplifié.
-
-## Biais possibles
-
-- Sur-pondération possible de l'absence et de la distance.
-- Filières échantillonnées uniformément (hors pondération réelle).
-
-## Usages autorisés
-
-- Développement et tests de la plateforme Traçabilité IA
-- Démonstration pédagogique d'explicabilité et de validation humaine
-- Benchmarks internes de pipelines ML
-
-## Usages interdits
-
-- Présenter ces données comme réelles
-- Décisions opérationnelles bancaires, médicales ou pédagogiques en production
-- Entraînement de modèles déployés sans réentraînement sur données réelles anonymisées
-- Identification de personnes (aucune PII réelle n'est présente)
+- Présenter comme données d’une université marocaine
+- Décisions d’orientation / exclusion sans validation institutionnelle

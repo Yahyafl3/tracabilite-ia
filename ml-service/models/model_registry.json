@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "governanceDefault": "DEMO_SYNTHETIC",
+  "note": "Modèles démonstrateurs synthétiques — non VALIDATED_PRODUCTION",
+  "models": [
+    {
+      "domain": "CREDIT",
+      "modelVersion": "credit-model-v1.0.0",
+      "datasetVersion": "credit-maroc-synthetic-v1.0.0",
+      "checksumSha256": "8c2b20b54d42bf1195c00ae843e4e5f5be4bf0d54ee9e02b4fa6ec468a43ce9a",
+      "governanceStatus": "DEMO_SYNTHETIC",
+      "lifecycleStatus": "ACTIVE",
+      "validatedProduction": false
+    },
+    {
+      "domain": "MEDICAL",
+      "modelVersion": "medical-model-v1.0.0",
+      "datasetVersion": "medical-diabetes-maroc-synthetic-v1.0.0",
+      "checksumSha256": "de4e73b1a838424c750bbcfccba9c7115292a4c09ae115e6d8eeb89372eab8d2",
+      "governanceStatus": "DEMO_SYNTHETIC",
+      "lifecycleStatus": "ACTIVE",
+      "validatedProduction": false
+    },
+    {
+      "domain": "EDUCATION",
+      "modelVersion": "education-model-v1.0.0",
+      "datasetVersion": "students-maroc-dropout-synthetic-v1.0.0",
+      "checksumSha256": "63d8f5b683e0aa9b7a99fe7c7293a1a33d75f5b95dc5e97bb98c41451d0010f4",
+      "governanceStatus": "DEMO_SYNTHETIC",
+      "lifecycleStatus": "ACTIVE",
+      "validatedProduction": false
+    }
+  ]
+}

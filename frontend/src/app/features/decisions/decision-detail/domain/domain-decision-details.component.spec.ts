@@ -27,19 +27,19 @@ describe('Domain decision detail components', () => {
     const fixture = TestBed.createComponent(CreditDecisionDetailsComponent);
     const d = base('CREDIT');
     d.creditData = {
-      secteurActivite: 'COMMERCE',
+      typeContrat: 'CDI',
       revenuMensuelMad: 8000,
       montantDemandeMad: 40000,
-      ratioEndettement: 0.3,
+      tauxEndettement: 0.3,
     };
     fixture.componentInstance.decision = d;
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toMatch(/8[\s\u202f]?000/);
     expect(text).toContain('MAD');
-    expect(text).toContain('COMMERCE');
+    expect(text).toContain('CDI');
     expect(text).not.toContain('Glycémie');
-    expect(text).not.toContain('Filière');
+    expect(text).not.toContain('Moyenne S1');
   });
 
   it('MEDICAL shows IMC/glycemia warning and hides credit fields', async () => {
@@ -48,36 +48,36 @@ describe('Domain decision detail components', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(MedicalDecisionDetailsComponent);
     const d = base('MEDICAL');
-    d.medicalData = { age: 45, imc: 28.5, glycemie: 1.2, region: 'Casablanca-Settat' };
+    d.medicalData = { age: 45, imcKgM2: 28.5, glycemieMgDl: 120, grossesses: 0 };
     fixture.componentInstance.decision = d;
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('IMC');
     expect(text).toContain('28.5');
-    expect(text).toContain('1.2');
+    expect(text).toContain('120');
     expect(text).toContain('ne remplace pas un diagnostic');
     expect(text).not.toContain('Montant demandé');
     expect(text).not.toContain('Revenu mensuel');
-    expect(text).not.toContain('Filière');
+    expect(text).not.toContain('Moyenne S1');
   });
 
-  it('EDUCATION shows filière/moyennes warning and hides credit/medical', async () => {
+  it('EDUCATION shows moyennes/warning and hides credit/medical', async () => {
     await TestBed.configureTestingModule({
       imports: [EducationDecisionDetailsComponent],
     }).compileComponents();
     const fixture = TestBed.createComponent(EducationDecisionDetailsComponent);
     const d = base('EDUCATION');
     d.educationData = {
-      filiere: 'SCIENCES',
-      moyenneSemestre1: 9.5,
-      moyenneSemestre2: 8.8,
-      tauxAbsence: 22,
-      modulesNonValides: 3,
+      sexe: 'HOMME',
+      moyenneS1: 9.5,
+      moyenneS2: 8.8,
+      unitesValideesS1: 4,
+      unitesValideesS2: 3,
     };
     fixture.componentInstance.decision = d;
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('SCIENCES');
+    expect(text).toContain('HOMME');
     expect(text).toContain('9.5');
     expect(text).toContain('accompagnement pédagogique');
     expect(text).not.toContain('Montant demandé');

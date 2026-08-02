@@ -10,19 +10,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EducationDecisionDataResponse {
-    private String region;
-    private String typeEtablissement;
-    private String filiere;
-    private String niveauEtude;
-    private Double moyenneSemestre1;
-    private Double moyenneSemestre2;
-    private Double tauxAbsence;
-    private Integer modulesNonValides;
-    private String participation;
-    private String bourse;
-    private Double distanceLogementKm;
-    private String accesInternet;
-    private String activiteProfessionnelle;
-    private String historiqueRedoublement;
-    private String situationAcademique;
+    private Integer ageInscription;
+    private Double noteAdmission;
+    private Double noteQualificationPrecedente;
+    private Integer unitesValideesS1;
+    private Double moyenneS1;
+    private Integer unitesValideesS2;
+    private Double moyenneS2;
+    private Double tauxChomage;
+    private Double tauxInflation;
+    private Double pib;
+    private String sexe;
+    private String boursier;
+    private String fraisAJour;
+    private String debiteur;
+    private String deplace;
+    private String international;
 }

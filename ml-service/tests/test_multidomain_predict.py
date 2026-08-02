@@ -1,4 +1,4 @@
-"""Tests non-régression des endpoints et modèles multidomain."""
+"""Tests non-régression des endpoints et modèles multidomain (datasets publics v2)."""
 from __future__ import annotations
 
 import pytest
@@ -8,61 +8,50 @@ from domain_schemas import normalize_domain_features
 
 
 CREDIT_PAYLOAD = {
-    "secteurActivite": "SERVICES",
-    "region": "Casablanca-Settat",
-    "ageDemandeur": 35,
-    "statutProfessionnel": "SALARIE_CDI",
-    "revenuMensuelMad": 12000,
-    "chargesMensuellesMad": 4000,
+    "age": 35,
+    "dureeMois": 48,
+    "typeContrat": "CDI",
+    "statutLogement": "PROPRIETAIRE",
+    "incidentPaiementBam": 0,
     "montantDemandeMad": 80000,
-    "dureeCreditMois": 48,
-    "ancienneteProfessionnelleAnnees": 8,
-    "creditsExistants": 1,
-    "incidentsPaiement24Mois": 0,
-    "ratioEndettement": 0.33,
-    "typeGarantie": "CAUTION",
-    "typeCredit": "CONSOMMATION",
+    "nouvelleEcheanceMad": 2500,
+    "revenuMensuelMad": 12000,
+    "tauxEndettement": 0.33,
 }
 
 MEDICAL_PAYLOAD = {
-    "region": "Rabat-Salé-Kénitra",
     "age": 52,
-    "sexe": "HOMME",
-    "imc": 31.2,
-    "niveauActivitePhysique": "SEDENTAIRE",
-    "antecedentsFamiliauxDiabete": "OUI",
-    "hypertension": "OUI",
-    "glycemie": 1.45,
-    "polyurie": "OUI",
-    "polydipsie": "NON",
-    "pertePoidsSoudaine": "NON",
-    "faiblesse": "OUI",
-    "obesite": "OUI",
-    "suiviMedical": "NON",
+    "grossesses": 0,
+    "glycemieMgDl": 148,
+    "pressionArterielleMmhg": 72,
+    "epaisseurPliCutaneMm": 35,
+    "insulineMicroUMl": 125,
+    "imcKgM2": 33.6,
 }
 
 EDUCATION_PAYLOAD = {
-    "region": "Marrakech-Safi",
-    "typeEtablissement": "UNIVERSITE_PUBLIQUE",
-    "filiere": "INFORMATIQUE",
-    "niveauEtude": "L2",
-    "moyenneSemestre1": 9.5,
-    "moyenneSemestre2": 8.8,
-    "tauxAbsence": 28,
-    "modulesNonValides": 3,
-    "participation": "FAIBLE",
-    "bourse": "NON",
-    "distanceLogementKm": 35,
-    "accesInternet": "OUI",
-    "activiteProfessionnelle": "OUI",
-    "historiqueRedoublement": "NON",
-    "situationAcademique": "DIFFICULTE",
+    "ageInscription": 20,
+    "noteAdmission": 127.3,
+    "noteQualificationPrecedente": 122.0,
+    "unitesValideesS1": 0,
+    "moyenneS1": 0.0,
+    "unitesValideesS2": 0,
+    "moyenneS2": 0.0,
+    "tauxChomage": 10.8,
+    "tauxInflation": 1.4,
+    "pib": 1.74,
+    "sexe": "HOMME",
+    "boursier": "NON",
+    "fraisAJour": "OUI",
+    "debiteur": "NON",
+    "deplace": "OUI",
+    "international": "NON",
 }
 
 
 def test_credit_normalize_and_predict():
     feats = normalize_domain_features("CREDIT", CREDIT_PAYLOAD)
-    assert feats["ratio_endettement"] == 0.33
+    assert feats["taux_endettement"] == 0.33
     result = predict_domain("CREDIT", CREDIT_PAYLOAD)
     assert result["domain"] == "CREDIT"
     assert result["prediction"].startswith("RISQUE_")
@@ -86,16 +75,16 @@ def test_education_predict():
 
 def test_missing_feature():
     bad = dict(CREDIT_PAYLOAD)
-    del bad["ratioEndettement"]
+    del bad["tauxEndettement"]
     with pytest.raises(ValueError, match="Features manquantes"):
         normalize_domain_features("CREDIT", bad)
 
 
 def test_invalid_category():
-    bad = dict(MEDICAL_PAYLOAD)
-    bad["sexe"] = "AUTRE"
+    bad = dict(CREDIT_PAYLOAD)
+    bad["typeContrat"] = "AUTRE"
     with pytest.raises(ValueError, match="invalide"):
-        normalize_domain_features("MEDICAL", bad)
+        normalize_domain_features("CREDIT", bad)
 
 
 def test_reproducibility():

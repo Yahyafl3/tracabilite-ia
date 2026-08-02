@@ -29,8 +29,8 @@ class DecisionMapperDomainDetailTest {
     void creditDetail_exposesOnlyCreditData() {
         Decision d = base(DecisionDomain.CREDIT);
         CreditDecisionData credit = new CreditDecisionData();
-        credit.setSecteurActivite("COMMERCE");
-        credit.setRegion("Casablanca-Settat");
+        credit.setAge(35);
+        credit.setTypeContrat("CDI");
         credit.setMontantDemandeMad(40000.0);
         credit.setRevenuMensuelMad(8500.0);
 
@@ -40,7 +40,7 @@ class DecisionMapperDomainDetailTest {
         assertNotNull(response.getCreditData());
         assertNull(response.getMedicalData());
         assertNull(response.getEducationData());
-        assertEquals("COMMERCE", response.getCreditData().getSecteurActivite());
+        assertEquals("CDI", response.getCreditData().getTypeContrat());
         assertNotNull(response.getSourcesMeta());
         assertTrue(response.getSourcesMeta().getDatasetVersion().contains("credit"));
         assertNotNull(response.getIntegrity());
@@ -52,9 +52,8 @@ class DecisionMapperDomainDetailTest {
         Decision d = base(DecisionDomain.MEDICAL);
         MedicalDecisionData medical = new MedicalDecisionData();
         medical.setAge(50);
-        medical.setImc(30.0);
-        medical.setGlycemie(1.4);
-        medical.setRegion("Rabat-Sale-Kenitra");
+        medical.setImcKgM2(30.0);
+        medical.setGlycemieMgDl(140.0);
 
         DecisionResponse response = mapper.toResponse(d);
         mapper.applyDomainData(response, null, medical, null);
@@ -62,7 +61,7 @@ class DecisionMapperDomainDetailTest {
         assertNotNull(response.getMedicalData());
         assertNull(response.getCreditData());
         assertNull(response.getEducationData());
-        assertEquals(30.0, response.getMedicalData().getImc());
+        assertEquals(30.0, response.getMedicalData().getImcKgM2());
         assertTrue(response.getSourcesMeta().getDisclaimer().toLowerCase().contains("diagnostic"));
     }
 
@@ -70,9 +69,9 @@ class DecisionMapperDomainDetailTest {
     void educationDetail_exposesOnlyEducationData() {
         Decision d = base(DecisionDomain.EDUCATION);
         EducationDecisionData edu = new EducationDecisionData();
-        edu.setFiliere("SCIENCES");
-        edu.setMoyenneSemestre1(9.5);
-        edu.setModulesNonValides(2);
+        edu.setMoyenneS1(9.5);
+        edu.setUnitesValideesS2(2);
+        edu.setSexe("HOMME");
 
         DecisionResponse response = mapper.toResponse(d);
         mapper.applyDomainData(response, null, null, edu);
@@ -80,7 +79,7 @@ class DecisionMapperDomainDetailTest {
         assertNotNull(response.getEducationData());
         assertNull(response.getCreditData());
         assertNull(response.getMedicalData());
-        assertEquals("SCIENCES", response.getEducationData().getFiliere());
+        assertEquals("HOMME", response.getEducationData().getSexe());
         assertTrue(response.getSourcesMeta().getUsageLimit().toLowerCase().contains("accompagnement")
                 || response.getSourcesMeta().getDisclaimer().toLowerCase().contains("sanction"));
     }

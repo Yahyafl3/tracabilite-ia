@@ -22,29 +22,19 @@ public class CreditDecisionData {
     @JoinColumn(name = "decision_id", nullable = false, unique = true)
     private Decision decision;
 
-    @Column(nullable = false, length = 32)
-    private String secteurActivite;
+    private Integer age;
 
-    @Column(nullable = false, length = 64)
-    private String region;
-
-    private Integer ageDemandeur;
+    private Integer dureeMois;
 
     @Column(length = 32)
-    private String statutProfessionnel;
+    private String typeContrat;
 
-    private Double revenuMensuelMad;
-    private Double chargesMensuellesMad;
+    @Column(length = 32)
+    private String statutLogement;
+
+    private Integer incidentPaiementBam;
     private Double montantDemandeMad;
-    private Integer dureeCreditMois;
-    private Integer ancienneteProfessionnelleAnnees;
-    private Integer creditsExistants;
-    private Integer incidentsPaiement24Mois;
-    private Double ratioEndettement;
-
-    @Column(length = 32)
-    private String typeGarantie;
-
-    @Column(length = 32)
-    private String typeCredit;
+    private Double nouvelleEcheanceMad;
+    private Double revenuMensuelMad;
+    private Double tauxEndettement;
 }

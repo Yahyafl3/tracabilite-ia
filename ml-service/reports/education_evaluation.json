@@ -1,259 +1,259 @@
 {
-  "generatedAt": "2026-07-30T15:03:06.910674+00:00",
+  "generatedAt": "2026-08-02T22:07:16.993860+00:00",
   "domain": "EDUCATION",
   "selectedModel": "LogisticRegression",
-  "modelVersion": "education-model-v1.0.0",
-  "datasetVersion": "students-maroc-dropout-synthetic-v1.0.0",
+  "modelVersion": "education-model-v2.0.0-public",
+  "datasetVersion": "education-portugal-dropout-public-v2.0.0",
   "features": [
-    "moyenne_semestre_1",
-    "moyenne_semestre_2",
-    "taux_absence",
-    "modules_non_valides",
-    "distance_logement_km",
-    "region",
-    "type_etablissement",
-    "filiere",
-    "niveau_etude",
-    "participation",
-    "bourse",
-    "acces_internet",
-    "activite_professionnelle",
-    "historique_redoublement",
-    "situation_academique"
+    "age_inscription",
+    "note_admission",
+    "note_qualification_precedente",
+    "unites_validees_s1",
+    "moyenne_s1",
+    "unites_validees_s2",
+    "moyenne_s2",
+    "taux_chomage",
+    "taux_inflation",
+    "pib",
+    "sexe",
+    "boursier",
+    "frais_a_jour",
+    "debiteur",
+    "deplace",
+    "international"
   ],
   "comparisons": [
     {
       "model": "LogisticRegression",
       "metrics": {
-        "accuracy": 0.7345,
-        "precision": 0.6667,
-        "recall": 0.7402,
-        "f1": 0.7015,
-        "roc_auc": 0.8136,
+        "accuracy": 0.8588,
+        "precision": 0.7659,
+        "recall": 0.8063,
+        "f1": 0.7856,
+        "roc_auc": 0.9099,
         "confusion_matrix": [
           [
-            845,
-            312
+            531,
+            70
           ],
           [
-            219,
-            624
+            55,
+            229
           ]
         ],
         "class_distribution_test": {
-          "0": 1157,
-          "1": 843
+          "0": 601,
+          "1": 284
         },
-        "false_negatives": 219,
-        "false_positives": 312,
+        "false_negatives": 55,
+        "false_positives": 70,
         "classification_report": {
           "0": {
-            "precision": 0.7941729323308271,
-            "recall": 0.7303370786516854,
-            "f1-score": 0.7609185051778479,
-            "support": 1157.0
+            "precision": 0.9061433447098977,
+            "recall": 0.8835274542429284,
+            "f1-score": 0.8946925021061499,
+            "support": 601.0
           },
           "1": {
-            "precision": 0.6666666666666666,
-            "recall": 0.7402135231316725,
-            "f1-score": 0.7015177065767285,
-            "support": 843.0
+            "precision": 0.7658862876254181,
+            "recall": 0.8063380281690141,
+            "f1-score": 0.7855917667238422,
+            "support": 284.0
           },
-          "accuracy": 0.7345,
+          "accuracy": 0.8587570621468926,
           "macro avg": {
-            "precision": 0.7304197994987469,
-            "recall": 0.735275300891679,
-            "f1-score": 0.7312181058772882,
-            "support": 2000.0
+            "precision": 0.8360148161676579,
+            "recall": 0.8449327412059713,
+            "f1-score": 0.8401421344149961,
+            "support": 885.0
           },
           "weighted avg": {
-            "precision": 0.7404290413533835,
-            "recall": 0.7345,
-            "f1-score": 0.735881068567476,
-            "support": 2000.0
+            "precision": 0.8611343004025618,
+            "recall": 0.8587570621468926,
+            "f1-score": 0.8596816446501326,
+            "support": 885.0
           }
         },
         "error_analysis": {
-          "fn_rate": 0.1095,
-          "fp_rate": 0.156,
+          "fn_rate": 0.0621,
+          "fp_rate": 0.0791,
           "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
         }
       },
-      "selection_score": 0.7099
+      "selection_score": 0.8663
     },
     {
       "model": "RandomForestClassifier",
       "metrics": {
-        "accuracy": 0.734,
-        "precision": 0.6853,
-        "recall": 0.6821,
-        "f1": 0.6837,
-        "roc_auc": 0.8037,
+        "accuracy": 0.8757,
+        "precision": 0.8452,
+        "recall": 0.75,
+        "f1": 0.7948,
+        "roc_auc": 0.9212,
         "confusion_matrix": [
           [
-            893,
-            264
+            562,
+            39
           ],
           [
-            268,
-            575
+            71,
+            213
           ]
         ],
         "class_distribution_test": {
-          "0": 1157,
-          "1": 843
+          "0": 601,
+          "1": 284
         },
-        "false_negatives": 268,
-        "false_positives": 264,
+        "false_negatives": 71,
+        "false_positives": 39,
         "classification_report": {
           "0": {
-            "precision": 0.7691645133505599,
-            "recall": 0.7718236819360415,
-            "f1-score": 0.7704918032786885,
-            "support": 1157.0
+            "precision": 0.8878357030015798,
+            "recall": 0.9351081530782029,
+            "f1-score": 0.9108589951377634,
+            "support": 601.0
           },
           "1": {
-            "precision": 0.6853396901072706,
-            "recall": 0.6820877817319099,
-            "f1-score": 0.6837098692033293,
-            "support": 843.0
+            "precision": 0.8452380952380952,
+            "recall": 0.75,
+            "f1-score": 0.7947761194029851,
+            "support": 284.0
           },
-          "accuracy": 0.734,
+          "accuracy": 0.8757062146892656,
           "macro avg": {
-            "precision": 0.7272521017289153,
-            "recall": 0.7269557318339757,
-            "f1-score": 0.727100836241009,
-            "support": 2000.0
+            "precision": 0.8665368991198374,
+            "recall": 0.8425540765391015,
+            "f1-score": 0.8528175572703742,
+            "support": 885.0
           },
           "weighted avg": {
-            "precision": 0.7338323503535135,
-            "recall": 0.734,
-            "f1-score": 0.7339132180659247,
-            "support": 2000.0
+            "precision": 0.8741659622051621,
+            "recall": 0.8757062146892656,
+            "f1-score": 0.8736075412296538,
+            "support": 885.0
           }
         },
         "error_analysis": {
-          "fn_rate": 0.134,
-          "fp_rate": 0.132,
+          "fn_rate": 0.0802,
+          "fp_rate": 0.0441,
           "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
         }
       },
-      "selection_score": 0.6789
+      "selection_score": 0.8437
     },
     {
       "model": "HistGradientBoostingClassifier",
       "metrics": {
-        "accuracy": 0.7235,
-        "precision": 0.6873,
-        "recall": 0.6311,
-        "f1": 0.658,
-        "roc_auc": 0.797,
+        "accuracy": 0.8644,
+        "precision": 0.8178,
+        "recall": 0.743,
+        "f1": 0.7786,
+        "roc_auc": 0.9108,
         "confusion_matrix": [
           [
-            915,
-            242
+            554,
+            47
           ],
           [
-            311,
-            532
+            73,
+            211
           ]
         ],
         "class_distribution_test": {
-          "0": 1157,
-          "1": 843
+          "0": 601,
+          "1": 284
         },
-        "false_negatives": 311,
-        "false_positives": 242,
+        "false_negatives": 73,
+        "false_positives": 47,
         "classification_report": {
           "0": {
-            "precision": 0.7463295269168027,
-            "recall": 0.790838375108038,
-            "f1-score": 0.7679395719681075,
-            "support": 1157.0
+            "precision": 0.8835725677830941,
+            "recall": 0.9217970049916805,
+            "f1-score": 0.9022801302931596,
+            "support": 601.0
           },
           "1": {
-            "precision": 0.6873385012919897,
-            "recall": 0.631079478054567,
-            "f1-score": 0.658008658008658,
-            "support": 843.0
+            "precision": 0.8178294573643411,
+            "recall": 0.7429577464788732,
+            "f1-score": 0.7785977859778598,
+            "support": 284.0
           },
-          "accuracy": 0.7235,
+          "accuracy": 0.864406779661017,
           "macro avg": {
-            "precision": 0.7168340141043962,
-            "recall": 0.7109589265813026,
-            "f1-score": 0.7129741149883828,
-            "support": 2000.0
+            "precision": 0.8507010125737176,
+            "recall": 0.8323773757352768,
+            "f1-score": 0.8404389581355096,
+            "support": 885.0
           },
           "weighted avg": {
-            "precision": 0.721464809615944,
-            "recall": 0.7235,
-            "f1-score": 0.7216036917341995,
-            "support": 2000.0
+            "precision": 0.8624753436487147,
+            "recall": 0.864406779661017,
+            "f1-score": 0.8625899768631651,
+            "support": 885.0
           }
         },
         "error_analysis": {
-          "fn_rate": 0.1555,
-          "fp_rate": 0.121,
+          "fn_rate": 0.0825,
+          "fp_rate": 0.0531,
           "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
         }
       },
-      "selection_score": 0.6491
+      "selection_score": 0.8328
     }
   ],
   "selectedMetrics": {
-    "accuracy": 0.7345,
-    "precision": 0.6667,
-    "recall": 0.7402,
-    "f1": 0.7015,
-    "roc_auc": 0.8136,
+    "accuracy": 0.8588,
+    "precision": 0.7659,
+    "recall": 0.8063,
+    "f1": 0.7856,
+    "roc_auc": 0.9099,
     "confusion_matrix": [
       [
-        845,
-        312
+        531,
+        70
       ],
       [
-        219,
-        624
+        55,
+        229
       ]
     ],
     "class_distribution_test": {
-      "0": 1157,
-      "1": 843
+      "0": 601,
+      "1": 284
     },
-    "false_negatives": 219,
-    "false_positives": 312,
+    "false_negatives": 55,
+    "false_positives": 70,
     "classification_report": {
       "0": {
-        "precision": 0.7941729323308271,
-        "recall": 0.7303370786516854,
-        "f1-score": 0.7609185051778479,
-        "support": 1157.0
+        "precision": 0.9061433447098977,
+        "recall": 0.8835274542429284,
+        "f1-score": 0.8946925021061499,
+        "support": 601.0
       },
       "1": {
-        "precision": 0.6666666666666666,
-        "recall": 0.7402135231316725,
-        "f1-score": 0.7015177065767285,
-        "support": 843.0
+        "precision": 0.7658862876254181,
+        "recall": 0.8063380281690141,
+        "f1-score": 0.7855917667238422,
+        "support": 284.0
       },
-      "accuracy": 0.7345,
+      "accuracy": 0.8587570621468926,
       "macro avg": {
-        "precision": 0.7304197994987469,
-        "recall": 0.735275300891679,
-        "f1-score": 0.7312181058772882,
-        "support": 2000.0
+        "precision": 0.8360148161676579,
+        "recall": 0.8449327412059713,
+        "f1-score": 0.8401421344149961,
+        "support": 885.0
       },
       "weighted avg": {
-        "precision": 0.7404290413533835,
-        "recall": 0.7345,
-        "f1-score": 0.735881068567476,
-        "support": 2000.0
+        "precision": 0.8611343004025618,
+        "recall": 0.8587570621468926,
+        "f1-score": 0.8596816446501326,
+        "support": 885.0
       }
     },
     "error_analysis": {
-      "fn_rate": 0.1095,
-      "fp_rate": 0.156,
+      "fn_rate": 0.0621,
+      "fp_rate": 0.0791,
       "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
     }
-  },
-  "selectionCriterion": "0.40*recall + 0.30*f1 + 0.25*roc_auc"
+  }
 }

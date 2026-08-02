@@ -23,16 +23,23 @@ wheels/
 .installed.cfg
 *.egg
 
-# ML Models
+# ML Models (artefacts locaux non versionnés)
 *.pkl
 *.h5
 artifacts/*.joblib
-models/
 checkpoints/
 
-# Keep metadata and synthetic dataset
+# Pipelines multidomain versionnés pour partage / déploiement
+# (joblib + metadata.json sous models/{credit,medical,education}/)
+models/**
+!models/
+!models/*/
+!models/*/*.joblib
+!models/*/metadata.json
+!models/model_registry.json
+
+# Keep metadata legacy
 !artifacts/metadata.json
-!data/synthetic_credit_dataset.csv
 
 # Jupyter Notebook
 .ipynb_checkpoints

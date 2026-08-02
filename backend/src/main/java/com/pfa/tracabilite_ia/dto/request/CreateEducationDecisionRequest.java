@@ -6,50 +6,53 @@ import lombok.Data;
 @Data
 public class CreateEducationDecisionRequest {
 
-    @NotBlank
-    private String region;
+    @NotNull @Min(15) @Max(80)
+    private Integer ageInscription;
 
-    @NotBlank
-    private String typeEtablissement;
+    @NotNull
+    private Double noteAdmission;
 
-    @NotBlank
-    private String filiere;
-
-    @NotBlank
-    private String niveauEtude;
-
-    @NotNull @DecimalMin("0") @DecimalMax("20")
-    private Double moyenneSemestre1;
-
-    @NotNull @DecimalMin("0") @DecimalMax("20")
-    private Double moyenneSemestre2;
-
-    @NotNull @DecimalMin("0") @DecimalMax("100")
-    private Double tauxAbsence;
+    @NotNull
+    private Double noteQualificationPrecedente;
 
     @NotNull @Min(0)
-    private Integer modulesNonValides;
+    private Integer unitesValideesS1;
 
-    @NotBlank
-    private String participation;
-
-    @NotBlank
-    private String bourse;
+    @NotNull @DecimalMin("0") @DecimalMax("20")
+    private Double moyenneS1;
 
     @NotNull @Min(0)
-    private Double distanceLogementKm;
+    private Integer unitesValideesS2;
+
+    @NotNull @DecimalMin("0") @DecimalMax("20")
+    private Double moyenneS2;
+
+    @NotNull
+    private Double tauxChomage;
+
+    @NotNull
+    private Double tauxInflation;
+
+    @NotNull
+    private Double pib;
 
     @NotBlank
-    private String accesInternet;
+    private String sexe;
 
     @NotBlank
-    private String activiteProfessionnelle;
+    private String boursier;
 
     @NotBlank
-    private String historiqueRedoublement;
+    private String fraisAJour;
 
     @NotBlank
-    private String situationAcademique;
+    private String debiteur;
+
+    @NotBlank
+    private String deplace;
+
+    @NotBlank
+    private String international;
 
     @Size(max = 4000)
     private String description;

@@ -83,55 +83,44 @@ export interface DecisionResponse {
 }
 
 export interface CreditDecisionData {
-  secteurActivite?: string;
-  region?: string;
-  ageDemandeur?: number;
-  statutProfessionnel?: string;
-  revenuMensuelMad?: number;
-  chargesMensuellesMad?: number;
+  age?: number;
+  dureeMois?: number;
+  typeContrat?: string;
+  statutLogement?: string;
+  incidentPaiementBam?: number;
   montantDemandeMad?: number;
-  dureeCreditMois?: number;
-  ancienneteProfessionnelleAnnees?: number;
-  creditsExistants?: number;
-  incidentsPaiement24Mois?: number;
-  ratioEndettement?: number;
-  typeGarantie?: string;
-  typeCredit?: string;
+  nouvelleEcheanceMad?: number;
+  revenuMensuelMad?: number;
+  tauxEndettement?: number;
 }
 
 export interface MedicalDecisionData {
-  region?: string;
   age?: number;
-  sexe?: string;
-  imc?: number;
-  niveauActivitePhysique?: string;
-  antecedentsFamiliauxDiabete?: string;
-  hypertension?: string;
-  glycemie?: number;
-  polyurie?: string;
-  polydipsie?: string;
-  pertePoidsSoudaine?: string;
-  faiblesse?: string;
-  obesite?: string;
-  suiviMedical?: string;
+  grossesses?: number;
+  glycemieMgDl?: number;
+  pressionArterielleMmhg?: number;
+  epaisseurPliCutaneMm?: number;
+  insulineMicroUMl?: number;
+  imcKgM2?: number;
 }
 
 export interface EducationDecisionData {
-  region?: string;
-  typeEtablissement?: string;
-  filiere?: string;
-  niveauEtude?: string;
-  moyenneSemestre1?: number;
-  moyenneSemestre2?: number;
-  tauxAbsence?: number;
-  modulesNonValides?: number;
-  participation?: string;
-  bourse?: string;
-  distanceLogementKm?: number;
-  accesInternet?: string;
-  activiteProfessionnelle?: string;
-  historiqueRedoublement?: string;
-  situationAcademique?: string;
+  ageInscription?: number;
+  noteAdmission?: number;
+  noteQualificationPrecedente?: number;
+  unitesValideesS1?: number;
+  moyenneS1?: number;
+  unitesValideesS2?: number;
+  moyenneS2?: number;
+  tauxChomage?: number;
+  tauxInflation?: number;
+  pib?: number;
+  sexe?: string;
+  boursier?: string;
+  fraisAJour?: string;
+  debiteur?: string;
+  deplace?: string;
+  international?: string;
 }
 
 export interface DecisionIntegrityView {

@@ -2,20 +2,13 @@
   <p-message severity="warn" [text]="warning" styleClass="w-full mb-3" />
   <h2 class="domain-details__title">Dossier médical (indicatif)</h2>
   <dl class="domain-details__grid">
-    <div><dt>Région</dt><dd>{{ text(data.region) }}</dd></div>
     <div><dt>Âge</dt><dd>{{ data.age != null ? data.age + ' ans' : '—' }}</dd></div>
-    <div><dt>Sexe</dt><dd>{{ text(data.sexe) }}</dd></div>
-    <div><dt>IMC</dt><dd>{{ data.imc != null ? data.imc + ' kg/m²' : '—' }}</dd></div>
-    <div><dt>Glycémie</dt><dd>{{ data.glycemie != null ? data.glycemie : '—' }}</dd></div>
-    <div><dt>Niveau d'activité physique</dt><dd>{{ text(data.niveauActivitePhysique) }}</dd></div>
-    <div><dt>Antécédents familiaux de diabète</dt><dd>{{ text(data.antecedentsFamiliauxDiabete) }}</dd></div>
-    <div><dt>Hypertension</dt><dd>{{ text(data.hypertension) }}</dd></div>
-    <div><dt>Polyurie</dt><dd>{{ text(data.polyurie) }}</dd></div>
-    <div><dt>Polydipsie</dt><dd>{{ text(data.polydipsie) }}</dd></div>
-    <div><dt>Perte de poids soudaine</dt><dd>{{ text(data.pertePoidsSoudaine) }}</dd></div>
-    <div><dt>Faiblesse</dt><dd>{{ text(data.faiblesse) }}</dd></div>
-    <div><dt>Obésité</dt><dd>{{ text(data.obesite) }}</dd></div>
-    <div><dt>Suivi médical</dt><dd>{{ text(data.suiviMedical) }}</dd></div>
+    <div><dt>Grossesses</dt><dd>{{ text(data.grossesses) }}</dd></div>
+    <div><dt>Glycémie</dt><dd>{{ data.glycemieMgDl != null ? data.glycemieMgDl + ' mg/dL' : '—' }}</dd></div>
+    <div><dt>Pression artérielle</dt><dd>{{ data.pressionArterielleMmhg != null ? data.pressionArterielleMmhg + ' mmHg' : '—' }}</dd></div>
+    <div><dt>Épaisseur pli cutané</dt><dd>{{ data.epaisseurPliCutaneMm != null ? data.epaisseurPliCutaneMm + ' mm' : '—' }}</dd></div>
+    <div><dt>Insuline</dt><dd>{{ data.insulineMicroUMl != null ? data.insulineMicroUMl + ' µU/mL' : '—' }}</dd></div>
+    <div><dt>IMC</dt><dd>{{ data.imcKgM2 != null ? data.imcKgM2 + ' kg/m²' : '—' }}</dd></div>
     <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
   </dl>
 </section>

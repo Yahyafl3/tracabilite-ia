@@ -211,21 +211,22 @@ class DecisionOrchestratorPersistenceOrderTest {
 
     private static CreateEducationDecisionRequest sampleEducation(boolean agents) {
         CreateEducationDecisionRequest r = new CreateEducationDecisionRequest();
-        r.setRegion("Fes-Meknes");
-        r.setTypeEtablissement("UNIVERSITE_PUBLIQUE");
-        r.setFiliere("SCIENCES");
-        r.setNiveauEtude("L2");
-        r.setMoyenneSemestre1(9.5);
-        r.setMoyenneSemestre2(8.8);
-        r.setTauxAbsence(22.0);
-        r.setModulesNonValides(3);
-        r.setParticipation("FAIBLE");
-        r.setBourse("OUI");
-        r.setDistanceLogementKm(18.0);
-        r.setAccesInternet("OUI");
-        r.setActiviteProfessionnelle("NON");
-        r.setHistoriqueRedoublement("NON");
-        r.setSituationAcademique("DIFFICULTE");
+        r.setAgeInscription(19);
+        r.setNoteAdmission(120.0);
+        r.setNoteQualificationPrecedente(110.0);
+        r.setUnitesValideesS1(4);
+        r.setMoyenneS1(9.5);
+        r.setUnitesValideesS2(3);
+        r.setMoyenneS2(8.8);
+        r.setTauxChomage(12.5);
+        r.setTauxInflation(2.1);
+        r.setPib(1.2);
+        r.setSexe("HOMME");
+        r.setBoursier("OUI");
+        r.setFraisAJour("OUI");
+        r.setDebiteur("NON");
+        r.setDeplace("NON");
+        r.setInternational("NON");
         r.setDescription("Test EDUCATION");
         r.setIncludeAgents(agents);
         return r;
@@ -233,40 +234,28 @@ class DecisionOrchestratorPersistenceOrderTest {
 
     private static CreateCreditDecisionRequest sampleCredit(boolean agents) {
         CreateCreditDecisionRequest r = new CreateCreditDecisionRequest();
-        r.setSecteurActivite("COMMERCE");
-        r.setRegion("Casablanca-Settat");
-        r.setAgeDemandeur(35);
-        r.setStatutProfessionnel("SALARIE_CDI");
+        r.setAge(35);
+        r.setDureeMois(36);
+        r.setTypeContrat("CDI");
+        r.setStatutLogement("LOCATAIRE");
+        r.setIncidentPaiementBam(0);
         r.setRevenuMensuelMad(8500.0);
-        r.setChargesMensuellesMad(3200.0);
         r.setMontantDemandeMad(40000.0);
-        r.setDureeCreditMois(36);
-        r.setAncienneteProfessionnelleAnnees(5);
-        r.setCreditsExistants(1);
-        r.setIncidentsPaiement24Mois(0);
-        r.setRatioEndettement(0.35);
-        r.setTypeGarantie("AUCUNE");
-        r.setTypeCredit("CONSOMMATION");
+        r.setNouvelleEcheanceMad(1200.0);
+        r.setTauxEndettement(0.35);
         r.setIncludeAgents(agents);
         return r;
     }
 
     private static CreateMedicalDecisionRequest sampleMedical(boolean agents) {
         CreateMedicalDecisionRequest r = new CreateMedicalDecisionRequest();
-        r.setRegion("Rabat-Sale-Kenitra");
         r.setAge(48);
-        r.setSexe("FEMME");
-        r.setImc(29.5);
-        r.setNiveauActivitePhysique("SEDENTAIRE");
-        r.setAntecedentsFamiliauxDiabete("OUI");
-        r.setHypertension("OUI");
-        r.setGlycemie(1.25);
-        r.setPolyurie("NON");
-        r.setPolydipsie("NON");
-        r.setPertePoidsSoudaine("NON");
-        r.setFaiblesse("OUI");
-        r.setObesite("OUI");
-        r.setSuiviMedical("OUI");
+        r.setGrossesses(2);
+        r.setGlycemieMgDl(140.0);
+        r.setPressionArterielleMmhg(72.0);
+        r.setEpaisseurPliCutaneMm(25.0);
+        r.setInsulineMicroUMl(85.0);
+        r.setImcKgM2(29.5);
         r.setIncludeAgents(agents);
         return r;
     }

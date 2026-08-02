@@ -73,61 +73,50 @@ public class MLDecisionServiceImpl implements MLDecisionService {
     @Override
     public DomainPredictionResponse predictCredit(CreateCreditDecisionRequest request) {
         Map<String, Object> body = new HashMap<>();
-        body.put("secteurActivite", request.getSecteurActivite());
-        body.put("region", request.getRegion());
-        body.put("ageDemandeur", request.getAgeDemandeur());
-        body.put("statutProfessionnel", request.getStatutProfessionnel());
-        body.put("revenuMensuelMad", request.getRevenuMensuelMad());
-        body.put("chargesMensuellesMad", request.getChargesMensuellesMad());
+        body.put("age", request.getAge());
+        body.put("dureeMois", request.getDureeMois());
+        body.put("typeContrat", request.getTypeContrat());
+        body.put("statutLogement", request.getStatutLogement());
+        body.put("incidentPaiementBam", request.getIncidentPaiementBam());
         body.put("montantDemandeMad", request.getMontantDemandeMad());
-        body.put("dureeCreditMois", request.getDureeCreditMois());
-        body.put("ancienneteProfessionnelleAnnees", request.getAncienneteProfessionnelleAnnees());
-        body.put("creditsExistants", request.getCreditsExistants());
-        body.put("incidentsPaiement24Mois", request.getIncidentsPaiement24Mois());
-        body.put("ratioEndettement", request.getRatioEndettement());
-        body.put("typeGarantie", request.getTypeGarantie());
-        body.put("typeCredit", request.getTypeCredit());
+        body.put("nouvelleEcheanceMad", request.getNouvelleEcheanceMad());
+        body.put("revenuMensuelMad", request.getRevenuMensuelMad());
+        body.put("tauxEndettement", request.getTauxEndettement());
         return postDomainPredict("/predict/credit", body);
     }
 
     @Override
     public DomainPredictionResponse predictMedical(CreateMedicalDecisionRequest request) {
         Map<String, Object> body = new HashMap<>();
-        body.put("region", request.getRegion());
         body.put("age", request.getAge());
-        body.put("sexe", request.getSexe());
-        body.put("imc", request.getImc());
-        body.put("niveauActivitePhysique", request.getNiveauActivitePhysique());
-        body.put("antecedentsFamiliauxDiabete", request.getAntecedentsFamiliauxDiabete());
-        body.put("hypertension", request.getHypertension());
-        body.put("glycemie", request.getGlycemie());
-        body.put("polyurie", request.getPolyurie());
-        body.put("polydipsie", request.getPolydipsie());
-        body.put("pertePoidsSoudaine", request.getPertePoidsSoudaine());
-        body.put("faiblesse", request.getFaiblesse());
-        body.put("obesite", request.getObesite());
-        body.put("suiviMedical", request.getSuiviMedical());
+        body.put("grossesses", request.getGrossesses());
+        body.put("glycemieMgDl", request.getGlycemieMgDl());
+        body.put("pressionArterielleMmhg", request.getPressionArterielleMmhg());
+        body.put("epaisseurPliCutaneMm", request.getEpaisseurPliCutaneMm());
+        body.put("insulineMicroUMl", request.getInsulineMicroUMl());
+        body.put("imcKgM2", request.getImcKgM2());
         return postDomainPredict("/predict/medical", body);
     }
 
     @Override
     public DomainPredictionResponse predictEducation(CreateEducationDecisionRequest request) {
         Map<String, Object> body = new HashMap<>();
-        body.put("region", request.getRegion());
-        body.put("typeEtablissement", request.getTypeEtablissement());
-        body.put("filiere", request.getFiliere());
-        body.put("niveauEtude", request.getNiveauEtude());
-        body.put("moyenneSemestre1", request.getMoyenneSemestre1());
-        body.put("moyenneSemestre2", request.getMoyenneSemestre2());
-        body.put("tauxAbsence", request.getTauxAbsence());
-        body.put("modulesNonValides", request.getModulesNonValides());
-        body.put("participation", request.getParticipation());
-        body.put("bourse", request.getBourse());
-        body.put("distanceLogementKm", request.getDistanceLogementKm());
-        body.put("accesInternet", request.getAccesInternet());
-        body.put("activiteProfessionnelle", request.getActiviteProfessionnelle());
-        body.put("historiqueRedoublement", request.getHistoriqueRedoublement());
-        body.put("situationAcademique", request.getSituationAcademique());
+        body.put("ageInscription", request.getAgeInscription());
+        body.put("noteAdmission", request.getNoteAdmission());
+        body.put("noteQualificationPrecedente", request.getNoteQualificationPrecedente());
+        body.put("unitesValideesS1", request.getUnitesValideesS1());
+        body.put("moyenneS1", request.getMoyenneS1());
+        body.put("unitesValideesS2", request.getUnitesValideesS2());
+        body.put("moyenneS2", request.getMoyenneS2());
+        body.put("tauxChomage", request.getTauxChomage());
+        body.put("tauxInflation", request.getTauxInflation());
+        body.put("pib", request.getPib());
+        body.put("sexe", request.getSexe());
+        body.put("boursier", request.getBoursier());
+        body.put("fraisAJour", request.getFraisAJour());
+        body.put("debiteur", request.getDebiteur());
+        body.put("deplace", request.getDeplace());
+        body.put("international", request.getInternational());
         return postDomainPredict("/predict/education", body);
     }
 
