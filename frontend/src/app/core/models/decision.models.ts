@@ -3,10 +3,16 @@ import type { AgentResponse, ConsensusResponse } from './openrouter.models';
 
 export enum StatutDecisionEnum {
   BROUILLON = 'BROUILLON',
+  EN_ANALYSE = 'EN_ANALYSE',
+  ANALYSEE = 'ANALYSEE',
+  EN_ATTENTE_VALIDATION = 'EN_ATTENTE_VALIDATION',
   EN_ATTENTE = 'EN_ATTENTE',
+  VALIDEE = 'VALIDEE',
   APPROUVEE = 'APPROUVEE',
   MODIFIEE = 'MODIFIEE',
+  A_REVOIR = 'A_REVOIR',
   REJETEE = 'REJETEE',
+  ARCHIVEE = 'ARCHIVEE',
 }
 
 export interface MlPredictionView {
@@ -33,6 +39,16 @@ export interface ExplanationFactor {
 export interface DecisionResponse {
   decisionId: string;
   reference?: string;
+  domaine?: string;
+  dossierReference?: string;
+  description?: string;
+  datasetVersion?: string;
+  sourceDonnees?: string;
+  accordAvecIa?: boolean;
+  justificationHumaine?: string;
+  validateurRole?: string;
+  validateurId?: string;
+  createdBy?: string;
   prompt: string;
   contexte: string;
   modelName: string;
@@ -56,8 +72,78 @@ export interface DecisionResponse {
   humanFinalAction?: 'APPROUVER' | 'REJETER' | 'MODIFIER' | 'REVIEW';
   validatorEmail?: string;
   validatedAt?: string;
+  submittedAt?: string;
   timestamp: string;
   currentHash?: string;
+  creditData?: CreditDecisionData;
+  medicalData?: MedicalDecisionData;
+  educationData?: EducationDecisionData;
+  integrity?: DecisionIntegrityView;
+  sourcesMeta?: DecisionSourcesMetaView;
+}
+
+export interface CreditDecisionData {
+  age?: number;
+  dureeMois?: number;
+  typeContrat?: string;
+  statutLogement?: string;
+  incidentPaiementBam?: number;
+  montantDemandeMad?: number;
+  nouvelleEcheanceMad?: number;
+  revenuMensuelMad?: number;
+  tauxEndettement?: number;
+}
+
+export interface MedicalDecisionData {
+  age?: number;
+  grossesses?: number;
+  glycemieMgDl?: number;
+  pressionArterielleMmhg?: number;
+  epaisseurPliCutaneMm?: number;
+  insulineMicroUMl?: number;
+  imcKgM2?: number;
+}
+
+export interface EducationDecisionData {
+  ageInscription?: number;
+  noteAdmission?: number;
+  noteQualificationPrecedente?: number;
+  unitesValideesS1?: number;
+  moyenneS1?: number;
+  unitesValideesS2?: number;
+  moyenneS2?: number;
+  tauxChomage?: number;
+  tauxInflation?: number;
+  pib?: number;
+  sexe?: string;
+  boursier?: string;
+  fraisAJour?: string;
+  debiteur?: string;
+  deplace?: string;
+  international?: string;
+}
+
+export interface DecisionIntegrityView {
+  currentHash?: string;
+  previousHash?: string;
+  businessDataHash?: string;
+  sourcesHash?: string;
+  agentResponsesHash?: string;
+  explanation?: string;
+}
+
+export interface DecisionSourcesMetaView {
+  sourceDonnees?: string;
+  datasetVersion?: string;
+  modelVersion?: string;
+  modelName?: string;
+  pipelineName?: string;
+  featureCount?: number;
+  features?: string[];
+  dataType?: string;
+  synthetic?: boolean;
+  disclaimer?: string;
+  usageLimit?: string;
 }
 
 export interface DecisionPageResponse {

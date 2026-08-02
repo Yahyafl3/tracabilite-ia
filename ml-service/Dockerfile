@@ -2,18 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY ml-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY config.py feature_validator.py schemas.py sector_schema.py shap_config.py dataset_service.py train_model.py \
-     model_loader.py prediction_service.py explainability_service.py test_shap_coherence.py \
-     risk_service.py generate_csv.py app.py ./
+# Legacy + multidomain sources
+COPY ml-service/ ./
+COPY datasets /datasets
 
-# Le modèle est monté via volume (artifacts/) ou entraîné au 1er démarrage
-COPY docker-entrypoint.sh .
-RUN sed -i 's/\r//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
+COPY ml-service/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN sed -i 's/\r//' /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh
 
-# Render injecte PORT ; local / compose = 5000
 ENV PORT=5000
+ENV DATASETS_DIR=/datasets
 EXPOSE 5000
 ENTRYPOINT ["./docker-entrypoint.sh"]

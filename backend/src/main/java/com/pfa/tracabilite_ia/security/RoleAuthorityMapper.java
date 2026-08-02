@@ -17,6 +17,12 @@ public final class RoleAuthorityMapper {
         if (role == null || role.isBlank()) {
             return List.of();
         }
+        String upper = role.toUpperCase();
+        if (upper.equals("RESPONSABLE_CREDIT")
+                || upper.equals("PROFESSIONNEL_SANTE")
+                || upper.equals("RESPONSABLE_PEDAGOGIQUE")) {
+            return domainAuthorities(upper);
+        }
         return List.of(new SimpleGrantedAuthority(mapToSpringRole(role)));
     }
 
@@ -44,9 +50,35 @@ public final class RoleAuthorityMapper {
         return switch (role.toUpperCase()) {
             case "ADMIN", "ADMINISTRATEUR" -> "ROLE_ADMIN";
             case "USER", "UTILISATEUR" -> "ROLE_USER";
-            case "VALIDATOR", "VALIDATEUR" -> "ROLE_VALIDATOR";
+            case "VALIDATOR", "VALIDATEUR",
+                 "RESPONSABLE_CREDIT", "PROFESSIONNEL_SANTE", "RESPONSABLE_PEDAGOGIQUE"
+                    -> "ROLE_VALIDATOR";
             case "AUDITOR", "AUDITEUR" -> "ROLE_AUDITOR";
             default -> role.startsWith("ROLE_") ? role : "ROLE_" + role.toUpperCase();
+        };
+    }
+
+    /**
+     * Autorités supplémentaires spécifiques au domaine (en plus de ROLE_VALIDATOR).
+     */
+    public static Collection<GrantedAuthority> domainAuthorities(String role) {
+        if (role == null || role.isBlank()) {
+            return List.of();
+        }
+        return switch (role.toUpperCase()) {
+            case "RESPONSABLE_CREDIT" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_VALIDATOR"),
+                    new SimpleGrantedAuthority("ROLE_CREDIT_VALIDATOR")
+            );
+            case "PROFESSIONNEL_SANTE" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_VALIDATOR"),
+                    new SimpleGrantedAuthority("ROLE_MEDICAL_VALIDATOR")
+            );
+            case "RESPONSABLE_PEDAGOGIQUE" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_VALIDATOR"),
+                    new SimpleGrantedAuthority("ROLE_EDUCATION_VALIDATOR")
+            );
+            default -> fromRoleClaim(role);
         };
     }
 }

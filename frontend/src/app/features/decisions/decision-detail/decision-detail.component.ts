@@ -35,6 +35,15 @@ import { DecisionService } from '../../../core/services/decision.service';
 import { ValidationService } from '../../../core/services/validation.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuditService } from '../../../core/services/audit.service';
+import { CreditDecisionDetailsComponent } from './domain/credit-decision-details.component';
+import { MedicalDecisionDetailsComponent } from './domain/medical-decision-details.component';
+import { EducationDecisionDetailsComponent } from './domain/education-decision-details.component';
+import {
+  DOMAIN_META,
+  featureDisplayName,
+  resolveDomain,
+  type DecisionDomain,
+} from '../../../core/config/domains/domain.config';
 import { UserRole } from '../../../core/models/auth.models';
 import {
   DecisionResponse,
@@ -108,6 +117,9 @@ type DetailTab =
     CopyHashComponent,
     TimelineComponent,
     ModelIdentityComponent,
+    CreditDecisionDetailsComponent,
+    MedicalDecisionDetailsComponent,
+    EducationDecisionDetailsComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './decision-detail.component.html',
@@ -124,10 +136,18 @@ export class DecisionDetailComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly humanDecisionOptions = [
-    { label: 'APPROUVER', value: 'APPROUVER' },
-    { label: 'REJETER', value: 'REJETER' },
-  ];
+  readonly humanDecisionOptions = computed(() => {
+    const domain = this.domain();
+    return DOMAIN_META[domain].humanDecisions;
+  });
+
+  readonly domain = computed<DecisionDomain>(() => resolveDomain(this.decision()?.domaine));
+
+  readonly domainMeta = computed(() => DOMAIN_META[this.domain()]);
+
+  readonly domainWarning = computed(() => this.domainMeta().warning ?? null);
+
+  readonly agentsConsulted = computed(() => (this.decision()?.agentResponses?.length ?? 0) > 0);
 
   readonly decision = signal<DecisionResponse | null>(null);
   readonly historyEntries = signal<DecisionHistoryEntry[]>([]);
@@ -189,8 +209,9 @@ export class DecisionDetailComponent {
   );
 
   readonly validationForm = this.fb.group({
-    commentaire: ['', Validators.maxLength(2000)],
-    decisionHumaine: ['REJETER' as 'APPROUVER' | 'REJETER', Validators.required],
+    commentaire: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(2000)]],
+    decisionHumaine: ['', Validators.required],
+    accordAvecIa: [true],
     confirmed: [false, Validators.requiredTrue],
   });
 
@@ -205,13 +226,25 @@ export class DecisionDetailComponent {
   readonly canValidate = computed(() => {
     const item = this.decision();
     const role = this.authService.currentUser?.role;
-    const isValidator = role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
-    return isValidator && item?.statutValidation === StatutDecisionEnum.EN_ATTENTE;
+    const domain = resolveDomain(item?.domaine);
+    const expected = DOMAIN_META[domain].validatorRole as UserRole;
+    const allowed =
+      role === expected ||
+      role === UserRole.VALIDATEUR ||
+      role === UserRole.ADMINISTRATEUR ||
+      role === UserRole.RESPONSABLE_CREDIT ||
+      role === UserRole.PROFESSIONNEL_SANTE ||
+      role === UserRole.RESPONSABLE_PEDAGOGIQUE;
+    const pending =
+      item?.statutValidation === StatutDecisionEnum.EN_ATTENTE ||
+      item?.statutValidation === StatutDecisionEnum.EN_ATTENTE_VALIDATION;
+    return !!allowed && !!pending;
   });
 
-  readonly isPendingValidation = computed(() =>
-    this.decision()?.statutValidation === StatutDecisionEnum.EN_ATTENTE,
-  );
+  readonly isPendingValidation = computed(() => {
+    const s = this.decision()?.statutValidation;
+    return s === StatutDecisionEnum.EN_ATTENTE || s === StatutDecisionEnum.EN_ATTENTE_VALIDATION;
+  });
 
   readonly tabs: Array<{ id: DetailTab; label: string }> = [
     { id: 'resume', label: 'Résumé' },
@@ -315,19 +348,54 @@ export class DecisionDetailComponent {
   }
 
   creatorLabel(item: DecisionResponse): string {
-    return item.validatorEmail || '—';
+    return item.createdBy || '—';
+  }
+
+  validatorLabel(item: DecisionResponse): string {
+    return item.validatorEmail || item.validateurRole || '—';
+  }
+
+  displayOrDash(value: unknown): string {
+    if (value == null || value === '') return '—';
+    return String(value);
+  }
+
+  factorLabel(name: string): string {
+    return featureDisplayName(this.domain(), name);
   }
 
   shapImpactTooltip(impact: string): string {
-    if (impact === 'POSITIVE') return 'Favorise APPROUVER';
-    if (impact === 'NEGATIVE') return 'Favorise REJETER';
+    if (impact === 'POSITIVE') return 'Impact positif sur le risque/signal';
+    if (impact === 'NEGATIVE') return 'Impact négatif sur le risque/signal';
     return impact;
   }
 
   shapImpactLabel(factor: { impactLabel?: string; impact: string }): string {
-    if (factor.impact === 'POSITIVE') return 'Favorise APPROUVER';
-    if (factor.impact === 'NEGATIVE') return 'Favorise REJETER';
+    if (factor.impact === 'POSITIVE') return 'Impact positif';
+    if (factor.impact === 'NEGATIVE') return 'Impact négatif';
     return factor.impactLabel || factor.impact;
+  }
+
+  submitDomainValidation(): void {
+    const id = this.decision()?.decisionId;
+    if (!id || this.validationForm.invalid) {
+      this.validationForm.markAllAsTouched();
+      return;
+    }
+    const raw = this.validationForm.getRawValue();
+    this.confirmAndSubmit(
+      'Confirmer la validation',
+      `Enregistrer la décision humaine « ${raw.decisionHumaine} » ?`,
+      () => {
+        this.submitValidation(() =>
+          this.decisionService.validateDomain(id, {
+            decisionFinale: raw.decisionHumaine!,
+            justificationHumaine: raw.commentaire ?? undefined,
+            accordAvecIa: raw.accordAvecIa ?? true,
+          }),
+        );
+      },
+    );
   }
 
   tabPanelId(tab: DetailTab): string {

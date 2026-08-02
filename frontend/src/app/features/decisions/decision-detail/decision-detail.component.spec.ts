@@ -29,9 +29,10 @@ describe('DecisionDetailComponent', () => {
 
   const mockDecision: DecisionResponse = {
     decisionId: 'dec-1',
+    domaine: 'CREDIT',
     prompt: 'Demande de crédit test',
     contexte: 'Contexte test',
-    reponse: 'APPROUVER',
+    reponse: 'RISQUE_FAIBLE',
     statutValidation: StatutDecisionEnum.EN_ATTENTE,
     timestamp: '2026-07-18T10:00:00.000Z',
     modelName: 'LogisticRegression',
@@ -44,7 +45,7 @@ describe('DecisionDetailComponent', () => {
         modelId: 'openai/gpt-4o-mini',
         provider: 'OpenRouter',
         statut: 'SUCCESS',
-        decisionProposee: 'APPROUVER',
+        decisionProposee: 'ACCEPTEE',
         declaredConfidence: 0.82,
       },
       {
@@ -168,9 +169,13 @@ describe('DecisionDetailComponent', () => {
     fixture.detectChanges();
 
     const form = fixture.componentInstance.validationForm;
-    expect(form.invalid).toBe(true);
+    expect(form.valid).toBe(false);
 
-    form.patchValue({ decisionHumaine: 'APPROUVER', confirmed: true });
+    form.patchValue({
+      decisionHumaine: 'ACCEPTEE',
+      commentaire: 'Dossier vérifié et décision confirmée.',
+      confirmed: true,
+    });
     expect(form.valid).toBe(true);
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -206,7 +211,7 @@ describe('DecisionDetailComponent', () => {
     fixture.componentInstance.decision.set({
       ...mockDecision,
       statutValidation: StatutDecisionEnum.APPROUVEE,
-      humanFinalDecision: 'APPROUVER',
+      humanFinalDecision: 'ACCEPTEE',
     });
     fixture.componentInstance.setTab('validation');
     fixture.detectChanges();

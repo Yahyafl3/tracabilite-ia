@@ -1,0 +1,102 @@
+{
+  "domain": "MEDICAL",
+  "modelVersion": "medical-model-v2.0.0-public",
+  "datasetVersion": "medical-diabetes-european-public-v2.0.0",
+  "governanceStatus": "DEMO_PUBLIC_DATASET",
+  "approvedForRealDecisions": false,
+  "modelType": "RandomForestClassifier",
+  "target": "risque_diabete",
+  "features": [
+    "age",
+    "grossesses",
+    "glycemie_mg_dl",
+    "pression_arterielle_mmhg",
+    "epaisseur_pli_cutane_mm",
+    "insuline_micro_u_ml",
+    "imc_kg_m2"
+  ],
+  "numericFeatures": [
+    "age",
+    "grossesses",
+    "glycemie_mg_dl",
+    "pression_arterielle_mmhg",
+    "epaisseur_pli_cutane_mm",
+    "insuline_micro_u_ml",
+    "imc_kg_m2"
+  ],
+  "categoricalFeatures": [],
+  "transformedFeatureNames": [
+    "num__age",
+    "num__grossesses",
+    "num__glycemie_mg_dl",
+    "num__pression_arterielle_mmhg",
+    "num__epaisseur_pli_cutane_mm",
+    "num__insuline_micro_u_ml",
+    "num__imc_kg_m2"
+  ],
+  "outputClasses": [
+    "FAIBLE",
+    "MODERE",
+    "ELEVE"
+  ],
+  "binaryTargetMeaning": "1 = risque diabète",
+  "metrics": {
+    "accuracy": 0.7662,
+    "precision": 0.6607,
+    "recall": 0.6852,
+    "f1": 0.6727,
+    "roc_auc": 0.8263,
+    "confusion_matrix": [
+      [
+        81,
+        19
+      ],
+      [
+        17,
+        37
+      ]
+    ],
+    "class_distribution_test": {
+      "0": 100,
+      "1": 54
+    },
+    "false_negatives": 17,
+    "false_positives": 19,
+    "classification_report": {
+      "0": {
+        "precision": 0.826530612244898,
+        "recall": 0.81,
+        "f1-score": 0.8181818181818182,
+        "support": 100.0
+      },
+      "1": {
+        "precision": 0.6607142857142857,
+        "recall": 0.6851851851851852,
+        "f1-score": 0.6727272727272727,
+        "support": 54.0
+      },
+      "accuracy": 0.7662337662337663,
+      "macro avg": {
+        "precision": 0.7436224489795918,
+        "recall": 0.7475925925925926,
+        "f1-score": 0.7454545454545455,
+        "support": 154.0
+      },
+      "weighted avg": {
+        "precision": 0.7683872250198781,
+        "recall": 0.7662337662337663,
+        "f1-score": 0.7671782762691854,
+        "support": 154.0
+      }
+    },
+    "error_analysis": {
+      "fn_rate": 0.1104,
+      "fp_rate": 0.1234,
+      "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+    }
+  },
+  "selectionScore": 0.751,
+  "disclaimer": "Dataset public/recherche — pas un dispositif médical. DEMO_PUBLIC_DATASET.",
+  "savedAt": "2026-08-02T22:07:03.189825+00:00",
+  "pipelinePath": "models/medical/medical_pipeline.joblib"
+}

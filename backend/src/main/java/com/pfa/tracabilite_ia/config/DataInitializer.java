@@ -5,6 +5,7 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,12 +22,19 @@ public class DataInitializer {
             UtilisateurRepository utilisateurRepository,
             PasswordEncoder passwordEncoder,
             JdbcTemplate jdbcTemplate,
-            AdminDemoAccountSynchronizer adminDemoAccountSynchronizer
+            AdminDemoAccountSynchronizer adminDemoAccountSynchronizer,
+            @Value("${app.demo.seed-enabled:true}") boolean seedEnabled
     ) {
         return args -> {
             updateRoleCheckConstraint(jdbcTemplate);
             updateDecisionStatusCheckConstraint(jdbcTemplate);
+            updateDecisionHistoryStatusCheckConstraints(jdbcTemplate);
             ensureUtilisateurActifColumn(jdbcTemplate);
+
+            if (!seedEnabled) {
+                log.info(">>> Seed demo desactive (app.demo.seed-enabled=false)");
+                return;
+            }
 
             long userCount = utilisateurRepository.count();
             if (userCount == 0) {
@@ -35,9 +43,15 @@ public class DataInitializer {
                 seedUser(utilisateurRepository, passwordEncoder);
                 seedValidateur(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
+                seedDomainValidators(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed initial des utilisateurs de demo termine");
             } else {
                 ensureAtLeastOneAdmin(utilisateurRepository, passwordEncoder);
+                // Comptes démo manquants (bases Docker déjà peuplées avec d'autres emails).
+                seedUser(utilisateurRepository, passwordEncoder);
+                seedValidateur(utilisateurRepository, passwordEncoder);
+                seedAuditeur(utilisateurRepository, passwordEncoder);
+                seedDomainValidators(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed utilisateurs ignore (base deja initialisee, {} compte(s))", userCount);
             }
 
@@ -64,8 +78,31 @@ public class DataInitializer {
                 """);
         jdbcTemplate.execute("""
                 ALTER TABLE decision ADD CONSTRAINT decision_statut_validation_check
-                CHECK (statut_validation IN ('BROUILLON', 'EN_ATTENTE', 'APPROUVEE', 'MODIFIEE', 'REJETEE'))
+                CHECK (statut_validation IN (
+                    'BROUILLON', 'EN_ANALYSE', 'ANALYSEE', 'EN_ATTENTE_VALIDATION', 'EN_ATTENTE',
+                    'VALIDEE', 'APPROUVEE', 'MODIFIEE', 'A_REVOIR', 'REJETEE', 'ARCHIVEE'
+                ))
                 """);
+    }
+
+    /** Aligne decision_history sur StatutDecisionEnum (agents écrivent ANALYSEE, etc.). */
+    private void updateDecisionHistoryStatusCheckConstraints(JdbcTemplate jdbcTemplate) {
+        String statuses = """
+                'BROUILLON', 'EN_ANALYSE', 'ANALYSEE', 'EN_ATTENTE_VALIDATION', 'EN_ATTENTE',
+                'VALIDEE', 'APPROUVEE', 'MODIFIEE', 'A_REVOIR', 'REJETEE', 'ARCHIVEE'
+                """;
+        jdbcTemplate.execute(
+                "ALTER TABLE decision_history DROP CONSTRAINT IF EXISTS decision_history_new_status_check");
+        jdbcTemplate.execute(
+                "ALTER TABLE decision_history DROP CONSTRAINT IF EXISTS decision_history_previous_status_check");
+        jdbcTemplate.execute("""
+                ALTER TABLE decision_history ADD CONSTRAINT decision_history_new_status_check
+                CHECK (new_status IS NULL OR new_status IN (%s))
+                """.formatted(statuses));
+        jdbcTemplate.execute("""
+                ALTER TABLE decision_history ADD CONSTRAINT decision_history_previous_status_check
+                CHECK (previous_status IS NULL OR previous_status IN (%s))
+                """.formatted(statuses));
     }
 
     private void updateRoleCheckConstraint(JdbcTemplate jdbcTemplate) {
@@ -74,7 +111,10 @@ public class DataInitializer {
                 """);
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
-                CHECK (role IN ('ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR'))
+                CHECK (role IN (
+                    'ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR',
+                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE'
+                ))
                 """);
     }
 
@@ -146,5 +186,35 @@ public class DataInitializer {
             utilisateurRepository.save(validateur);
             log.info(">>> Utilisateur validateur cree : {} / validateur123", email);
         }
+    }
+
+    /** Validateurs spécialisés par domaine (idempotent sur bases déjà initialisées). */
+    private void seedDomainValidators(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "credit@tracabilite.ia", "Responsable crédit", RoleEnum.RESPONSABLE_CREDIT, "credit123");
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "sante@tracabilite.ia", "Professionnel santé", RoleEnum.PROFESSIONNEL_SANTE, "sante123");
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "pedago@tracabilite.ia", "Responsable pédagogique", RoleEnum.RESPONSABLE_PEDAGOGIQUE, "pedago123");
+    }
+
+    private void seedIfMissing(
+            UtilisateurRepository utilisateurRepository,
+            PasswordEncoder passwordEncoder,
+            String email,
+            String nom,
+            RoleEnum role,
+            String password
+    ) {
+        if (utilisateurRepository.existsByEmailIgnoreCase(email)) {
+            return;
+        }
+        Utilisateur u = new Utilisateur();
+        u.setNom(nom);
+        u.setEmail(email);
+        u.setMotDePasseHash(passwordEncoder.encode(password));
+        u.setRole(role);
+        utilisateurRepository.save(u);
+        log.info(">>> Validateur domaine cree : {} / {} ({})", email, password, role);
     }
 }

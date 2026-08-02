@@ -55,14 +55,14 @@ interface StatisticsData {
           <div class="gauge-circle" [class.gauge-high]="stats().integrityRate >= 90" [class.gauge-medium]="stats().integrityRate >= 70 && stats().integrityRate < 90" [class.gauge-low]="stats().integrityRate < 70">
             <svg viewBox="0 0 200 200" class="gauge-svg">
               <circle cx="100" cy="100" r="80" fill="none" stroke="#e5e7eb" stroke-width="20" />
-              <circle 
-                cx="100" 
-                cy="100" 
-                r="80" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="20" 
-                stroke-dasharray="502.65" 
+              <circle
+                cx="100"
+                cy="100"
+                r="80"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="20"
+                stroke-dasharray="502.65"
                 [attr.stroke-dashoffset]="502.65 - (502.65 * stats().integrityRate / 100)"
                 transform="rotate(-90 100 100)"
                 stroke-linecap="round"

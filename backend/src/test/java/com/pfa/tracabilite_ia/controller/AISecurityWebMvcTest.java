@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         SecurityConfig.class,
         CorrelationIdFilter.class,
         JwtAuthenticationFilter.class,
+        com.pfa.tracabilite_ia.filter.RateLimitingFilter.class,
         CustomAuthenticationEntryPoint.class,
         CustomAccessDeniedHandler.class
 })
@@ -52,18 +53,17 @@ class AISecurityWebMvcTest {
     private JwtProvider jwtProvider;
 
     @Test
-    void ping_withoutToken_returns200() throws Exception {
+    void ping_withoutToken_returns401() throws Exception {
         mockMvc.perform(get("/api/ai/ping"))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void testPost_withoutToken_returns200() throws Exception {
+    void testPost_withoutToken_returns401() throws Exception {
         mockMvc.perform(post("/api/ai/test-post")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"hello\":\"world\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("OK"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

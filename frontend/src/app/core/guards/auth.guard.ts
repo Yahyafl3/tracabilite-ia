@@ -19,11 +19,11 @@ export const authGuard: CanActivateFn = (
 
   // Store the attempted URL for redirecting after login
   const returnUrl = state.url;
-  router.navigate(['/auth/login'], { 
+  router.navigate(['/auth/login'], {
     queryParams: { returnUrl },
-    replaceUrl: true 
+    replaceUrl: true
   });
-  
+
   return false;
 };
 
@@ -37,9 +37,9 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
     const router = inject(Router);
 
     if (!authService.isAuthenticated) {
-      router.navigate(['/auth/login'], { 
+      router.navigate(['/auth/login'], {
         queryParams: { returnUrl: state.url },
-        replaceUrl: true 
+        replaceUrl: true
       });
       return false;
     }

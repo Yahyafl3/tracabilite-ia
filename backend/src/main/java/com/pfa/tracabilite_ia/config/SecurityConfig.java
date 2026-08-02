@@ -61,12 +61,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             CorrelationIdFilter correlationIdFilter,
-            JwtAuthenticationFilter jwtAuthenticationFilter
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            com.pfa.tracabilite_ia.filter.RateLimitingFilter rateLimitingFilter,
+            @Value("${springdoc.swagger-ui.enabled:true}") boolean swaggerEnabled
     ) throws Exception {
 
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
+            .headers(headers -> headers
+                .contentTypeOptions(Customizer.withDefaults())
+                .frameOptions(frame -> frame.deny())
+                .referrerPolicy(referrer ->
+                    referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                )
+            )
 
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -77,64 +86,37 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler)
             )
 
-            .authorizeHttpRequests(auth -> auth
-
-                // Autoriser les dispatch internes d'erreur
-                .dispatcherTypeMatchers(
+            .authorizeHttpRequests(auth -> {
+                auth.dispatcherTypeMatchers(
                     DispatcherType.ERROR,
                     DispatcherType.FORWARD
-                ).permitAll()
+                ).permitAll();
 
-                // Autoriser l'endpoint d'erreur Spring
-                .requestMatchers("/error").permitAll()
+                auth.requestMatchers("/error").permitAll();
+                auth.requestMatchers("/api/auth/**").permitAll();
+                auth.requestMatchers(HttpMethod.POST, "/api/support/messages").permitAll();
+                auth.requestMatchers(
+                    "/actuator/health",
+                    "/actuator/health/**",
+                    "/actuator/info"
+                ).permitAll();
 
-                .requestMatchers("/api/auth/**").permitAll()
+                if (swaggerEnabled) {
+                    auth.requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
+                    ).permitAll();
+                }
 
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/support/messages"
-                ).permitAll()
+                // Endpoints AI de test : authentifiés (plus publics)
+                auth.requestMatchers("/api/ai/**").authenticated();
+                auth.anyRequest().authenticated();
+            })
 
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**"
-                ).permitAll()
-
-                .requestMatchers("/actuator/health").permitAll()
-
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/ai/ping"
-                ).permitAll()
-
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/ai/test-post"
-                ).permitAll()
-
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/ai/analyze-decision"
-                ).authenticated()
-
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/ai/security-me"
-                ).authenticated()
-
-                .anyRequest().authenticated()
-            )
-
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
-            )
-
-            .addFilterBefore(
-                correlationIdFilter,
-                JwtAuthenticationFilter.class
-            );
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(correlationIdFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

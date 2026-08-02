@@ -39,7 +39,6 @@ public class DecisionHistoryServiceImpl implements DecisionHistoryService {
     }
 
     @Override
-    @Transactional
     public void record(Decision decision,
                        DecisionHistoryAction action,
                        StatutDecisionEnum previousStatus,

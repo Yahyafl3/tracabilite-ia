@@ -46,19 +46,19 @@ try {
     Write-Host "  Token recu (longueur: $($response.token.Length))" -ForegroundColor Green
     Write-Host "  Email: $($response.email)" -ForegroundColor Green
     Write-Host "  Role: $($response.role)" -ForegroundColor Green
-    
+
     $token = $response.token
 
     # 5. Test API IA
     Write-Host "`n[5] Test Analyse IA:" -ForegroundColor Yellow
-    
+
     $analysisBody = @{
         prompt = "Analyser la decision: Approuver credit 50000 EUR sur 5 ans"
         contexte = "Demande de credit client avec bon historique de paiement, revenus stables, pas d'incidents bancaires"
     } | ConvertTo-Json
 
     Write-Host "  Envoi requete vers Ollama..." -ForegroundColor Gray
-    
+
     $analysis = Invoke-RestMethod -Uri "http://localhost:8080/api/ai/analyze-decision" `
         -Method Post `
         -Body $analysisBody `
@@ -70,7 +70,7 @@ try {
 
     Write-Host "  Analyse recue (longueur: $($analysis.analysis.Length) caracteres)" -ForegroundColor Green
     Write-Host "  Modele: $($analysis.model)" -ForegroundColor Green
-    
+
     $excerpt = $analysis.analysis.Substring(0, [Math]::Min(150, $analysis.analysis.Length))
     Write-Host "`n  Extrait de l'analyse:" -ForegroundColor Cyan
     Write-Host "  $excerpt..." -ForegroundColor White

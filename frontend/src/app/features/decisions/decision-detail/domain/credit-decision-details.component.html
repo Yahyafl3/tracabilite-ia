@@ -1,0 +1,15 @@
+<section class="domain-details" aria-label="Données crédit">
+  <h2 class="domain-details__title">Dossier crédit</h2>
+  <dl class="domain-details__grid">
+    <div><dt>Âge</dt><dd>{{ data.age != null ? data.age + ' ans' : '—' }}</dd></div>
+    <div><dt>Durée</dt><dd>{{ data.dureeMois != null ? data.dureeMois + ' mois' : '—' }}</dd></div>
+    <div><dt>Type de contrat</dt><dd>{{ text(data.typeContrat) }}</dd></div>
+    <div><dt>Statut logement</dt><dd>{{ text(data.statutLogement) }}</dd></div>
+    <div><dt>Incidents paiement BAM</dt><dd>{{ text(data.incidentPaiementBam) }}</dd></div>
+    <div><dt>Montant demandé</dt><dd>{{ mad(data.montantDemandeMad) }}</dd></div>
+    <div><dt>Nouvelle échéance</dt><dd>{{ mad(data.nouvelleEcheanceMad) }}</dd></div>
+    <div><dt>Revenu mensuel</dt><dd>{{ mad(data.revenuMensuelMad) }}</dd></div>
+    <div><dt>Taux d'endettement</dt><dd>{{ pct(data.tauxEndettement) }}</dd></div>
+    <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
+  </dl>
+</section>

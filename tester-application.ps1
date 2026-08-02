@@ -13,7 +13,7 @@ function Test-Result {
         [bool]$Success,
         [string]$Details = ""
     )
-    
+
     if ($Success) {
         Write-Host "[✓] $TestName" -ForegroundColor Green
         if ($Details) {
@@ -34,7 +34,7 @@ Write-Host "──────────────────────�
 $containers = docker ps --format "{{.Names}}"
 $requiredContainers = @(
     "tracabilite-backend",
-    "tracabilite-frontend", 
+    "tracabilite-frontend",
     "tracabilite-postgres",
     "tracabilite-ml-service",
     "tracabilite-ollama"
@@ -77,7 +77,7 @@ try {
     $ollamaResponse = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec 5 -ErrorAction Stop
     $hasModels = $ollamaResponse.models.Count -gt 0
     Test-Result -TestName "Ollama API" -Success $hasModels
-    
+
     if ($hasModels) {
         foreach ($model in $ollamaResponse.models) {
             $sizeMB = [math]::Round($model.size / 1MB, 2)
@@ -103,15 +103,15 @@ try {
     }
 
     $loginResponse = Invoke-RestMethod -Uri "http://localhost:8080/api/auth/login" -Method Post -Body $loginBody -Headers $headers -TimeoutSec 5 -ErrorAction Stop
-    
+
     $hasToken = $null -ne $loginResponse.token
     Test-Result -TestName "Connexion Admin" -Success $hasToken
-    
+
     if ($hasToken) {
         Write-Host "    → Token JWT reçu (longueur: $($loginResponse.token.Length))" -ForegroundColor Gray
         Write-Host "    → Utilisateur: $($loginResponse.email)" -ForegroundColor Gray
         Write-Host "    → Rôle: $($loginResponse.role)" -ForegroundColor Gray
-        
+
         # Sauvegarder le token pour les tests suivants
         $global:authToken = $loginResponse.token
     }
@@ -143,14 +143,14 @@ if ($global:authToken) {
 
         Write-Host "    → Envoi de la requête d'analyse..." -ForegroundColor Gray
         $analysisResponse = Invoke-RestMethod -Uri "http://localhost:8080/api/ai/analyze-decision" -Method Post -Body $analysisBody -Headers $headers -TimeoutSec 30 -ErrorAction Stop
-        
+
         $hasAnalysis = $null -ne $analysisResponse.analysis
         Test-Result -TestName "Analyse IA Générée" -Success $hasAnalysis
-        
+
         if ($hasAnalysis) {
             Write-Host "    → Analyse reçue (longueur: $($analysisResponse.analysis.Length) caractères)" -ForegroundColor Gray
             Write-Host "    → Modèle utilisé: $($analysisResponse.model)" -ForegroundColor Gray
-            
+
             # Afficher un extrait de l'analyse
             $excerpt = $analysisResponse.analysis.Substring(0, [Math]::Min(100, $analysisResponse.analysis.Length))
             Write-Host "    → Extrait: $excerpt..." -ForegroundColor Gray

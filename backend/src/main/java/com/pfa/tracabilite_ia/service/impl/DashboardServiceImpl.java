@@ -54,7 +54,7 @@ public class DashboardServiceImpl implements DashboardService {
         List<OpenRouterAgentDefinition> agents = openRouterAgentRegistryService.configuredAgents();
         String agentsLabel = agents.stream()
                 .map(OpenRouterAgentDefinition::displayName)
-                .collect(Collectors.joining(" · "));
+                .collect(Collectors.joining(" Â· "));
 
         List<ComparaisonAgentResponse> agentPerformance = comparaisonService.classerAgentsOpenRouter();
         List<DashboardResponse.RecentDecisionSummary> recent = decisionRepository

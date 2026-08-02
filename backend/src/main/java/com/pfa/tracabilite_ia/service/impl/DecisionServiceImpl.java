@@ -22,8 +22,8 @@ import com.pfa.tracabilite_ia.entities.SystemeIA;
 
 import com.pfa.tracabilite_ia.entities.Utilisateur;
 
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.DecisionHistoryAction;
-
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
@@ -35,10 +35,11 @@ import com.pfa.tracabilite_ia.mapper.ValidationMapper;
 import com.pfa.tracabilite_ia.groq.GroqMultiAgentService;
 import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRetryService;
 
+import com.pfa.tracabilite_ia.repository.CreditDecisionDataRepository;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
-
+import com.pfa.tracabilite_ia.repository.EducationDecisionDataRepository;
+import com.pfa.tracabilite_ia.repository.MedicalDecisionDataRepository;
 import com.pfa.tracabilite_ia.repository.SystemeIARepository;
-
 import com.pfa.tracabilite_ia.repository.ValidationActionRepository;
 
 import com.pfa.tracabilite_ia.service.*;
@@ -61,10 +62,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
-
 import java.util.Map;
-
 import java.util.UUID;
 
 
@@ -109,6 +109,12 @@ public class DecisionServiceImpl implements DecisionService {
 
     private final DecisionScopeService decisionScopeService;
 
+    private final CreditDecisionDataRepository creditDecisionDataRepository;
+
+    private final MedicalDecisionDataRepository medicalDecisionDataRepository;
+
+    private final EducationDecisionDataRepository educationDecisionDataRepository;
+
 
 
     public DecisionServiceImpl(DecisionRepository decisionRepository,
@@ -139,7 +145,13 @@ public class DecisionServiceImpl implements DecisionService {
 
                                  AuthService authService,
 
-                                 DecisionScopeService decisionScopeService) {
+                                 DecisionScopeService decisionScopeService,
+
+                                 CreditDecisionDataRepository creditDecisionDataRepository,
+
+                                 MedicalDecisionDataRepository medicalDecisionDataRepository,
+
+                                 EducationDecisionDataRepository educationDecisionDataRepository) {
 
         this.decisionRepository = decisionRepository;
 
@@ -170,6 +182,12 @@ public class DecisionServiceImpl implements DecisionService {
         this.authService = authService;
 
         this.decisionScopeService = decisionScopeService;
+
+        this.creditDecisionDataRepository = creditDecisionDataRepository;
+
+        this.medicalDecisionDataRepository = medicalDecisionDataRepository;
+
+        this.educationDecisionDataRepository = educationDecisionDataRepository;
 
     }
 
@@ -210,6 +228,12 @@ public class DecisionServiceImpl implements DecisionService {
 
         DecisionResponse response = decisionMapper.toResponse(decision);
 
+        decisionMapper.applyDomainData(
+                response,
+                creditDecisionDataRepository.findByDecision_DecisionId(id).orElse(null),
+                medicalDecisionDataRepository.findByDecision_DecisionId(id).orElse(null),
+                educationDecisionDataRepository.findByDecision_DecisionId(id).orElse(null));
+
         decisionMapper.applyValidationMetadata(response, validationMapper.toResponseList(
 
                 validationActionRepository.findByDecisionDecisionIdOrderByTimestampDesc(id)));
@@ -249,29 +273,38 @@ public class DecisionServiceImpl implements DecisionService {
     @Override
 
     @Transactional(readOnly = true)
-
     public DecisionPageResponse rechercher(String search, StatutDecisionEnum statut, int page, int size) {
+        return rechercher(search, statut, null, null, null, null, null, null, page, size);
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public DecisionPageResponse rechercher(
+            String search,
+            StatutDecisionEnum statut,
+            DecisionDomain domaine,
+            String riskLevel,
+            String decisionFinale,
+            String validateur,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            int page,
+            int size
+    ) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
-
-        Page<Decision> result = decisionRepository.search(search, statut, pageable);
-
+        LocalDateTime fromBound = fromDate != null ? fromDate : LocalDateTime.of(1970, 1, 1, 0, 0);
+        LocalDateTime toBound = toDate != null ? toDate : LocalDateTime.of(2999, 12, 31, 23, 59, 59);
+        String validateurBound = validateur != null ? validateur : "";
+        Page<Decision> result = decisionRepository.searchFiltered(
+                search, statut, domaine, riskLevel, decisionFinale, validateurBound, fromBound, toBound, pageable);
         return DecisionPageResponse.builder()
-
                 .content(decisionMapper.toResponseList(result.getContent()))
-
                 .page(result.getNumber())
-
                 .size(result.getSize())
-
                 .totalElements(result.getTotalElements())
-
                 .totalPages(result.getTotalPages())
-
                 .last(result.isLast())
-
                 .build();
-
     }
 
 

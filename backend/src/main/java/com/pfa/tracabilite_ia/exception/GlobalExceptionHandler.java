@@ -1,5 +1,10 @@
 package com.pfa.tracabilite_ia.exception;
 
+import com.pfa.tracabilite_ia.dto.response.ApiErrorResponse;
+import com.pfa.tracabilite_ia.filter.CorrelationIdFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,114 +15,135 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Map;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", ex.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+        return respond(HttpStatus.NOT_FOUND, "NOT_FOUND", safeMessage(ex.getMessage(), "Ressource introuvable"), req);
     }
 
     @ExceptionHandler(MLServiceValidationException.class)
-    public ResponseEntity<Map<String, String>> handleMlValidation(MLServiceValidationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", ex.getMessage(), "code", "VALIDATION_ERROR"));
+    public ResponseEntity<ApiErrorResponse> handleMlValidation(MLServiceValidationException ex, HttpServletRequest req) {
+        return respond(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", safeMessage(ex.getMessage(), "Requête invalide"), req);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleUnreadable(HttpMessageNotReadableException ex) {
-        String message = ex.getMostSpecificCause() != null
-                ? ex.getMostSpecificCause().getMessage()
-                : "Corps de requête invalide";
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", message, "code", "VALIDATION_ERROR"));
+    public ResponseEntity<ApiErrorResponse> handleUnreadable(HttpMessageNotReadableException ex, HttpServletRequest req) {
+        return respond(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Corps de requête invalide", req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + " : " + error.getDefaultMessage())
-                .findFirst()
-                .orElse("Donnees invalides");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", message));
+    public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+        List<ApiErrorResponse.FieldErrorItem> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> new ApiErrorResponse.FieldErrorItem(err.getField(), err.getDefaultMessage()))
+                .toList();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiErrorResponse.of(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "VALIDATION_ERROR",
+                        "Requête invalide",
+                        correlationId(req),
+                        errors
+                )
+        );
     }
 
     @ExceptionHandler(RestClientException.class)
-    public ResponseEntity<Map<String, String>> handleRestClient(RestClientException ex) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(Map.of("message", "Service ML indisponible: " + ex.getMessage(), "code", "ML_UNAVAILABLE"));
+    public ResponseEntity<ApiErrorResponse> handleRestClient(RestClientException ex, HttpServletRequest req) {
+        log.warn("Service distant indisponible: {}", ex.getClass().getSimpleName());
+        return respond(HttpStatus.SERVICE_UNAVAILABLE, "ML_UNAVAILABLE", "Service ML indisponible", req);
     }
 
     @ExceptionHandler(OpenRouterException.class)
-    public ResponseEntity<Map<String, String>> handleOpenRouter(OpenRouterException ex) {
+    public ResponseEntity<ApiErrorResponse> handleOpenRouter(OpenRouterException ex, HttpServletRequest req) {
         HttpStatus status = ex.getHttpStatus() > 0
                 ? HttpStatus.valueOf(ex.getHttpStatus())
                 : HttpStatus.BAD_GATEWAY;
-        return ResponseEntity.status(status)
-                .body(Map.of(
-                        "message", ex.getMessage(),
-                        "code", ex.getErrorCode().name()
-                ));
+        return respond(status, ex.getErrorCode().name(), safeMessage(ex.getMessage(), "Erreur agents IA"), req);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of(
-                        "message", ex.getMessage() != null ? ex.getMessage() : "Identifiants invalides",
-                        "code", "INVALID_CREDENTIALS"
-                ));
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex, HttpServletRequest req) {
+        return respond(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Identifiants invalides", req);
     }
 
     @ExceptionHandler(UnauthorizedActionException.class)
-    public ResponseEntity<Map<String, String>> handleUnauthorized(UnauthorizedActionException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", ex.getMessage() != null ? ex.getMessage() : "Action non autorisee"));
+    public ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedActionException ex, HttpServletRequest req) {
+        return respond(HttpStatus.FORBIDDEN, "FORBIDDEN", safeMessage(ex.getMessage(), "Action non autorisée"), req);
     }
 
     @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
-    public ResponseEntity<Map<String, String>> handleAccessDenied(Exception ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", "Acces refuse - role insuffisant"));
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(Exception ex, HttpServletRequest req) {
+        return respond(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Accès refusé — rôle insuffisant", req);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("message", ex.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest req) {
+        return respond(HttpStatus.CONFLICT, "CONFLICT", safeMessage(ex.getMessage(), "Conflit d'état"), req);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", ex.getMessage() != null ? ex.getMessage() : "Requete invalide"));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", ex.getMessage() != null ? ex.getMessage() : "Erreur interne", "code", "INTERNAL_ERROR"));
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
+        return respond(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", safeMessage(ex.getMessage(), "Requête invalide"), req);
     }
 
     @ExceptionHandler(AIServiceUnavailableException.class)
-    public ResponseEntity<Map<String, String>> handleAiUnavailable(AIServiceUnavailableException ex) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(Map.of("message", ex.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handleAiUnavailable(AIServiceUnavailableException ex, HttpServletRequest req) {
+        return respond(HttpStatus.SERVICE_UNAVAILABLE, "AI_UNAVAILABLE", "Service IA indisponible", req);
     }
 
     @ExceptionHandler(AIInvalidResponseException.class)
-    public ResponseEntity<Map<String, String>> handleAiInvalidResponse(AIInvalidResponseException ex) {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(Map.of("message", ex.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handleAiInvalidResponse(AIInvalidResponseException ex, HttpServletRequest req) {
+        return respond(HttpStatus.UNPROCESSABLE_ENTITY, "AI_INVALID_RESPONSE", "Réponse IA invalide", req);
     }
 
     @ExceptionHandler(AIServiceException.class)
-    public ResponseEntity<Map<String, String>> handleAiService(AIServiceException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", ex.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handleAiService(AIServiceException ex, HttpServletRequest req) {
+        log.error("Erreur service IA", ex);
+        return respond(HttpStatus.INTERNAL_SERVER_ERROR, "AI_ERROR", "Erreur service IA", req);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex, HttpServletRequest req) {
+        log.error("Erreur interne non gérée", ex);
+        return respond(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Erreur interne", req);
+    }
+
+    private static ResponseEntity<ApiErrorResponse> respond(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest req
+    ) {
+        return ResponseEntity.status(status).body(
+                ApiErrorResponse.of(status.value(), code, message, correlationId(req))
+        );
+    }
+
+    private static String correlationId(HttpServletRequest req) {
+        String fromMdc = org.slf4j.MDC.get(CorrelationIdFilter.CORRELATION_ID_KEY);
+        if (fromMdc != null && !fromMdc.isBlank()) {
+            return fromMdc;
+        }
+        String header = req.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
+        return header != null ? header : null;
+    }
+
+    private static String safeMessage(String message, String fallback) {
+        if (message == null || message.isBlank()) {
+            return fallback;
+        }
+        // Empêche la fuite de chemins / SQL dans les réponses
+        String lower = message.toLowerCase();
+        if (lower.contains("jdbc:") || lower.contains("password") || lower.contains("exception")
+                || lower.contains("stack") || lower.contains("hibernate") || lower.contains("sql")) {
+            return fallback;
+        }
+        return message.length() > 300 ? fallback : message;
     }
 }

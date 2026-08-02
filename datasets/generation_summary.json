@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-08-02T21:51:13.628927+00:00",
+  "seed": 42,
+  "version": "2.0.0-public",
+  "governanceStatus": "DEMO_PUBLIC_DATASET",
+  "note": "Datasets publics / recherche — pas des données métier confidentielles. Modèles non VALIDATED_PRODUCTION.",
+  "credit": {
+    "rows": 1000,
+    "path": "datasets/credit/credit_analysis_dataset.csv",
+    "target_rate": 0.3,
+    "checksum_sha256": "09edeaaaf60edc40636cf06c829ca8503f87d04e4379fa93b4a0b31443422e7c",
+    "source": "c:\\Users\\yahya\\Downloads\\Datasets\\credit_analysis_dataset.csv"
+  },
+  "medical": {
+    "rows": 768,
+    "path": "datasets/medical/medical_diabetes_european_dataset.csv",
+    "target_rate": 0.3489583333333333,
+    "checksum_sha256": "ad9c047807b664a1e22aba2dd94f8fcb362a3a1c795dd3d52b8fdaa153aeb75d",
+    "source": "c:\\Users\\yahya\\Downloads\\Datasets\\medical_diabetes_european_dataset.csv"
+  },
+  "education": {
+    "rows": 4424,
+    "path": "datasets/education/education_portugal_dropout.csv",
+    "target_rate": 0.3212025316455696,
+    "checksum_sha256": "af63ffac721708ab4404cd2a7447a40012cbd34747fc3e6244bd39915fcdaa8d",
+    "source": "c:\\Users\\yahya\\Downloads\\Datasets\\education_portugal_raw.csv"
+  }
+}

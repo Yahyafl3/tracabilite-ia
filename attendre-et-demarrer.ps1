@@ -25,7 +25,7 @@ $maxIterations = 60  # 60 * 30 secondes = 30 minutes max
 while (-not (Test-ModelDownloaded) -and $iteration -lt $maxIterations) {
     $iteration++
     $downloadingProcesses = Get-DownloadProgress
-    
+
     if ($downloadingProcesses -gt 0) {
         Write-Host "⏳ Téléchargement en cours... ($downloadingProcesses processus actif(s))" -ForegroundColor Cyan
         Write-Host "   Vérification #$iteration - Prochaine vérification dans 30 secondes" -ForegroundColor Gray
@@ -43,33 +43,33 @@ Write-Host ""
 if (Test-ModelDownloaded) {
     Write-Host "✅ Téléchargement terminé avec succès !" -ForegroundColor Green
     Write-Host ""
-    
+
     # Afficher les modèles disponibles
     Write-Host "[2/3] Modèles Ollama disponibles:" -ForegroundColor Yellow
     docker exec tracabilite-ollama ollama list
     Write-Host ""
-    
+
     # Demander confirmation avant de démarrer
     Write-Host "[3/3] Démarrage de tous les services Docker Compose" -ForegroundColor Yellow
     $response = Read-Host "Voulez-vous démarrer tous les services maintenant ? (O/N)"
-    
+
     if ($response -eq "O" -or $response -eq "o" -or $response -eq "Y" -or $response -eq "y") {
         Write-Host ""
         Write-Host "🚀 Démarrage des services..." -ForegroundColor Cyan
         Write-Host ""
-        
+
         # Arrêter les conteneurs existants si nécessaire
         docker-compose down 2>$null
-        
+
         # Démarrer tous les services
         docker-compose up -d
-        
+
         Write-Host ""
         Write-Host "✅ Services démarrés !" -ForegroundColor Green
         Write-Host ""
         Write-Host "Vérification de l'état des conteneurs:" -ForegroundColor Yellow
         docker-compose ps
-        
+
         Write-Host ""
         Write-Host "📋 Accès aux services:" -ForegroundColor Cyan
         Write-Host "   - Frontend:  http://localhost" -ForegroundColor White

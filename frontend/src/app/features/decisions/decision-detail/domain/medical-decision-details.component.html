@@ -1,0 +1,14 @@
+<section class="domain-details" aria-label="Données médicales">
+  <p-message severity="warn" [text]="warning" styleClass="w-full mb-3" />
+  <h2 class="domain-details__title">Dossier médical (indicatif)</h2>
+  <dl class="domain-details__grid">
+    <div><dt>Âge</dt><dd>{{ data.age != null ? data.age + ' ans' : '—' }}</dd></div>
+    <div><dt>Grossesses</dt><dd>{{ text(data.grossesses) }}</dd></div>
+    <div><dt>Glycémie</dt><dd>{{ data.glycemieMgDl != null ? data.glycemieMgDl + ' mg/dL' : '—' }}</dd></div>
+    <div><dt>Pression artérielle</dt><dd>{{ data.pressionArterielleMmhg != null ? data.pressionArterielleMmhg + ' mmHg' : '—' }}</dd></div>
+    <div><dt>Épaisseur pli cutané</dt><dd>{{ data.epaisseurPliCutaneMm != null ? data.epaisseurPliCutaneMm + ' mm' : '—' }}</dd></div>
+    <div><dt>Insuline</dt><dd>{{ data.insulineMicroUMl != null ? data.insulineMicroUMl + ' µU/mL' : '—' }}</dd></div>
+    <div><dt>IMC</dt><dd>{{ data.imcKgM2 != null ? data.imcKgM2 + ' kg/m²' : '—' }}</dd></div>
+    <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
+  </dl>
+</section>

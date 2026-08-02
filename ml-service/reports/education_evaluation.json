@@ -1,0 +1,259 @@
+{
+  "generatedAt": "2026-08-02T22:07:16.993860+00:00",
+  "domain": "EDUCATION",
+  "selectedModel": "LogisticRegression",
+  "modelVersion": "education-model-v2.0.0-public",
+  "datasetVersion": "education-portugal-dropout-public-v2.0.0",
+  "features": [
+    "age_inscription",
+    "note_admission",
+    "note_qualification_precedente",
+    "unites_validees_s1",
+    "moyenne_s1",
+    "unites_validees_s2",
+    "moyenne_s2",
+    "taux_chomage",
+    "taux_inflation",
+    "pib",
+    "sexe",
+    "boursier",
+    "frais_a_jour",
+    "debiteur",
+    "deplace",
+    "international"
+  ],
+  "comparisons": [
+    {
+      "model": "LogisticRegression",
+      "metrics": {
+        "accuracy": 0.8588,
+        "precision": 0.7659,
+        "recall": 0.8063,
+        "f1": 0.7856,
+        "roc_auc": 0.9099,
+        "confusion_matrix": [
+          [
+            531,
+            70
+          ],
+          [
+            55,
+            229
+          ]
+        ],
+        "class_distribution_test": {
+          "0": 601,
+          "1": 284
+        },
+        "false_negatives": 55,
+        "false_positives": 70,
+        "classification_report": {
+          "0": {
+            "precision": 0.9061433447098977,
+            "recall": 0.8835274542429284,
+            "f1-score": 0.8946925021061499,
+            "support": 601.0
+          },
+          "1": {
+            "precision": 0.7658862876254181,
+            "recall": 0.8063380281690141,
+            "f1-score": 0.7855917667238422,
+            "support": 284.0
+          },
+          "accuracy": 0.8587570621468926,
+          "macro avg": {
+            "precision": 0.8360148161676579,
+            "recall": 0.8449327412059713,
+            "f1-score": 0.8401421344149961,
+            "support": 885.0
+          },
+          "weighted avg": {
+            "precision": 0.8611343004025618,
+            "recall": 0.8587570621468926,
+            "f1-score": 0.8596816446501326,
+            "support": 885.0
+          }
+        },
+        "error_analysis": {
+          "fn_rate": 0.0621,
+          "fp_rate": 0.0791,
+          "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+        }
+      },
+      "selection_score": 0.8663
+    },
+    {
+      "model": "RandomForestClassifier",
+      "metrics": {
+        "accuracy": 0.8757,
+        "precision": 0.8452,
+        "recall": 0.75,
+        "f1": 0.7948,
+        "roc_auc": 0.9212,
+        "confusion_matrix": [
+          [
+            562,
+            39
+          ],
+          [
+            71,
+            213
+          ]
+        ],
+        "class_distribution_test": {
+          "0": 601,
+          "1": 284
+        },
+        "false_negatives": 71,
+        "false_positives": 39,
+        "classification_report": {
+          "0": {
+            "precision": 0.8878357030015798,
+            "recall": 0.9351081530782029,
+            "f1-score": 0.9108589951377634,
+            "support": 601.0
+          },
+          "1": {
+            "precision": 0.8452380952380952,
+            "recall": 0.75,
+            "f1-score": 0.7947761194029851,
+            "support": 284.0
+          },
+          "accuracy": 0.8757062146892656,
+          "macro avg": {
+            "precision": 0.8665368991198374,
+            "recall": 0.8425540765391015,
+            "f1-score": 0.8528175572703742,
+            "support": 885.0
+          },
+          "weighted avg": {
+            "precision": 0.8741659622051621,
+            "recall": 0.8757062146892656,
+            "f1-score": 0.8736075412296538,
+            "support": 885.0
+          }
+        },
+        "error_analysis": {
+          "fn_rate": 0.0802,
+          "fp_rate": 0.0441,
+          "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+        }
+      },
+      "selection_score": 0.8437
+    },
+    {
+      "model": "HistGradientBoostingClassifier",
+      "metrics": {
+        "accuracy": 0.8644,
+        "precision": 0.8178,
+        "recall": 0.743,
+        "f1": 0.7786,
+        "roc_auc": 0.9108,
+        "confusion_matrix": [
+          [
+            554,
+            47
+          ],
+          [
+            73,
+            211
+          ]
+        ],
+        "class_distribution_test": {
+          "0": 601,
+          "1": 284
+        },
+        "false_negatives": 73,
+        "false_positives": 47,
+        "classification_report": {
+          "0": {
+            "precision": 0.8835725677830941,
+            "recall": 0.9217970049916805,
+            "f1-score": 0.9022801302931596,
+            "support": 601.0
+          },
+          "1": {
+            "precision": 0.8178294573643411,
+            "recall": 0.7429577464788732,
+            "f1-score": 0.7785977859778598,
+            "support": 284.0
+          },
+          "accuracy": 0.864406779661017,
+          "macro avg": {
+            "precision": 0.8507010125737176,
+            "recall": 0.8323773757352768,
+            "f1-score": 0.8404389581355096,
+            "support": 885.0
+          },
+          "weighted avg": {
+            "precision": 0.8624753436487147,
+            "recall": 0.864406779661017,
+            "f1-score": 0.8625899768631651,
+            "support": 885.0
+          }
+        },
+        "error_analysis": {
+          "fn_rate": 0.0825,
+          "fp_rate": 0.0531,
+          "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+        }
+      },
+      "selection_score": 0.8328
+    }
+  ],
+  "selectedMetrics": {
+    "accuracy": 0.8588,
+    "precision": 0.7659,
+    "recall": 0.8063,
+    "f1": 0.7856,
+    "roc_auc": 0.9099,
+    "confusion_matrix": [
+      [
+        531,
+        70
+      ],
+      [
+        55,
+        229
+      ]
+    ],
+    "class_distribution_test": {
+      "0": 601,
+      "1": 284
+    },
+    "false_negatives": 55,
+    "false_positives": 70,
+    "classification_report": {
+      "0": {
+        "precision": 0.9061433447098977,
+        "recall": 0.8835274542429284,
+        "f1-score": 0.8946925021061499,
+        "support": 601.0
+      },
+      "1": {
+        "precision": 0.7658862876254181,
+        "recall": 0.8063380281690141,
+        "f1-score": 0.7855917667238422,
+        "support": 284.0
+      },
+      "accuracy": 0.8587570621468926,
+      "macro avg": {
+        "precision": 0.8360148161676579,
+        "recall": 0.8449327412059713,
+        "f1-score": 0.8401421344149961,
+        "support": 885.0
+      },
+      "weighted avg": {
+        "precision": 0.8611343004025618,
+        "recall": 0.8587570621468926,
+        "f1-score": 0.8596816446501326,
+        "support": 885.0
+      }
+    },
+    "error_analysis": {
+      "fn_rate": 0.0621,
+      "fp_rate": 0.0791,
+      "note": "Pour CREDIT et MEDICAL, le recall de la classe à risque est prioritaire sur l'accuracy seule."
+    }
+  }
+}

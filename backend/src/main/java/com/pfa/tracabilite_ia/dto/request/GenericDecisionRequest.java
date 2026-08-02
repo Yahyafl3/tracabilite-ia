@@ -18,7 +18,7 @@ public class GenericDecisionRequest {
      * Domaine de décision: credit, medical, insurance, hr, legal, education, general
      */
     private String domain;
-    
+
     /**
      * Features dynamiques selon le domaine
      * Exemples:
@@ -27,12 +27,12 @@ public class GenericDecisionRequest {
      * - insurance: {"risqueClient": 0.4, "historique": 0.8, "montantCouverture": 0.6, "age": 0.7}
      */
     private Map<String, Object> features;
-    
+
     /**
      * Description de la demande
      */
     private String description;
-    
+
     /**
      * Métadonnées additionnelles (optionnel)
      */

@@ -1,17 +1,22 @@
 # Traçabilité IA
 
-Plateforme de traçabilité, d’explicabilité, d’audit et de validation humaine des décisions assistées par intelligence artificielle.
+Plateforme **multisectorielle** de traçabilité, d’explicabilité, d’audit et de validation humaine des décisions assistées par intelligence artificielle.
 
 **Projet de fin d’études (PFA) 2025/2026** — preuve de concept académique.
 
-Traçabilité IA est une application web permettant d’analyser des demandes de crédit à l’aide d’un modèle Machine Learning, d’explications SHAP et de plusieurs agents IA. Chaque décision est conservée dans un dossier complet comprenant le contexte, les données, les réponses IA, les sources, l’historique, les empreintes SHA-256 et la validation humaine finale.
+Domaines supportés : **Crédit**, **Médical** (risque diabète indicatif), **Éducation** (décrochage universitaire).
+
+> **Les datasets fournis sont synthétiques et contextualisés au Maroc. Ils servent au développement, aux tests et à la démonstration. Ils ne constituent pas des données réelles de banques, d’établissements de santé ou d’universités marocaines.**
+
+Traçabilité IA analyse des dossiers via des modèles Machine Learning dédiés par domaine, des explications (coefficients / importances ; SHAP sur le pipeline legacy crédit) et des agents IA optionnels. Chaque décision est conservée avec contexte, données, réponses IA, historique, empreintes SHA-256 et validation humaine finale.
 
 **Principes importants :**
 
 - l’IA **assiste** la décision ; elle ne la remplace pas ;
-- la **décision finale reste humaine** (validateur) ;
-- le dataset ML est **synthétique** (prototype académique) ;
-- le système **n’est pas destiné** à une utilisation bancaire réelle en production.
+- la **décision finale reste humaine** (validateur métier par domaine) ;
+- le module médical **ne remplace pas** un diagnostic ;
+- le module éducation **n’est pas** une sanction automatique ;
+- le système **n’est pas destiné** à une utilisation opérationnelle réelle sans réentraînement sur données anonymisées.
 
 ---
 
@@ -328,13 +333,16 @@ Les noms suivants sont définis dans `.env.example` (à adapter localement) :
 ## Comptes de démonstration
 
 Au **premier démarrage** (base vide), `DataInitializer` crée des comptes de développement.
-Si la base contient déjà des utilisateurs, le seed ne recrée pas les comptes (sauf recreation de secours d’un administrateur s’il n’en reste aucun).
+Sur une base déjà peuplée, les comptes démo manquants (`user@`, validateurs domaine, etc.) sont créés s’ils n’existent pas encore.
 
 | Email | Mot de passe (dev) | Rôle |
 |-------|--------------------|------|
 | `0629378510a@gmail.com` | `admin123` | Administrateur |
-| `user@tracabilite.ia` | `user123` | Agent de crédit (`UTILISATEUR`) |
-| `validateur@tracabilite.ia` | `validateur123` | Validateur |
+| `user@tracabilite.ia` | `user123` | Agent métier (`UTILISATEUR`) |
+| `validateur@tracabilite.ia` | `validateur123` | Validateur (compat) |
+| `credit@tracabilite.ia` | `credit123` | Responsable crédit |
+| `sante@tracabilite.ia` | `sante123` | Professionnel de santé |
+| `pedago@tracabilite.ia` | `pedago123` | Responsable pédagogique |
 | `auditeur@tracabilite.ia` | `auditor123` | Auditeur |
 
 Ces identifiants sont destinés uniquement à un environnement local de démonstration.
@@ -464,7 +472,7 @@ Lien reset-password construit ainsi : `${FRONTEND_URL}/auth/reset-password?token
 1. Importer le monorepo, **Root Directory** = `frontend`.
 2. Build : `npm run build` (injecte `API_URL` puis `ng build`).
 3. Output : `dist/frontend/browser` (voir `frontend/vercel.json`).
-4. Variable de build (optionnelle) : `API_URL=https://tracabilite-ia-backend.onrender.com`  
+4. Variable de build (optionnelle) : `API_URL=https://tracabilite-ia-backend.onrender.com`
    (si absente, ce défaut est injecté automatiquement au build).
 5. Les rewrites SPA renvoient `index.html` pour `/auth/login`, `/dashboard`, etc.
 

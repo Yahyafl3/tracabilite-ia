@@ -11,9 +11,7 @@
     <div>
       <p class="page-eyebrow">Décisions / Nouvelle analyse</p>
       <h1>Nouvelle décision</h1>
-      <p class="page-subtitle">
-        Saisissez le dossier d’un client (demandeur de crédit) pour lancer l’analyse ML et, optionnellement, les 3 agents IA.
-      </p>
+      <p class="page-subtitle">{{ domainDescription }}</p>
     </div>
   </header>
 
@@ -21,104 +19,80 @@
     <p-card styleClass="form-card">
       <ng-template #header>
         <div class="card-head">
-          <strong>Informations du dossier client</strong>
-          <span class="muted">Données du demandeur de crédit envoyées au ml-service (schéma {{ schemaInfo.schemaType }})</span>
+          <strong>Dossier — {{ selectedDomain }}</strong>
+          <span class="muted">{{ domainMeta.useCase }}</span>
         </div>
       </ng-template>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid" novalidate>
+      <form [formGroup]="shellForm" class="form-grid" (ngSubmit)="submit()" novalidate>
         <div class="field field--full">
-          <label for="sector">Secteur</label>
+          <label for="domaine">Domaine de décision</label>
           <p-select
-            inputId="sector"
-            formControlName="sector"
-            [options]="sectors"
+            inputId="domaine"
+            formControlName="domaine"
+            [options]="domains"
             optionLabel="label"
             optionValue="value"
             styleClass="w-full"
-            ariaLabel="Secteur d'activité"
-          />
-          <p class="field-hint">{{ schemaInfo.sectorHint }}</p>
-          <p class="field-note">{{ schemaInfo.description }}</p>
-        </div>
-
-        @for (field of activeFields(); track field.key) {
-          <div class="field">
-            <label [for]="field.key">{{ field.label }}</label>
-            <p-inputNumber
-              [inputId]="field.key"
-              [formControlName]="field.key"
-              [min]="field.min"
-              [max]="field.max ?? undefined"
-              [step]="field.step"
-              [minFractionDigits]="field.step < 1 ? 2 : 0"
-              [maxFractionDigits]="field.step < 1 ? 2 : 0"
-              styleClass="w-full"
-              inputStyleClass="w-full"
-            />
-            <p class="field-hint">{{ field.help }}</p>
-          </div>
-        }
-
-        <div class="field field--full">
-          <label for="description">Description</label>
-          <textarea
-            pTextarea
-            id="description"
-            formControlName="description"
-            rows="3"
-            class="w-full"
-            aria-label="Description de la demande"
-          ></textarea>
-        </div>
-
-        <div class="field field--full checkbox-row">
-          <p-checkbox
-            formControlName="includeOpenRouter"
-            [binary]="true"
-            inputId="includeOpenRouter"
-          />
-          <label for="includeOpenRouter">
-            Consulter les 3 agents IA (consensus informatif, n'affecte pas le ML/SHAP)
-          </label>
-        </div>
-
-        @if (showValidationSummary() && validationErrors().length > 0) {
-          <div class="field field--full" role="alert">
-              <ul class="validation-list">
-                @for (msg of validationErrors(); track msg) {
-                  <li>{{ msg }}</li>
-                }
-              </ul>
-          </div>
-        }
-
-        <div class="form-actions field--full">
-          <p-button
-            type="submit"
-            label="Analyser la décision"
-            icon="pi pi-search"
-            [disabled]="loading()"
-            [loading]="loading()"
-            ariaLabel="Lancer l'analyse de la décision"
+            (onChange)="onDomainChange()"
+            ariaLabel="Domaine de décision"
           />
         </div>
       </form>
 
+      @switch (selectedDomain) {
+        @case ('CREDIT') {
+          <app-credit-decision-form (formReady)="onChildForm($event)" />
+        }
+        @case ('MEDICAL') {
+          <app-medical-decision-form (formReady)="onChildForm($event)" />
+        }
+        @case ('EDUCATION') {
+          <app-education-decision-form (formReady)="onChildForm($event)" />
+        }
+      }
+
+      <div class="field field--full checkbox-row" [formGroup]="shellForm">
+        <p-checkbox
+          formControlName="includeOpenRouter"
+          [binary]="true"
+          inputId="includeOpenRouter"
+        />
+        <label for="includeOpenRouter">
+          Consulter les agents IA (informatif — n’affecte pas la prédiction ML)
+        </label>
+      </div>
+
       @if (error()) {
         <p-message severity="error" [text]="error()!" styleClass="w-full mt-3" />
       }
+
+      <div class="form-actions field--full">
+        <p-button
+          type="button"
+          label="Analyser la décision"
+          icon="pi pi-search"
+          [disabled]="loading() || !childValid()"
+          [loading]="loading()"
+          (onClick)="submit()"
+          ariaLabel="Lancer l'analyse de la décision"
+        />
+      </div>
     </p-card>
 
     <aside class="side-column">
       <p-card header="Résumé du dossier">
         <ul class="side-list">
-          <li><span>Secteur</span><strong>{{ form.get('sector')?.value }}</strong></li>
-          <li><span>Champs ML</span><strong>{{ activeFields().length }} features</strong></li>
+          <li><span>Domaine</span><strong>{{ selectedDomain }}</strong></li>
+          <li><span>Cas d’usage</span><strong>{{ domainMeta.useCase }}</strong></li>
+          <li><span>Features</span><strong>{{ domainMeta.featureCount }}</strong></li>
+          <li><span>Modèle</span><strong>{{ domainMeta.modelLabel }}</strong></li>
+          <li><span>Version</span><strong>{{ domainMeta.modelVersion }}</strong></li>
           <li>
             <span>Agents IA</span>
-            <strong>{{ form.get('includeOpenRouter')?.value ? 'Activés' : 'Désactivés' }}</strong>
+            <strong>{{ shellForm.get('includeOpenRouter')?.value ? 'Activés' : 'Désactivés' }}</strong>
           </li>
+          <li><span>Validateur</span><strong>{{ domainMeta.validatorRole }}</strong></li>
         </ul>
       </p-card>
 
@@ -126,7 +100,7 @@
         @if (loading()) {
           <div class="loading-box" role="status" aria-live="polite">
             <p-progressSpinner strokeWidth="4" [style]="{ width: '42px', height: '42px' }" />
-            <p>Analyse ML et agents en cours…</p>
+            <p>Analyse ML en cours…</p>
           </div>
         } @else if (result()) {
           <p-tag severity="success" value="Analyse terminée" icon="pi pi-check" />
@@ -135,31 +109,17 @@
         }
       </p-card>
 
-      <p-card header="Informations agents">
-        <p class="muted">
-          Les agents IA fournissent un consensus informatif. Ils n'altèrent pas le score ML ni les
-          facteurs SHAP.
-        </p>
-      </p-card>
-
-      @if (loading()) {
-        <p-card header="Résultat de l'analyse">
-          <div class="loading-box">
-            <p-progressSpinner strokeWidth="4" [style]="{ width: '42px', height: '42px' }" />
-            <p>Calcul en cours…</p>
-          </div>
-        </p-card>
-      } @else if (result(); as analysis) {
+      @if (result(); as analysis) {
         <p-card>
           <ng-template #header>
             <div class="card-head">
               <strong>Prédiction ML</strong>
-              <span class="muted">Source : {{ analysis.explanationSource }}</span>
+              <span class="muted">{{ analysis.domaine || selectedDomain }} · {{ analysis.modelVersion }}</span>
             </div>
           </ng-template>
           <div class="result-summary">
             <div>
-              <span class="label">Décision ML</span>
+              <span class="label">Recommandation</span>
               <p-tag
                 [value]="analysis.suggestedDecision || 'N/A'"
                 [severity]="mlSeverity(analysis.suggestedDecision)"
@@ -167,7 +127,7 @@
             </div>
             <div>
               <span class="label">Confiance</span>
-              <strong>{{ analysis.confidenceScore | number:'1.0-2' }} %</strong>
+              <strong>{{ analysis.confidenceScore | number:'1.0-4' }}</strong>
             </div>
             <div>
               <span class="label">Risque</span>
@@ -176,17 +136,14 @@
                 [severity]="riskSeverity(analysis.riskLevel)"
               />
             </div>
+            <div>
+              <span class="label">Dataset</span>
+              <strong>{{ analysis.datasetVersion || '—' }}</strong>
+            </div>
           </div>
         </p-card>
 
         @if (analysis.consensus) {
-          @if (analysis.consensus.note?.includes('Quota OpenRouter') || analysis.consensus.note?.includes('GROQ_API_KEY')) {
-            <p-message
-              severity="warn"
-              text="Agents LLM indisponibles. L'analyse ML reste disponible."
-              styleClass="w-full"
-            />
-          }
           <p-card [header]="multiAgentLabels.consensus">
             <app-consensus-card [consensus]="analysis.consensus" />
           </p-card>
@@ -202,16 +159,7 @@
           </p-card>
         }
 
-        @if (analysis.resumeConsensus) {
-          <p-card [header]="multiAgentLabels.synthesis">
-            <p>{{ analysis.resumeConsensus }}</p>
-          </p-card>
-        }
-
-        <p-card [header]="'Facteurs explicatifs (' + (analysis.explanationSource || 'SHAP') + ')'">
-          <p class="tech-note">
-            Classe expliquée : <strong>APPROUVER</strong>. contribution % = |SHAP| / Σ|SHAP| × 100.
-          </p>
+        <p-card header="Facteurs principaux">
           <div class="factors">
             @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
               <div class="factor-row">
@@ -224,26 +172,31 @@
                   />
                 </div>
                 <div class="factor-values">
-                  <span>valeur: {{ factor.value }}</span>
                   <span>contribution: {{ factor.contributionPercent | number:'1.0-2' }}%</span>
-                  <span>SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
                 </div>
               </div>
             }
           </div>
           <p-divider />
-          <p-button
-            label="Voir le détail enregistré"
-            icon="pi pi-eye"
-            [outlined]="true"
-            (onClick)="openDetail()"
-          />
+          <div class="form-actions">
+            <p-button
+              label="Soumettre à validation"
+              icon="pi pi-send"
+              (onClick)="submitForValidation()"
+              [loading]="loading()"
+            />
+            <p-button
+              label="Voir le détail enregistré"
+              icon="pi pi-eye"
+              [outlined]="true"
+              (onClick)="openDetail()"
+            />
+          </div>
         </p-card>
       } @else {
         <p-card header="Résultat de l'analyse">
           <p class="muted">
-            Remplissez le formulaire et lancez l'analyse pour afficher la décision ML, le consensus et
-            les facteurs SHAP.
+            Choisissez un domaine, remplissez le formulaire, puis lancez l’analyse.
           </p>
         </p-card>
       }

@@ -18,11 +18,17 @@ export function riskChipClass(risk?: string | null): string {
 /** Classe CSS pour les chips de statut de validation humaine. */
 export function statutChipClass(statut: StatutDecisionEnum): string {
   const map: Record<StatutDecisionEnum, string> = {
+    [StatutDecisionEnum.BROUILLON]: 'chip--pending',
+    [StatutDecisionEnum.EN_ANALYSE]: 'chip--pending',
+    [StatutDecisionEnum.ANALYSEE]: 'chip--modified',
+    [StatutDecisionEnum.EN_ATTENTE_VALIDATION]: 'chip--pending',
+    [StatutDecisionEnum.EN_ATTENTE]: 'chip--pending',
+    [StatutDecisionEnum.VALIDEE]: 'chip--approved',
     [StatutDecisionEnum.APPROUVEE]: 'chip--approved',
     [StatutDecisionEnum.MODIFIEE]: 'chip--modified',
+    [StatutDecisionEnum.A_REVOIR]: 'chip--modified',
     [StatutDecisionEnum.REJETEE]: 'chip--rejected',
-    [StatutDecisionEnum.EN_ATTENTE]: 'chip--pending',
-    [StatutDecisionEnum.BROUILLON]: 'chip--pending',
+    [StatutDecisionEnum.ARCHIVEE]: 'chip--pending',
   };
   return map[statut] ?? 'chip--pending';
 }
