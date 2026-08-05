@@ -27,6 +27,7 @@ import com.pfa.tracabilite_ia.enumeration.DecisionHistoryAction;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.pfa.tracabilite_ia.mapper.DecisionMapper;
 
@@ -224,7 +225,13 @@ public class DecisionServiceImpl implements DecisionService {
     @Transactional(readOnly = true)
     public DecisionResponse obtenir(UUID id) {
 
-        Decision decision = decisionScopeService.loadForRead(id);
+        Utilisateur currentUser = authService.getCurrentUser();
+        Decision decision = decisionRepository.findVisibleByIdWithFactors(
+                id,
+                currentUser.getRole() != null ? currentUser.getRole().name() : "",
+                currentUser.getEmail(),
+                currentUser.getId())
+                .orElseThrow(() -> new AccessDeniedException("Accès refusé à cette décision"));
 
         DecisionResponse response = decisionMapper.toResponse(decision);
 
@@ -291,12 +298,15 @@ public class DecisionServiceImpl implements DecisionService {
             int page,
             int size
     ) {
+        Utilisateur currentUser = authService.getCurrentUser();
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
         LocalDateTime fromBound = fromDate != null ? fromDate : LocalDateTime.of(1970, 1, 1, 0, 0);
         LocalDateTime toBound = toDate != null ? toDate : LocalDateTime.of(2999, 12, 31, 23, 59, 59);
         String validateurBound = validateur != null ? validateur : "";
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().name() : "";
         Page<Decision> result = decisionRepository.searchFiltered(
-                search, statut, domaine, riskLevel, decisionFinale, validateurBound, fromBound, toBound, pageable);
+                search, statut, domaine, riskLevel, decisionFinale, validateurBound,
+                fromBound, toBound, roleName, currentUser.getEmail(), currentUser.getId(), pageable);
         return DecisionPageResponse.builder()
                 .content(decisionMapper.toResponseList(result.getContent()))
                 .page(result.getNumber())

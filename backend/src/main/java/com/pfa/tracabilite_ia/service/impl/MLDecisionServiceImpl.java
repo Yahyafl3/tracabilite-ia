@@ -135,7 +135,7 @@ public class MLDecisionServiceImpl implements MLDecisionService {
     public boolean isMLServiceAvailable() {
         try {
             Map<?, ?> response = restClient.get()
-                    .uri("/ready")
+                    .uri("/health/ready")
                     .retrieve()
                     .body(Map.class);
             return response != null && Boolean.TRUE.equals(response.get("ready"));

@@ -7,6 +7,7 @@ import com.pfa.tracabilite_ia.dto.response.ValidationActionResponse;
 import com.pfa.tracabilite_ia.entities.Decision;
 import com.pfa.tracabilite_ia.entities.Utilisateur;
 import com.pfa.tracabilite_ia.entities.ValidationAction;
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.DecisionHistoryAction;
 import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
@@ -69,13 +70,24 @@ public class ValidationServiceImpl implements ValidationService {
     @Override
     @Transactional(readOnly = true)
     public DecisionPageResponse listerEnAttente(int page, int size) {
-        assertValidateur();
-        assertValidateur();
-        var pending = decisionRepository.findByStatutValidationInOrderByTimestampDesc(
-                List.of(StatutDecisionEnum.EN_ATTENTE_VALIDATION, StatutDecisionEnum.EN_ATTENTE));
+        Utilisateur user = assertValidateur();
+        RoleEnum role = user.getRole();
+
+        List<StatutDecisionEnum> pendingStatuts = List.of(
+                StatutDecisionEnum.EN_ATTENTE_VALIDATION,
+                StatutDecisionEnum.EN_ATTENTE);
+
+        List<DecisionDomain> allowedDomains = resolveAllowedDomains(role);
+
+        // Use domain-filtered query or unfiltered depending on role
+        var pending = allowedDomains.isEmpty()
+                ? decisionRepository.findPendingAllDomains(pendingStatuts)
+                : decisionRepository.findPendingByDomains(pendingStatuts, allowedDomains);
+
         int from = Math.min(page * size, pending.size());
-        int to = Math.min(from + size, pending.size());
+        int to   = Math.min(from + size, pending.size());
         var slice = pending.subList(from, to);
+
         return DecisionPageResponse.builder()
                 .content(decisionMapper.toResponseList(slice))
                 .page(page)
@@ -216,10 +228,28 @@ public class ValidationServiceImpl implements ValidationService {
         }
     }
 
+    /**
+     * Returns the list of domains the current user's role is allowed to validate.
+     * An empty list means "no domain filter" (ADMIN/generic VALIDATEUR sees all).
+     */
+    private List<DecisionDomain> resolveAllowedDomains(RoleEnum role) {
+        return switch (role) {
+            case RESPONSABLE_CREDIT     -> List.of(DecisionDomain.CREDIT);
+            case PROFESSIONNEL_SANTE    -> List.of(DecisionDomain.MEDICAL);
+            case RESPONSABLE_PEDAGOGIQUE -> List.of(DecisionDomain.EDUCATION);
+            // ADMINISTRATEUR and generic VALIDATEUR see all domains
+            default                     -> List.of();
+        };
+    }
+
     private Utilisateur assertValidateur() {
         Utilisateur user = authService.getCurrentUser();
         RoleEnum role = user.getRole();
-        if (role != RoleEnum.VALIDATEUR && role != RoleEnum.ADMINISTRATEUR) {
+        if (role != RoleEnum.VALIDATEUR
+                && role != RoleEnum.ADMINISTRATEUR
+                && role != RoleEnum.RESPONSABLE_CREDIT
+                && role != RoleEnum.PROFESSIONNEL_SANTE
+                && role != RoleEnum.RESPONSABLE_PEDAGOGIQUE) {
             throw new UnauthorizedActionException(
                     "Seuls les validateurs et administrateurs peuvent effectuer cette action.");
         }

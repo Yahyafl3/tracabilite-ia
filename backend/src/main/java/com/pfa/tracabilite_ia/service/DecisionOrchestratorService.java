@@ -280,9 +280,25 @@ public class DecisionOrchestratorService {
 
     @Transactional(readOnly = true)
     public List<DecisionResponse> pendingValidation() {
-        return decisionRepository.findByStatutValidationInOrderByTimestampDesc(
-                        List.of(StatutDecisionEnum.EN_ATTENTE_VALIDATION, StatutDecisionEnum.EN_ATTENTE))
-                .stream()
+        Utilisateur user = authService.getCurrentUser();
+        RoleEnum role = user.getRole();
+
+        List<StatutDecisionEnum> pendingStatuts = List.of(
+                StatutDecisionEnum.EN_ATTENTE_VALIDATION,
+                StatutDecisionEnum.EN_ATTENTE);
+
+        List<DecisionDomain> allowedDomains = switch (role) {
+            case RESPONSABLE_CREDIT      -> List.of(DecisionDomain.CREDIT);
+            case PROFESSIONNEL_SANTE     -> List.of(DecisionDomain.MEDICAL);
+            case RESPONSABLE_PEDAGOGIQUE -> List.of(DecisionDomain.EDUCATION);
+            default                      -> List.of();
+        };
+
+        var decisions = allowedDomains.isEmpty()
+                ? decisionRepository.findPendingAllDomains(pendingStatuts)
+                : decisionRepository.findPendingByDomains(pendingStatuts, allowedDomains);
+
+        return decisions.stream()
                 .map(decisionMapper::toResponse)
                 .toList();
     }
@@ -336,22 +352,32 @@ public class DecisionOrchestratorService {
     }
 
     private void assertCanValidate(Utilisateur user, Decision decision) {
+        // Rule 1: author cannot validate their own decision
         if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(decision.getCreatedBy())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "L'auteur ne peut pas valider son propre dossier");
         }
+
         RoleEnum role = user.getRole();
+
+        // Rule 2: ADMIN can validate any domain
+        if (role == RoleEnum.ADMINISTRATEUR) {
+            return;
+        }
+
+        // Rule 3: domain-specific validators may only validate their domain
         DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
 
         boolean allowed = switch (domain) {
-            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
-            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE || role == RoleEnum.VALIDATEUR;
+            case CREDIT    -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
+            case MEDICAL   -> role == RoleEnum.PROFESSIONNEL_SANTE || role == RoleEnum.VALIDATEUR;
             case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE || role == RoleEnum.VALIDATEUR;
         };
+
         if (!allowed) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Rôle insuffisant pour valider le domaine " + domain
-                            + ". ADMINISTRATEUR n'est pas validateur métier par défaut.");
+                            + ". Votre rôle (" + role + ") n'est pas autorisé sur ce domaine.");
         }
     }
 

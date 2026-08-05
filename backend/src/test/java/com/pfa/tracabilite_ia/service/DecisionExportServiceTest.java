@@ -46,7 +46,7 @@ class DecisionExportServiceTest {
         credit.setJustificationHumaine("Accepte avec garanties");
         credit.setStatutValidation(StatutDecisionEnum.VALIDEE);
 
-        when(decisionRepository.findForExport(any(), any(), any(), any(), any()))
+        when(decisionRepository.findForExport(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(List.of(medical, credit));
 
         Utilisateur auditor = new Utilisateur();
@@ -64,7 +64,7 @@ class DecisionExportServiceTest {
 
     @Test
     void exportExcelXmlContainsWorkbook() {
-        when(decisionRepository.findForExport(any(), any(), any(), any(), any())).thenReturn(List.of());
+        when(decisionRepository.findForExport(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of());
         Utilisateur admin = new Utilisateur();
         admin.setRole(RoleEnum.ADMINISTRATEUR);
         byte[] xml = exportService.exportExcelXml(null, null, null, null, null, admin);

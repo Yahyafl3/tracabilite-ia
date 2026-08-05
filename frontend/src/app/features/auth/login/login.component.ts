@@ -78,7 +78,12 @@ export class LoginComponent {
         const role = response.user?.role;
         let defaultUrl = '/decisions';
         if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
-        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
+        if (
+          role === UserRole.VALIDATEUR ||
+          role === UserRole.RESPONSABLE_CREDIT ||
+          role === UserRole.PROFESSIONNEL_SANTE ||
+          role === UserRole.RESPONSABLE_PEDAGOGIQUE
+        ) defaultUrl = '/validation';
         const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
         void this.router.navigate([target]);
       },

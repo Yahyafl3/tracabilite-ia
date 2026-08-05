@@ -120,13 +120,13 @@ public class DecisionController {
     }
 
     @GetMapping("/{id}/validation")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VALIDATOR', 'CREDIT_VALIDATOR', 'MEDICAL_VALIDATOR', 'EDUCATION_VALIDATOR')")
     public DecisionResponse obtenirContexteValidation(@PathVariable UUID id) {
         return validationService.obtenirContexteValidation(id);
     }
 
     @PostMapping("/{id}/submit-validation")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VALIDATOR', 'USER')")
     public DecisionResponse soumettreValidation(@PathVariable UUID id) {
         return validationService.soumettreValidation(id);
     }

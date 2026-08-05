@@ -51,11 +51,19 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'decisions',
+        redirectTo: 'validation',
       },
       {
         path: 'dashboard',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
+        canActivate: [roleGuard([
+          UserRole.ADMINISTRATEUR,
+          UserRole.UTILISATEUR,
+          UserRole.AUDITEUR,
+          UserRole.VALIDATEUR,
+          UserRole.RESPONSABLE_CREDIT,
+          UserRole.PROFESSIONNEL_SANTE,
+          UserRole.RESPONSABLE_PEDAGOGIQUE,
+        ])],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
@@ -79,7 +87,13 @@ export const routes: Routes = [
       },
       {
         path: 'decisions/new',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
+        canActivate: [roleGuard([
+          UserRole.ADMINISTRATEUR,
+          UserRole.UTILISATEUR,
+          UserRole.PROFESSIONNEL_SANTE,
+          UserRole.RESPONSABLE_PEDAGOGIQUE,
+          UserRole.RESPONSABLE_CREDIT,
+        ])],
         loadComponent: () =>
           import('./features/decisions/decision-new/decision-new.component').then(
             (m) => m.DecisionNewComponent,
@@ -131,6 +145,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/validation/validation-queue.component').then(
             (m) => m.ValidationQueueComponent,
+          ),
+      },
+      {
+        path: 'validation/:id',
+        canActivate: [
+          roleGuard([
+            UserRole.ADMINISTRATEUR,
+            UserRole.VALIDATEUR,
+            UserRole.RESPONSABLE_CREDIT,
+            UserRole.PROFESSIONNEL_SANTE,
+            UserRole.RESPONSABLE_PEDAGOGIQUE,
+          ]),
+        ],
+        loadComponent: () =>
+          import('./features/validation/validation-detail/validation-detail.component').then(
+            (m) => m.ValidationDetailComponent,
           ),
       },
       {

@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserRole } from '../models/auth.models';
 
 /**
  * Authentication Guard
@@ -66,6 +67,21 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/decisions']);
+  // Redirect to role-appropriate home
+  const role = authService.currentUser?.role;
+  const validatorRoles: string[] = [
+    UserRole.VALIDATEUR,
+    UserRole.RESPONSABLE_CREDIT,
+    UserRole.PROFESSIONNEL_SANTE,
+    UserRole.RESPONSABLE_PEDAGOGIQUE,
+  ];
+
+  if (role === UserRole.AUDITEUR) {
+    router.navigate(['/audit']);
+  } else if (validatorRoles.includes(role ?? '')) {
+    router.navigate(['/validation']);
+  } else {
+    router.navigate(['/decisions']);
+  }
   return false;
 };

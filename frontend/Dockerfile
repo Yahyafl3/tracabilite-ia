@@ -1,34 +1,26 @@
-# Stage 1: Build Angular Application
+# Stage 1: Build Angular SPA
 FROM node:24-alpine AS build
 
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Install dependencies
 COPY package*.json ./
-
-# Installer les dépendances
 RUN npm ci --legacy-peer-deps
 
-# Copier le code source
+# Copy source
 COPY . .
 
-# Docker local : appels relatifs (/api → Nginx → backend). Vercel utilise le défaut Render.
-ENV API_URL=
-
-# Build l'application Angular pour production
+# Build the Angular SPA (outputs to dist/frontend/browser)
 RUN npm run build
 
-# Stage 2: Servir avec Nginx
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-# Copier les fichiers buildés depuis le stage précédent
+# Copy the built SPA
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
-# Copier la configuration Nginx personnalisée
+# Copy custom Nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Exposer le port 80
 EXPOSE 80
-
-# Démarrer Nginx
 CMD ["nginx", "-g", "daemon off;"]

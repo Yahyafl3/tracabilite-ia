@@ -19,42 +19,80 @@ export class AppMenuComponent {
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
     const isValidateur = role === UserRole.VALIDATEUR;
-    const canValidate = isValidateur || isAdmin;
+    const isAnalysteCredit = role === UserRole.UTILISATEUR;
+    const isProfessionnelSante = role === UserRole.PROFESSIONNEL_SANTE;
+    const isResponsablePedagogique = role === UserRole.RESPONSABLE_PEDAGOGIQUE;
+    const isResponsableCredit = role === UserRole.RESPONSABLE_CREDIT;
+    const canValidate = isValidateur || isAdmin || isResponsableCredit || isProfessionnelSante || isResponsablePedagogique;
 
-    // Auditeur — audit only
     if (isAuditeur) {
       return [
         {
-          label: 'Audit',
+          label: 'Application',
           items: [
-            { label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' },
+            { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+            { label: 'Historique', icon: 'pi pi-history', routerLink: '/audit' },
+            { label: 'Audit', icon: 'pi pi-shield', routerLink: '/audit' },
           ],
         },
       ];
     }
 
-    // Validateur — validation queue only
-    if (isValidateur) {
+    if (isValidateur || isResponsableCredit || isProfessionnelSante || isResponsablePedagogique) {
+      const domainLabel = isProfessionnelSante
+        ? 'Décisions médicales'
+        : isResponsablePedagogique
+          ? 'Décisions éducation'
+          : 'Décisions à valider';
       return [
         {
-          label: 'Validation',
+          label: 'Application',
           items: [
-            { label: 'File de validation', icon: 'pi pi-check-square', routerLink: '/validation' },
+            { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+            { label: domainLabel, icon: 'pi pi-check-square', routerLink: '/validation' },
           ],
         },
       ];
     }
 
-    const items: AppMenuItem[] = [
-      {
+    const items: AppMenuItem[] = [];
+    if (isAdmin) {
+      items.push({
         label: 'Application',
         items: [
           { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
           { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
-          { label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
+          { label: 'Nouvelle décision Crédit', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
         ],
-      },
-    ];
+      });
+    } else if (isAnalysteCredit) {
+      items.push({
+        label: 'Application',
+        items: [
+          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+          { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+          { label: 'Nouvelle décision Crédit', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
+        ],
+      });
+    } else if (isProfessionnelSante) {
+      items.push({
+        label: 'Application',
+        items: [
+          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+          { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+          { label: 'Nouvelle décision Médicale', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
+        ],
+      });
+    } else if (isResponsablePedagogique) {
+      items.push({
+        label: 'Application',
+        items: [
+          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+          { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+          { label: 'Nouvelle décision Éducation', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
+        ],
+      });
+    }
 
     // Analyse : réservée aux rôles effectivement autorisés côté API
     // (ComparaisonController = ADMIN / VALIDATOR / AUDITOR — pas ROLE_USER).

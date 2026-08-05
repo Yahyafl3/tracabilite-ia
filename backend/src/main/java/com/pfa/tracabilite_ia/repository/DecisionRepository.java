@@ -27,6 +27,44 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
 
     @Query("""
             SELECT d FROM Decision d
+            LEFT JOIN FETCH d.explanationFactors
+            WHERE d.decisionId = :id
+              AND (
+                    :roleName = 'ADMINISTRATEUR'
+                    OR :roleName = 'AUDITEUR'
+                    OR (:roleName = 'VALIDATEUR' AND (
+                            d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR ((:roleName = 'UTILISATEUR' OR :roleName = 'RESPONSABLE_CREDIT') AND (
+                            (d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.CREDIT OR d.domaine IS NULL)
+                            AND (
+                                LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                                OR d.validateurId = :userId
+                                OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                            )
+                        ))
+                    OR (:roleName = 'PROFESSIONNEL_SANTE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.MEDICAL AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR (:roleName = 'RESPONSABLE_PEDAGOGIQUE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.EDUCATION AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                )
+            """)
+    Optional<Decision> findVisibleByIdWithFactors(
+            @Param("id") UUID id,
+            @Param("roleName") String roleName,
+            @Param("userEmail") String userEmail,
+            @Param("userId") UUID userId
+    );
+
+    @Query("""
+            SELECT d FROM Decision d
             WHERE (:search IS NULL OR :search = '' OR
                    LOWER(d.prompt) LIKE LOWER(CONCAT('%', :search, '%')) OR
                    LOWER(d.contexte) LIKE LOWER(CONCAT('%', :search, '%')) OR
@@ -61,6 +99,32 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
                   )
               AND d.timestamp >= :fromDate
               AND d.timestamp <= :toDate
+              AND (
+                    :roleName = 'ADMINISTRATEUR'
+                    OR :roleName = 'AUDITEUR'
+                    OR (:roleName = 'VALIDATEUR' AND (
+                            d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR ((:roleName = 'UTILISATEUR' OR :roleName = 'RESPONSABLE_CREDIT') AND (
+                            (d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.CREDIT OR d.domaine IS NULL)
+                            AND (
+                                LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                                OR d.validateurId = :userId
+                                OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                            )
+                        ))
+                    OR (:roleName = 'PROFESSIONNEL_SANTE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.MEDICAL AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR (:roleName = 'RESPONSABLE_PEDAGOGIQUE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.EDUCATION AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                )
             """)
     Page<Decision> searchFiltered(
             @Param("search") String search,
@@ -71,6 +135,9 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
             @Param("validateur") String validateur,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
+            @Param("roleName") String roleName,
+            @Param("userEmail") String userEmail,
+            @Param("userId") UUID userId,
             Pageable pageable
     );
 
@@ -90,6 +157,32 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
                     OR LOWER(COALESCE(d.validatorEmail, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
                     OR LOWER(COALESCE(d.validateurRole, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
                   )
+              AND (
+                    :roleName = 'ADMINISTRATEUR'
+                    OR :roleName = 'AUDITEUR'
+                    OR (:roleName = 'VALIDATEUR' AND (
+                            d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR ((:roleName = 'UTILISATEUR' OR :roleName = 'RESPONSABLE_CREDIT') AND (
+                            (d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.CREDIT OR d.domaine IS NULL)
+                            AND (
+                                LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                                OR d.validateurId = :userId
+                                OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                            )
+                        ))
+                    OR (:roleName = 'PROFESSIONNEL_SANTE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.MEDICAL AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                    OR (:roleName = 'RESPONSABLE_PEDAGOGIQUE' AND d.domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.EDUCATION AND (
+                            LOWER(COALESCE(d.createdBy, '')) = LOWER(:userEmail)
+                            OR d.validateurId = :userId
+                            OR LOWER(COALESCE(d.validatorEmail, '')) = LOWER(:userEmail)
+                        ))
+                )
             ORDER BY d.timestamp DESC
             """)
     List<Decision> findForExport(
@@ -97,7 +190,10 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
             @Param("statut") StatutDecisionEnum statut,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
-            @Param("validateur") String validateur
+            @Param("validateur") String validateur,
+            @Param("roleName") String roleName,
+            @Param("userEmail") String userEmail,
+            @Param("userId") UUID userId
     );
 
     @Query("""
@@ -129,4 +225,32 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
     java.util.Optional<Decision> findTopByDecisionIdNotOrderByTimestampDesc(UUID decisionId);
 
     List<Decision> findByStatutValidationInOrderByTimestampDesc(List<StatutDecisionEnum> statuts);
+
+    /**
+     * File de validation filtrée par domaines autorisés.
+     * Utilisé pour le role-based domain filtering de la file de validation.
+     * Passer {@code null} pour {@code domaines} = pas de filtre sur le domaine (ADMIN).
+     */
+    @Query("""
+            SELECT d FROM Decision d
+            WHERE d.statutValidation IN :statuts
+              AND d.domaine IN :domaines
+            ORDER BY d.timestamp DESC
+            """)
+    List<Decision> findPendingByDomains(
+            @Param("statuts") List<StatutDecisionEnum> statuts,
+            @Param("domaines") List<DecisionDomain> domaines
+    );
+
+    /**
+     * File de validation sans filtre de domaine (ADMIN / VALIDATEUR générique).
+     */
+    @Query("""
+            SELECT d FROM Decision d
+            WHERE d.statutValidation IN :statuts
+            ORDER BY d.timestamp DESC
+            """)
+    List<Decision> findPendingAllDomains(
+            @Param("statuts") List<StatutDecisionEnum> statuts
+    );
 }

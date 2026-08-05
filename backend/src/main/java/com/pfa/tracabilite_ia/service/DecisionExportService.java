@@ -41,7 +41,10 @@ public class DecisionExportService {
             Utilisateur user
     ) {
         List<Decision> decisions = decisionRepository.findForExport(
-                domaine, statut, boundFrom(from), boundTo(to), normalizeValidateur(validateur));
+                domaine, statut, boundFrom(from), boundTo(to), normalizeValidateur(validateur),
+                user.getRole() != null ? user.getRole().name() : "",
+                user.getEmail(),
+                user.getId());
         auditLogService.record(null, user, "EXPORT", null, null,
                 "Export CSV n=" + decisions.size()
                         + " domaine=" + domaine
@@ -71,7 +74,10 @@ public class DecisionExportService {
             Utilisateur user
     ) {
         List<Decision> decisions = decisionRepository.findForExport(
-                domaine, statut, boundFrom(from), boundTo(to), normalizeValidateur(validateur));
+                domaine, statut, boundFrom(from), boundTo(to), normalizeValidateur(validateur),
+                user.getRole() != null ? user.getRole().name() : "",
+                user.getEmail(),
+                user.getId());
         auditLogService.record(null, user, "EXPORT", null, null,
                 "Export ExcelXML n=" + decisions.size()
                         + " domaine=" + domaine

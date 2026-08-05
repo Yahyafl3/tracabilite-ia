@@ -1,23 +1,27 @@
 <div class="page">
+
   <header class="page-header">
     <div>
       <p class="page-eyebrow">Accueil / Validation</p>
       <h1>Validation humaine</h1>
       <p class="page-subtitle">
-        Décisions finales selon le domaine (Crédit, Médical, Éducation). L’IA reste consultative.
+        Décisions IA en attente d'un contrôle humain. Cliquez sur un dossier pour le valider.
       </p>
     </div>
     <p-button
       icon="pi pi-refresh"
       [outlined]="true"
+      severity="secondary"
       (onClick)="loadPending()"
       [loading]="loading()"
+      pTooltip="Actualiser"
       ariaLabel="Actualiser la file"
     />
   </header>
 
+  <!-- KPI Row -->
   @if (!loading() && !error()) {
-    <section class="kpi-row" aria-label="Statistiques de validation">
+    <section class="kpi-row" aria-label="Statistiques">
       @for (kpi of kpis(); track kpi.label) {
         <div class="kpi-card" [ngClass]="kpiColorClass(kpi.color)">
           <div class="kpi-card__icon"><i [class]="kpi.icon" aria-hidden="true"></i></div>
@@ -39,19 +43,28 @@
     </ng-template>
 
     @if (loading()) {
-      @for (i of [1, 2, 3]; track i) {
+      @for (i of [1, 2, 3, 4]; track i) {
         <p-skeleton height="3.5rem" styleClass="mb-2" />
       }
     } @else if (error()) {
       <p-message severity="error" [text]="error()!" styleClass="w-full" />
     } @else if (decisions().length === 0) {
       <div class="empty-state" role="status">
+        <div class="empty-state__icon-wrap">
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+        </div>
         <h2>File vide</h2>
         <p>Aucune décision en attente de validation.</p>
+        <p-button label="Actualiser" icon="pi pi-refresh" [outlined]="true" (onClick)="loadPending()" />
       </div>
     } @else {
       <div class="table-scroll">
-        <p-table [value]="decisions()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '52rem' }">
+        <p-table
+          [value]="decisions()"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '52rem' }"
+          ariaLabel="Décisions en attente de validation"
+        >
           <ng-template #header>
             <tr>
               <th>Référence</th>
@@ -59,13 +72,16 @@
               <th>Recommandation IA</th>
               <th>Confiance</th>
               <th>Risque</th>
+              <th>Date</th>
               <th>Actions</th>
             </tr>
           </ng-template>
           <ng-template #body let-row>
-            <tr>
+            <tr [class.row--high-risk]="riskSeverity(row.riskLevel) === 'danger'">
               <td>
-                <button class="dossier-link" type="button" (click)="openDetail(row)">
+                <button class="dossier-link" type="button"
+                  (click)="openDetail(row)"
+                  [attr.aria-label]="'Ouvrir le dossier ' + reference(row)">
                   {{ reference(row) }}
                 </button>
               </td>
@@ -74,7 +90,7 @@
               </td>
               <td>
                 <p-tag
-                  [value]="mlDecision(row) || row.suggestedDecision || 'N/A'"
+                  [value]="mlDecision(row) ?? row.suggestedDecision ?? 'N/A'"
                   [severity]="mlSeverity(row.suggestedDecision)"
                 />
               </td>
@@ -84,15 +100,17 @@
               <td>
                 <p-tag [value]="riskLabel(row.riskLevel)" [severity]="riskSeverity(row.riskLevel)" />
               </td>
+              <td class="td-time">
+                <span>{{ row.submittedAt ?? row.timestamp | date:'dd MMM' }}</span>
+                <span class="muted">{{ row.submittedAt ?? row.timestamp | date:'HH:mm' }}</span>
+              </td>
               <td class="actions-cell">
-                <p-button label="Valider" icon="pi pi-check" size="small" (onClick)="openValidate(row)" />
                 <p-button
-                  label="À revoir"
-                  icon="pi pi-refresh"
+                  label="Valider"
+                  icon="pi pi-arrow-right"
                   size="small"
-                  [outlined]="true"
-                  severity="warn"
-                  (onClick)="submitForReview(row)"
+                  (onClick)="openValidate(row)"
+                  [attr.aria-label]="'Valider le dossier ' + reference(row)"
                 />
               </td>
             </tr>
@@ -102,98 +120,4 @@
     }
   </p-card>
 
-  <!-- Detail -->
-  <p-dialog
-    header="Détail du dossier"
-    [visible]="detailVisible()"
-    (visibleChange)="detailVisible.set($event)"
-    [modal]="true"
-    [style]="{ width: 'min(40rem, 95vw)' }"
-  >
-    @if (detailTarget(); as row) {
-      @if (row.domaine === 'MEDICAL') {
-        <p-message
-          severity="warn"
-          text="Cette estimation ne constitue pas un diagnostic médical et doit être revue par un professionnel de santé."
-          styleClass="w-full mb-3"
-        />
-      }
-      <p><strong>Référence :</strong> {{ reference(row) }}</p>
-      <p><strong>Domaine :</strong> {{ domainBadge(row) }}</p>
-      <p><strong>IA :</strong> {{ row.suggestedDecision }}</p>
-      <p><strong>Confiance :</strong> {{ row.confidenceScore }}</p>
-      <p><strong>Modèle :</strong> {{ row.modelVersion }}</p>
-      <p-divider />
-      <p-button label="Ouvrir le dossier" icon="pi pi-external-link" (onClick)="goToDossier(row)" />
-    }
-  </p-dialog>
-
-  <!-- Validate -->
-  <p-dialog
-    header="Décision humaine finale"
-    [visible]="actionDialogVisible()"
-    (visibleChange)="!$event && closeAction()"
-    [modal]="true"
-    [style]="{ width: 'min(32rem, 95vw)' }"
-  >
-    @if (medicalWarning()) {
-      <p-message severity="warn" [text]="medicalWarning()!" styleClass="w-full mb-3" />
-    }
-
-    <form [formGroup]="actionForm" (ngSubmit)="submitAction()" class="action-form">
-      <div class="field">
-        <label for="decisionFinale">Décision finale</label>
-        <p-select
-          inputId="decisionFinale"
-          formControlName="decisionFinale"
-          [options]="decisionOptions()"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Choisir…"
-          styleClass="w-full"
-        />
-        @if (hasError('decisionFinale')) {
-          <small class="error">Décision finale obligatoire</small>
-        }
-      </div>
-
-      <div class="field checkbox-row">
-        <p-checkbox formControlName="accordAvecIa" [binary]="true" inputId="accordAvecIa" />
-        <label for="accordAvecIa">Accord avec la recommandation IA</label>
-      </div>
-
-      <div class="field">
-        <label for="justificationHumaine">Justification humaine</label>
-        <textarea
-          pTextarea
-          id="justificationHumaine"
-          formControlName="justificationHumaine"
-          rows="4"
-          class="w-full"
-          [placeholder]="
-            actionForm.get('accordAvecIa')?.value
-              ? 'Justification (min. 10 caractères)'
-              : 'Justification détaillée en cas de désaccord (min. 30 caractères)'
-          "
-        ></textarea>
-        @if (hasError('justificationHumaine')) {
-          <small class="error">Justification insuffisante</small>
-        }
-      </div>
-
-      @if (submitError()) {
-        <p-message severity="error" [text]="submitError()!" styleClass="w-full" />
-      }
-
-      <div class="dialog-actions">
-        <p-button type="button" label="Annuler" [text]="true" (onClick)="closeAction()" />
-        <p-button
-          type="submit"
-          label="Enregistrer la décision"
-          icon="pi pi-check"
-          [loading]="submitting()"
-        />
-      </div>
-    </form>
-  </p-dialog>
 </div>

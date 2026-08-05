@@ -1,43 +1,32 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Card } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Skeleton } from 'primeng/skeleton';
-import { Divider } from 'primeng/divider';
-import { Textarea } from 'primeng/textarea';
-import { Select } from 'primeng/select';
-import { Checkbox } from 'primeng/checkbox';
+import { Tooltip } from 'primeng/tooltip';
 import { DecisionService } from '../../core/services/decision.service';
 import { DecisionResponse, mlDecision, mlConfidence } from '../../core/models/decision.models';
 import { decisionLabel, riskLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { ConfidenceDisplayComponent } from '../../shared/ui';
-import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.config';
 
 @Component({
   selector: 'app-validation-queue',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     RouterModule,
     Card,
     TableModule,
     Tag,
     Button,
-    Dialog,
     Message,
     Skeleton,
-    Divider,
-    Textarea,
-    Select,
-    Checkbox,
+    Tooltip,
     ConfidenceDisplayComponent,
   ],
   templateUrl: './validation-queue.component.html',
@@ -46,42 +35,11 @@ import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.co
 export class ValidationQueueComponent {
   private readonly decisionService = inject(DecisionService);
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly decisions = signal<DecisionResponse[]>([]);
   readonly totalElements = signal(0);
-  readonly submitting = signal(false);
-  readonly submitError = signal<string | null>(null);
-
-  readonly actionDialogVisible = signal(false);
-  readonly actionTarget = signal<DecisionResponse | null>(null);
-
-  readonly actionForm = this.fb.group({
-    decisionFinale: this.fb.nonNullable.control('', [Validators.required]),
-    justificationHumaine: this.fb.nonNullable.control('', [
-      Validators.required,
-      Validators.minLength(10),
-    ]),
-    accordAvecIa: this.fb.nonNullable.control(true),
-  });
-
-  readonly detailVisible = signal(false);
-  readonly detailTarget = signal<DecisionResponse | null>(null);
-
-  readonly decisionOptions = computed(() => {
-    const row = this.actionTarget();
-    const domain = (row?.domaine || 'CREDIT') as DecisionDomain;
-    return DOMAIN_META[domain]?.humanDecisions ?? [];
-  });
-
-  readonly medicalWarning = computed(() => {
-    const domain = this.actionTarget()?.domaine || this.detailTarget()?.domaine;
-    return domain === 'MEDICAL'
-      ? 'Cette estimation ne constitue pas un diagnostic médical et doit être revue par un professionnel de santé.'
-      : null;
-  });
 
   readonly kpis = computed(() => {
     const all = this.decisions();
@@ -100,15 +58,6 @@ export class ValidationQueueComponent {
 
   constructor() {
     this.loadPending();
-    this.actionForm.get('accordAvecIa')?.valueChanges.subscribe((agree) => {
-      const ctrl = this.actionForm.get('justificationHumaine');
-      if (!agree) {
-        ctrl?.setValidators([Validators.required, Validators.minLength(30)]);
-      } else {
-        ctrl?.setValidators([Validators.required, Validators.minLength(10)]);
-      }
-      ctrl?.updateValueAndValidity();
-    });
   }
 
   loadPending(): void {
@@ -128,71 +77,15 @@ export class ValidationQueueComponent {
   }
 
   openDetail(row: DecisionResponse): void {
-    this.detailTarget.set(row);
-    this.detailVisible.set(true);
-  }
-
-  closeDetail(): void {
-    this.detailVisible.set(false);
-    this.detailTarget.set(null);
-  }
-
-  goToDossier(row: DecisionResponse): void {
-    this.closeDetail();
-    void this.router.navigate(['/decisions', row.decisionId]);
+    void this.router.navigate(['/validation', row.decisionId]);
   }
 
   openValidate(row: DecisionResponse): void {
-    this.actionTarget.set(row);
-    this.actionForm.reset({
-      decisionFinale: '',
-      justificationHumaine: '',
-      accordAvecIa: true,
-    });
-    this.submitError.set(null);
-    this.actionDialogVisible.set(true);
-  }
-
-  closeAction(): void {
-    this.actionDialogVisible.set(false);
-    this.actionTarget.set(null);
-  }
-
-  submitAction(): void {
-    if (this.actionForm.invalid) {
-      this.actionForm.markAllAsTouched();
-      return;
-    }
-    const row = this.actionTarget();
-    if (!row) return;
-
-    const { decisionFinale, justificationHumaine, accordAvecIa } = this.actionForm.getRawValue();
-    this.submitting.set(true);
-    this.submitError.set(null);
-
-    this.decisionService
-      .validateDomain(row.decisionId, {
-        decisionFinale,
-        justificationHumaine,
-        accordAvecIa,
-      })
-      .subscribe({
-        next: () => {
-          this.submitting.set(false);
-          this.closeAction();
-          this.decisions.update((list) => list.filter((d) => d.decisionId !== row.decisionId));
-          this.totalElements.update((n) => Math.max(0, n - 1));
-        },
-        error: (err) => {
-          this.submitting.set(false);
-          this.submitError.set(resolveHttpErrorMessage(err, 'Erreur lors de la validation.'));
-        },
-      });
+    void this.router.navigate(['/validation', row.decisionId]);
   }
 
   submitForReview(row: DecisionResponse): void {
-    this.openValidate(row);
-    this.actionForm.patchValue({ decisionFinale: 'A_REVOIR', accordAvecIa: false });
+    void this.router.navigate(['/validation', row.decisionId]);
   }
 
   domainBadge(row: DecisionResponse): string {
@@ -206,11 +99,6 @@ export class ValidationQueueComponent {
     return 'secondary';
   }
 
-  hasError(field: string): boolean {
-    const ctrl = this.actionForm.get(field);
-    return !!ctrl && ctrl.invalid && ctrl.touched;
-  }
-
   decisionLabel = decisionLabel;
   riskLabel = riskLabel;
   mlDecision = mlDecision;
@@ -218,10 +106,12 @@ export class ValidationQueueComponent {
 
   mlSeverity(value: string | undefined): 'success' | 'danger' | 'secondary' | 'warn' {
     if (!value) return 'secondary';
-    if (value.includes('FAIBLE') || value === 'APPROUVER') return 'success';
-    if (value.includes('MOYEN') || value.includes('MODERE')) return 'warn';
-    if (value.includes('ELEVE') || value === 'REJETER') return 'danger';
-    return 'secondary';
+    if (value.includes('FAIBLE') || value === 'APPROUVER' || value.includes('ACCEPT')
+      || value.includes('SUIVI') || value.includes('AUCUNE')) return 'success';
+    if (value.includes('MOYEN') || value.includes('MODERE') || value.includes('ACCOMP')) return 'warn';
+    if (value.includes('ELEVE') || value === 'REJETER' || value.includes('REFUS')
+      || value.includes('ORIENTATION_SPEC') || value.includes('DECROCHAGE')) return 'danger';
+    return 'warn';
   }
 
   riskSeverity(risk: string | undefined): 'success' | 'warn' | 'danger' | 'secondary' {

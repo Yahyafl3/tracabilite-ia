@@ -1,0 +1,362 @@
+<div class="page">
+
+  <!-- Back nav -->
+  <div class="back-nav">
+    <p-button icon="pi pi-arrow-left" label="Retour à la file" [text]="true"
+      severity="secondary" (onClick)="goBack()" />
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="skeleton-layout">
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <div class="skeleton-grid">
+        <p-skeleton height="14rem" />
+        <p-skeleton height="14rem" />
+      </div>
+      <p-skeleton height="10rem" styleClass="mt-3" />
+    </div>
+  }
+
+  <!-- Error -->
+  @else if (error()) {
+    <p-message severity="error" [text]="error()!" styleClass="w-full" />
+  }
+
+  <!-- Content -->
+  @else if (decision(); as d) {
+
+    <!-- Success Banner -->
+    @if (submitSuccess()) {
+      <p-message severity="success"
+        text="Décision enregistrée avec succès. Retour à la file…"
+        styleClass="w-full" />
+    }
+
+    <!-- Self-validation warning -->
+    @if (isSelfValidation()) {
+      <p-message severity="error"
+        text="Vous êtes l'auteur de ce dossier. Vous ne pouvez pas le valider vous-même."
+        styleClass="w-full" />
+    }
+
+    <!-- Medical disclaimer -->
+    @if (d.domaine === 'MEDICAL') {
+      <p-message severity="warn"
+        [text]="domainMeta().warning ?? domainMeta().disclaimer ?? ''"
+        styleClass="w-full" />
+    }
+
+    <!-- Already validated banner -->
+    @if (isAlreadyValidated()) {
+      <p-message severity="info"
+        [text]="'Ce dossier a déjà été traité — statut : ' + statutLabel(d.statutValidation)"
+        styleClass="w-full" />
+    }
+
+    <!-- ═══════════════════════════════════════════════════════
+         SECTION 1 — Informations générales
+         ═══════════════════════════════════════════════════════ -->
+    <p-card styleClass="section-card">
+      <ng-template #title>
+        <div class="section-header">
+          <i class="pi pi-file-edit section-icon"></i>
+          <span>Informations générales</span>
+        </div>
+      </ng-template>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Référence</span>
+          <span class="info-value mono">{{ d.dossierReference ?? d.reference ?? d.decisionId.slice(0,8).toUpperCase() }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Domaine</span>
+          <p-tag [value]="domainLabel(d.domaine)" [severity]="domainSeverity(d.domaine)" />
+        </div>
+        <div class="info-item">
+          <span class="info-label">Date de soumission</span>
+          <span class="info-value">{{ d.submittedAt ?? d.timestamp | date:'dd MMM yyyy, HH:mm' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Auteur</span>
+          <span class="info-value">{{ d.createdBy ?? '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Statut actuel</span>
+          <p-tag [value]="statutLabel(d.statutValidation)" [severity]="statutSeverity(d.statutValidation)" />
+        </div>
+        <div class="info-item">
+          <span class="info-label">Description</span>
+          <span class="info-value">{{ d.description ?? '—' }}</span>
+        </div>
+      </div>
+
+      @if (featureEntries().length > 0) {
+        <p-divider />
+        <h4 class="subsection-title">Données d'entrée</h4>
+        <div class="feature-grid">
+          @for (f of featureEntries(); track f.key) {
+            <div class="feature-item">
+              <span class="feature-label">{{ f.label }}</span>
+              <span class="feature-value">{{ formatValue(f.value) }}</span>
+            </div>
+          }
+        </div>
+      }
+    </p-card>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SECTION 2 — Résultat IA
+         ═══════════════════════════════════════════════════════ -->
+    <p-card styleClass="section-card">
+      <ng-template #title>
+        <div class="section-header">
+          <i class="pi pi-cpu section-icon section-icon--purple"></i>
+          <span>Résultat IA</span>
+        </div>
+      </ng-template>
+
+      <div class="ai-result-grid">
+        <!-- Prédiction -->
+        <div class="ai-result-card ai-result-card--primary">
+          <p class="ai-result-card__label">Prédiction ML</p>
+          <p-tag
+            [value]="d.suggestedDecision ?? d.mlPrediction?.decision ?? 'N/A'"
+            [severity]="mlSeverity(d.suggestedDecision ?? d.mlPrediction?.decision)"
+            styleClass="text-lg"
+          />
+        </div>
+
+        <!-- Confiance -->
+        <div class="ai-result-card">
+          <p class="ai-result-card__label">Score de confiance</p>
+          <app-confidence-display
+            [confidence]="d.confidenceScore ?? d.mlPrediction?.confidenceScore"
+            scale="percent"
+          />
+        </div>
+
+        <!-- Risque -->
+        <div class="ai-result-card">
+          <p class="ai-result-card__label">Niveau de risque</p>
+          <app-risk-badge [riskLevel]="d.riskLevel ?? d.mlPrediction?.riskLevel" />
+        </div>
+
+        <!-- Modèle -->
+        <div class="ai-result-card">
+          <p class="ai-result-card__label">Modèle</p>
+          <span class="info-value mono">{{ d.mlPrediction?.modelName ?? d.modelName }}</span>
+          <span class="info-subvalue">{{ d.mlPrediction?.modelVersion ?? d.modelVersion ?? domainMeta().modelVersion }}</span>
+        </div>
+
+        <!-- Dataset -->
+        <div class="ai-result-card">
+          <p class="ai-result-card__label">Dataset</p>
+          <span class="info-value">{{ d.sourcesMeta?.sourceDonnees ?? d.sourceDonnees ?? domainMeta().sourceMeta.dataType }}</span>
+          <span class="info-subvalue">{{ d.sourcesMeta?.datasetVersion ?? d.datasetVersion ?? domainMeta().datasetVersion }}</span>
+        </div>
+
+        <!-- Source explication -->
+        <div class="ai-result-card">
+          <p class="ai-result-card__label">Méthode d'explication</p>
+          <span class="info-value">{{ d.explanationSource ?? 'SHAP' }}</span>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SECTION 3 — Explication SHAP
+         ═══════════════════════════════════════════════════════ -->
+    @if (topFactors().length > 0) {
+      <p-card styleClass="section-card">
+        <ng-template #title>
+          <div class="section-header">
+            <i class="pi pi-chart-bar section-icon section-icon--green"></i>
+            <span>Explication IA — Facteurs SHAP</span>
+          </div>
+        </ng-template>
+
+        <p class="section-note">
+          Les facteurs suivants ont le plus influencé la recommandation du modèle.
+          Une valeur positive renforce la décision, une valeur négative la contredit.
+        </p>
+
+        <div class="shap-list">
+          @for (f of topFactors(); track f.name) {
+            <div class="shap-item">
+              <div class="shap-item__header">
+                <span class="shap-item__name">{{ f.name }}</span>
+                <span class="shap-item__value">{{ f.value }}</span>
+                <span class="shap-item__shap" [style.color]="impactColor(f)">
+                  {{ f.shapValue > 0 ? '+' : '' }}{{ f.shapValue | number:'1.3-3' }}
+                </span>
+              </div>
+              <div class="shap-bar-wrap">
+                <div
+                  class="shap-bar"
+                  [class.shap-bar--positive]="f.impact === 'POSITIVE'"
+                  [class.shap-bar--negative]="f.impact === 'NEGATIVE'"
+                  [style.width.%]="f.contributionPercent | number:'1.0-0'"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      </p-card>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════
+         SECTION 4 — Agents IA & Consensus
+         ═══════════════════════════════════════════════════════ -->
+    @if (d.agentResponses && d.agentResponses.length > 0) {
+      <p-card styleClass="section-card">
+        <ng-template #title>
+          <div class="section-header">
+            <i class="pi pi-users section-icon section-icon--blue"></i>
+            <span>Agents IA</span>
+            @if (d.resumeConsensus) {
+              <p-tag
+                [value]="d.consensusDecision ?? 'Consensus'"
+                [severity]="mlSeverity(d.consensusDecision)"
+                styleClass="ml-auto"
+              />
+            }
+          </div>
+        </ng-template>
+
+        @if (d.resumeConsensus) {
+          <div class="consensus-summary">
+            <i class="pi pi-comment"></i>
+            <p>{{ d.resumeConsensus }}</p>
+          </div>
+          <p-divider />
+        }
+
+        <div class="agents-grid">
+          @for (agent of d.agentResponses; track agent.agentKey) {
+            <app-agent-response-card [agent]="agent" />
+          }
+        </div>
+      </p-card>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════
+         SECTION 5 — Formulaire de validation
+         ═══════════════════════════════════════════════════════ -->
+    <p-card styleClass="section-card section-card--validation">
+      <ng-template #title>
+        <div class="section-header">
+          <i class="pi pi-shield section-icon section-icon--indigo"></i>
+          <span>Décision humaine finale</span>
+        </div>
+      </ng-template>
+
+      @if (!canValidate()) {
+        <p-message
+          [severity]="isAlreadyValidated() ? 'info' : 'error'"
+          [text]="isAlreadyValidated()
+            ? 'Ce dossier a déjà été traité.'
+            : 'Vous ne pouvez pas valider votre propre dossier.'"
+          styleClass="w-full"
+        />
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" class="validation-form">
+
+          <!-- Decision selector -->
+          <div class="form-field" [class.form-field--error]="hasError('decisionFinale')">
+            <label for="decisionFinale">
+              Décision finale <span class="required">*</span>
+            </label>
+            <p-select
+              inputId="decisionFinale"
+              formControlName="decisionFinale"
+              [options]="decisionOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner une décision…"
+              styleClass="w-full"
+            />
+            @if (hasError('decisionFinale')) {
+              <small class="field-error">Décision finale obligatoire</small>
+            }
+          </div>
+
+          <!-- Accord IA -->
+          <div class="form-field accord-row">
+            <p-checkbox formControlName="accordAvecIa" [binary]="true" inputId="accordAvecIa" />
+            <label for="accordAvecIa" class="accord-label">
+              Je suis en accord avec la recommandation de l'IA
+            </label>
+            @if (form.get('decisionFinale')?.value) {
+              @if (mlAgreement() === true) {
+                <p-tag value="Accord IA" severity="success" icon="pi pi-check" />
+              } @else if (mlAgreement() === false) {
+                <p-tag value="Désaccord IA" severity="danger" icon="pi pi-times" />
+              }
+            }
+          </div>
+
+          <!-- Justification -->
+          <div class="form-field" [class.form-field--error]="hasError('justificationHumaine')">
+            <label for="justificationHumaine">
+              Justification <span class="required">*</span>
+              <span class="field-hint">
+                {{ form.get('accordAvecIa')?.value
+                  ? '(minimum 10 caractères)'
+                  : '(minimum 30 caractères en cas de désaccord)' }}
+              </span>
+            </label>
+            <textarea
+              pTextarea
+              id="justificationHumaine"
+              formControlName="justificationHumaine"
+              rows="4"
+              class="w-full"
+              [placeholder]="form.get('accordAvecIa')?.value
+                ? 'Motivez votre décision…'
+                : 'Justification détaillée obligatoire en cas de désaccord avec l\'IA…'"
+              [autoResize]="true"
+            ></textarea>
+            @if (hasError('justificationHumaine')) {
+              <small class="field-error">
+                Justification insuffisante ({{ form.get('accordAvecIa')?.value ? '10' : '30' }} caractères minimum)
+              </small>
+            }
+          </div>
+
+          <!-- Confirmation checkbox -->
+          <div class="form-field confirm-row" [class.form-field--error]="hasError('confirmed')">
+            <p-checkbox formControlName="confirmed" [binary]="true" inputId="confirmed" />
+            <label for="confirmed" class="confirm-label">
+              Je confirme avoir analysé l'ensemble des informations (données d'entrée, résultat IA, facteurs SHAP et agents IA) avant de rendre ma décision.
+            </label>
+          </div>
+          @if (hasError('confirmed')) {
+            <small class="field-error">Veuillez confirmer avoir analysé le dossier</small>
+          }
+
+          @if (submitError()) {
+            <p-message severity="error" [text]="submitError()!" styleClass="w-full" />
+          }
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <p-button type="button" label="Annuler" [text]="true"
+              severity="secondary" (onClick)="goBack()" [disabled]="submitting()" />
+            <p-button
+              type="submit"
+              label="Enregistrer la décision"
+              icon="pi pi-check"
+              [loading]="submitting()"
+              [disabled]="submitting()"
+            />
+          </div>
+
+        </form>
+      }
+    </p-card>
+
+  } <!-- end @else if decision -->
+
+</div>

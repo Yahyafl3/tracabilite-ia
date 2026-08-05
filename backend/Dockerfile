@@ -32,8 +32,7 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache curl \
- && addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app
 
 COPY --from=build /app/target/*.jar app.jar
 RUN chown -R app:app /app
@@ -45,6 +44,6 @@ ENV PORT=8080
 EXPOSE 8080
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=10 \
-  CMD curl -fsS "http://127.0.0.1:${PORT}/actuator/health" || exit 1
+  CMD wget -qO- "http://127.0.0.1:${PORT}/actuator/health" >/dev/null 2>&1 || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -53,7 +53,8 @@ describe('AppMenuComponent', () => {
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toContain('File de validation');
+    expect(labels).toContain('Dashboard');
+    expect(labels).toContain('Décisions à valider');
     expect(labels).not.toContain('Utilisateurs');
     expect(labels).not.toContain('Agents Groq');
     expect(labels).not.toContain('Support');
@@ -66,11 +67,11 @@ describe('AppMenuComponent', () => {
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toEqual(['Dashboard', 'Mes décisions', 'Nouvelle décision']);
+    expect(labels).toEqual(['Dashboard', 'Mes décisions', 'Nouvelle décision Crédit']);
     expect(labels).not.toContain('Utilisateurs');
     expect(labels).not.toContain('Agents Groq');
     expect(labels).not.toContain('Support');
-    expect(labels).not.toContain('File de validation');
+    expect(labels).not.toContain('Décisions à valider');
     expect(labels).not.toContain('Comparaison IA');
     expect(labels).not.toContain('Audit');
   });
