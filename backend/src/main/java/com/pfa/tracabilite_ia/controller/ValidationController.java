@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/validation")
-@PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
+@PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN', 'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE')")
 public class ValidationController {
 
     private final ValidationService validationService;

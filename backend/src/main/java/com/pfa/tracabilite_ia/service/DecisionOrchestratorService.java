@@ -183,7 +183,7 @@ public class DecisionOrchestratorService {
 
         // 3) Audit après sauvegarde cohérente (pas dans @PrePersist)
         auditLogService.record(saved.getDecisionId(), user, "ANALYSE",
-                StatutDecisionEnum.BROUILLON, StatutDecisionEnum.ANALYSEE,
+                StatutDecisionEnum.BROUILLON, StatutDecisionEnum.EN_ATTENTE_VALIDATION,
                 auditDetails, correlationId);
 
         return decisionMapper.toResponse(saved);
@@ -270,6 +270,21 @@ public class DecisionOrchestratorService {
 
     @Transactional(readOnly = true)
     public List<DecisionResponse> byDomain(DecisionDomain domain) {
+        Utilisateur user = authService.getCurrentUser();
+        RoleEnum role = user != null ? user.getRole() : null;
+
+        if (role != RoleEnum.ADMINISTRATEUR && role != RoleEnum.AUDITEUR) {
+             DecisionDomain checkDomain = domain != null ? domain : DecisionDomain.CREDIT;
+             boolean allowed = switch (checkDomain) {
+                case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
+                case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
+                case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
+             };
+             if (!allowed) {
+                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Accès refusé au domaine " + checkDomain);
+             }
+        }
+
         return decisionRepository.findAll().stream()
                 .filter(d -> d.getDomaine() == domain
                         || (d.getDomaine() == null && domain == DecisionDomain.CREDIT))
@@ -280,9 +295,20 @@ public class DecisionOrchestratorService {
 
     @Transactional(readOnly = true)
     public List<DecisionResponse> pendingValidation() {
+        Utilisateur user = authService.getCurrentUser();
+        RoleEnum role = user != null ? user.getRole() : null;
+
         return decisionRepository.findByStatutValidationInOrderByTimestampDesc(
                         List.of(StatutDecisionEnum.EN_ATTENTE_VALIDATION, StatutDecisionEnum.EN_ATTENTE))
                 .stream()
+                .filter(d -> {
+                    if (role == RoleEnum.ADMINISTRATEUR || role == RoleEnum.AUDITEUR) return true;
+                    DecisionDomain domain = d.getDomaine() != null ? d.getDomaine() : DecisionDomain.CREDIT;
+                    if (role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR) return domain == DecisionDomain.CREDIT;
+                    if (role == RoleEnum.PROFESSIONNEL_SANTE) return domain == DecisionDomain.MEDICAL;
+                    if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) return domain == DecisionDomain.EDUCATION;
+                    return false;
+                })
                 .map(decisionMapper::toResponse)
                 .toList();
     }
@@ -301,7 +327,8 @@ public class DecisionOrchestratorService {
         decision.setModelName(prediction.getModelType() != null ? prediction.getModelType() : "sklearn");
         decision.setModelVersion(prediction.getModelVersion());
         decision.setDatasetVersion(prediction.getDatasetVersion());
-        decision.setStatutValidation(StatutDecisionEnum.ANALYSEE);
+        decision.setStatutValidation(StatutDecisionEnum.EN_ATTENTE_VALIDATION);
+        decision.setSubmittedAt(LocalDateTime.now());
         decision.setUpdatedAt(LocalDateTime.now());
         return decision;
     }

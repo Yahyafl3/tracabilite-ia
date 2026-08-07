@@ -118,51 +118,10 @@ public class DecisionController {
     public DecisionResponse obtenir(@PathVariable UUID id) {
         return decisionService.obtenir(id);
     }
-
-    @GetMapping("/{id}/validation")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
-    public DecisionResponse obtenirContexteValidation(@PathVariable UUID id) {
-        return validationService.obtenirContexteValidation(id);
-    }
-
-    @PostMapping("/{id}/submit-validation")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN', 'USER')")
-    public DecisionResponse soumettreValidation(@PathVariable UUID id) {
-        return validationService.soumettreValidation(id);
-    }
-
     @PutMapping("/{id}")
     public DecisionResponse mettreAJour(@PathVariable UUID id,
                                         @Valid @RequestBody DecisionRequest request) {
         return decisionService.mettreAJour(id, request);
-    }
-
-    @PostMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
-    public DecisionResponse approuver(@PathVariable UUID id,
-                                      @RequestBody(required = false) @Valid ValidationRequest request) {
-        return validationService.approuver(id, request != null ? request : new ValidationRequest());
-    }
-
-    @PostMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
-    public DecisionResponse rejeter(@PathVariable UUID id,
-                                    @RequestBody(required = false) @Valid ValidationRequest request) {
-        return validationService.rejeter(id, request != null ? request : new ValidationRequest());
-    }
-
-    @PostMapping("/{id}/modify")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
-    public DecisionResponse modifier(@PathVariable UUID id,
-                                     @Valid @RequestBody ValidationRequest request) {
-        return validationService.modifier(id, request);
-    }
-
-    @PostMapping("/{id}/review")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'ADMIN')")
-    public DecisionResponse review(@PathVariable UUID id,
-                                   @RequestBody(required = false) @Valid ValidationRequest request) {
-        return validationService.review(id, request != null ? request : new ValidationRequest());
     }
 
     @PostMapping("/{id}/retry-failed-agents")

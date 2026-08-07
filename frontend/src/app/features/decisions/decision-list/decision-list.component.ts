@@ -76,10 +76,24 @@ export class DecisionListComponent {
     ].map((statut) => ({ label: statutLabel(statut), value: statut })),
   ];
 
-  readonly domaineOptions = [
-    { label: 'Tous', value: '' },
-    ...DECISION_DOMAINS.map((d) => ({ label: d.label, value: d.value })),
-  ];
+  readonly domaineOptions = computed(() => {
+    const role = this.authService.currentUser?.role as UserRole | undefined;
+    // Specialist roles only see their own domain — no "Tous" option
+    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) {
+      return [{ label: 'Crédit', value: 'CREDIT' }];
+    }
+    if (role === UserRole.PROFESSIONNEL_SANTE) {
+      return [{ label: 'Médical', value: 'MEDICAL' }];
+    }
+    if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) {
+      return [{ label: 'Éducation', value: 'EDUCATION' }];
+    }
+    // Admin / Auditeur / Utilisateur see all domains
+    return [
+      { label: 'Tous', value: '' },
+      ...DECISION_DOMAINS.map((d) => ({ label: d.label, value: d.value })),
+    ];
+  });
 
   readonly riskOptions = [
     { label: 'Tous', value: '' },

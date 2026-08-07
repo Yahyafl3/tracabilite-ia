@@ -467,73 +467,7 @@ export class DecisionDetailComponent {
     this.loadIntegrityAudit();
   }
 
-  approve(): void {
-    this.confirmAndSubmit(
-      'Confirmer l’approbation',
-      'Enregistrer APPROUVER sur le dossier global de décision ?',
-      () => {
-        const id = this.decision()?.decisionId;
-        if (!id) return;
-        this.submitValidation(() =>
-          this.validationService.approve(id, {
-            commentaire: this.validationForm.value.commentaire ?? undefined,
-          }),
-        );
-      },
-    );
-  }
 
-  reject(): void {
-    this.confirmAndSubmit(
-      'Confirmer le rejet',
-      'Enregistrer REJETER sur le dossier global de décision ?',
-      () => {
-        const id = this.decision()?.decisionId;
-        if (!id) return;
-        this.submitValidation(() =>
-          this.validationService.reject(id, {
-            commentaire: this.validationForm.value.commentaire ?? undefined,
-          }),
-        );
-      },
-    );
-  }
-
-  modify(): void {
-    this.confirmAndSubmit(
-      'Confirmer la modification',
-      'Enregistrer la décision humaine finale (MODIFIER) sur le dossier global ?',
-      () => {
-        const id = this.decision()?.decisionId;
-        if (!id || this.validationForm.invalid) {
-          this.validationForm.markAllAsTouched();
-          return;
-        }
-        this.submitValidation(() =>
-          this.validationService.modify(id, {
-            commentaire: this.validationForm.value.commentaire ?? undefined,
-            decisionHumaine: this.validationForm.value.decisionHumaine as 'APPROUVER' | 'REJETER',
-          }),
-        );
-      },
-    );
-  }
-
-  review(): void {
-    this.confirmAndSubmit(
-      'Confirmer la revue',
-      'Enregistrer REVIEW sur le dossier global de décision ?',
-      () => {
-        const id = this.decision()?.decisionId;
-        if (!id) return;
-        this.submitValidation(() =>
-          this.validationService.review(id, {
-            commentaire: this.validationForm.value.commentaire ?? undefined,
-          }),
-        );
-      },
-    );
-  }
 
   private confirmAndSubmit(header: string, message: string, onAccept: () => void): void {
     if (!this.validationForm.controls.confirmed.value) {

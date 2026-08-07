@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -80,6 +81,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(Exception ex, HttpServletRequest req) {
         return respond(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "Accès refusé — rôle insuffisant", req);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiErrorResponse> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String code = status == HttpStatus.FORBIDDEN ? "FORBIDDEN"
+                : status == HttpStatus.UNAUTHORIZED ? "UNAUTHORIZED"
+                : status == HttpStatus.NOT_FOUND ? "NOT_FOUND"
+                : status == HttpStatus.BAD_REQUEST ? "VALIDATION_ERROR"
+                : "ERROR";
+        String reason = ex.getReason();
+        String message = (reason != null && !reason.isBlank()) ? safeMessage(reason, "Requête refusée") : "Requête refusée";
+        if (status.is5xxServerError()) {
+            log.error("ResponseStatusException {}: {}", status, ex.getReason());
+        }
+        return respond(status, code, message, req);
     }
 
     @ExceptionHandler(IllegalStateException.class)

@@ -14,7 +14,9 @@ import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
 import { DecisionService } from '../../core/services/decision.service';
+import { AuthService } from '../../core/services/auth.service';
 import { DecisionResponse, mlDecision, mlConfidence } from '../../core/models/decision.models';
+import { UserRole } from '../../core/models/auth.models';
 import { decisionLabel, riskLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { ConfidenceDisplayComponent } from '../../shared/ui';
@@ -45,8 +47,40 @@ import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.co
 })
 export class ValidationQueueComponent {
   private readonly decisionService = inject(DecisionService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+
+  /** Domain allowed for the current user's role. null = admin/auditor (all domains). */
+  private readonly allowedDomain = computed<DecisionDomain | null>(() => {
+    const role = this.authService.currentUser?.role as UserRole | undefined;
+    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) return 'CREDIT';
+    if (role === UserRole.PROFESSIONNEL_SANTE) return 'MEDICAL';
+    if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) return 'EDUCATION';
+    return null; // ADMIN / AUDITEUR see all
+  });
+
+  /** Label for the "Examiner" button, domain-specific. */
+  readonly examinerLabel = computed(() => {
+    const d = this.allowedDomain();
+    if (d === 'CREDIT') return 'Examiner le dossier crédit';
+    if (d === 'MEDICAL') return 'Examiner le dossier médical';
+    if (d === 'EDUCATION') return 'Examiner le dossier pédagogique';
+    return 'Examiner le dossier';
+  });
+
+  /**
+   * Returns true when the current user may examine this specific row:
+   * - status must be EN_ATTENTE_VALIDATION
+   * - role must match the decision's domain
+   */
+  canExamine(row: DecisionResponse): boolean {
+    if (row.statutValidation !== 'EN_ATTENTE_VALIDATION') return false;
+    const d = this.allowedDomain();
+    if (d === null) return true; // admin/auditor
+    const rowDomain = (row.domaine || 'CREDIT') as DecisionDomain;
+    return rowDomain === d;
+  }
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);

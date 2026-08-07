@@ -19,7 +19,8 @@ export class AppMenuComponent {
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
     const isValidateur = role === UserRole.VALIDATEUR;
-    const canValidate = isValidateur || isAdmin;
+    const isDomainValidator = role === UserRole.RESPONSABLE_CREDIT || role === UserRole.PROFESSIONNEL_SANTE || role === UserRole.RESPONSABLE_PEDAGOGIQUE;
+    const canValidate = isValidateur || isDomainValidator || isAdmin;
 
     // Auditeur — audit only
     if (isAuditeur) {
@@ -33,13 +34,14 @@ export class AppMenuComponent {
       ];
     }
 
-    // Validateur — validation queue only
-    if (isValidateur) {
+    // Validateur (generic or domain) — validation queue only + mes décisions
+    if (isValidateur || isDomainValidator) {
       return [
         {
           label: 'Validation',
           items: [
             { label: 'File de validation', icon: 'pi pi-check-square', routerLink: '/validation' },
+            { label: 'Historique des validations', icon: 'pi pi-file', routerLink: '/decisions' },
           ],
         },
       ];

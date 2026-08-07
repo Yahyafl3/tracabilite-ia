@@ -24,6 +24,7 @@ import com.pfa.tracabilite_ia.entities.Utilisateur;
 
 import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.DecisionHistoryAction;
+import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
@@ -291,12 +292,33 @@ public class DecisionServiceImpl implements DecisionService {
             int page,
             int size
     ) {
+        Utilisateur user = authService.getCurrentUser();
+        DecisionDomain enforcedDomain = domaine;
+
+        if (user != null && user.getRole() != null) {
+            RoleEnum role = user.getRole();
+            if (role == RoleEnum.RESPONSABLE_CREDIT) {
+                enforcedDomain = DecisionDomain.CREDIT;
+            } else if (role == RoleEnum.PROFESSIONNEL_SANTE) {
+                enforcedDomain = DecisionDomain.MEDICAL;
+            } else if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) {
+                enforcedDomain = DecisionDomain.EDUCATION;
+            }
+            // If the role is VALIDATEUR, we default to CREDIT for legacy compatibility,
+            // unless they requested another domain and they actually have access to it?
+            // The prompt says "Un VALIDATEUR générique ne doit jamais pouvoir contourner l'isolation par domaine".
+            // So if they are VALIDATEUR, they might only see CREDIT since it's the legacy behavior.
+            else if (role == RoleEnum.VALIDATEUR) {
+                enforcedDomain = DecisionDomain.CREDIT;
+            }
+        }
+
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
         LocalDateTime fromBound = fromDate != null ? fromDate : LocalDateTime.of(1970, 1, 1, 0, 0);
         LocalDateTime toBound = toDate != null ? toDate : LocalDateTime.of(2999, 12, 31, 23, 59, 59);
         String validateurBound = validateur != null ? validateur : "";
         Page<Decision> result = decisionRepository.searchFiltered(
-                search, statut, domaine, riskLevel, decisionFinale, validateurBound, fromBound, toBound, pageable);
+                search, statut, enforcedDomain, riskLevel, decisionFinale, validateurBound, fromBound, toBound, pageable);
         return DecisionPageResponse.builder()
                 .content(decisionMapper.toResponseList(result.getContent()))
                 .page(result.getNumber())
@@ -323,6 +345,7 @@ public class DecisionServiceImpl implements DecisionService {
 
         Decision decision = new Decision();
 
+        decision.setDomaine(DecisionDomain.CREDIT);
         decision.setStatutValidation(StatutDecisionEnum.BROUILLON);
 
         decision.setPrompt(request.getDescription() != null && !request.getDescription().isBlank()
@@ -400,12 +423,10 @@ public class DecisionServiceImpl implements DecisionService {
 
 
         StatutDecisionEnum previous = decision.getStatutValidation();
-
-        decision.setStatutValidation(StatutDecisionEnum.EN_ATTENTE);
-
+        decision.setStatutValidation(StatutDecisionEnum.EN_ATTENTE_VALIDATION);
+        decision.setSubmittedAt(LocalDateTime.now());
         recordHistory(decision, DecisionHistoryAction.DECISION_SUBMITTED_FOR_VALIDATION,
-
-                previous, StatutDecisionEnum.EN_ATTENTE, user);
+                previous, StatutDecisionEnum.EN_ATTENTE_VALIDATION, user);
 
 
 

@@ -2,9 +2,12 @@ package com.pfa.tracabilite_ia.service;
 
 import com.pfa.tracabilite_ia.entities.Decision;
 import com.pfa.tracabilite_ia.entities.ReponseAgentIA;
+import com.pfa.tracabilite_ia.entities.Utilisateur;
+import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.enumeration.StatutReponseAgentEnum;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
 import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
+import com.pfa.tracabilite_ia.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,11 +31,17 @@ class DecisionIsolationTest {
     @Mock
     private ReponseAgentIARepository reponseAgentIARepository;
 
+    @Mock
+    private AuthService authService;
+
     private DecisionScopeService scopeService;
 
     @BeforeEach
     void setUp() {
-        scopeService = new DecisionScopeService(decisionRepository, reponseAgentIARepository);
+        Utilisateur admin = new Utilisateur();
+        admin.setRole(RoleEnum.ADMINISTRATEUR);
+        lenient().when(authService.getCurrentUser()).thenReturn(admin);
+        scopeService = new DecisionScopeService(decisionRepository, reponseAgentIARepository, authService);
     }
 
     @Test

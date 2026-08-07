@@ -66,7 +66,7 @@ public class MultidomainDecisionController {
     }
 
     @PostMapping("/{id}/validate")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'CREDIT_VALIDATOR', 'MEDICAL_VALIDATOR', 'EDUCATION_VALIDATOR')")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE')")
     public DecisionResponse validate(
             @PathVariable UUID id,
             @Valid @RequestBody DomainValidationRequest request
@@ -75,7 +75,7 @@ public class MultidomainDecisionController {
     }
 
     @PostMapping("/{id}/request-review")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'CREDIT_VALIDATOR', 'MEDICAL_VALIDATOR', 'EDUCATION_VALIDATOR')")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE')")
     public DecisionResponse requestReview(
             @PathVariable UUID id,
             @RequestBody(required = false) DomainValidationRequest request
@@ -89,7 +89,7 @@ public class MultidomainDecisionController {
     }
 
     @GetMapping("/pending-validation")
-    @PreAuthorize("hasAnyRole('VALIDATOR', 'CREDIT_VALIDATOR', 'MEDICAL_VALIDATOR', 'EDUCATION_VALIDATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('VALIDATOR', 'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE', 'ADMIN')")
     public List<DecisionResponse> pendingValidation() {
         return orchestrator.pendingValidation();
     }
@@ -99,7 +99,7 @@ public class MultidomainDecisionController {
      * Retours : VALID | INVALID | NOT_AVAILABLE
      */
     @PostMapping("/{id}/verify-integrity")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR', 'VALIDATOR', 'CREDIT_VALIDATOR', 'MEDICAL_VALIDATOR', 'EDUCATION_VALIDATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR', 'VALIDATOR', 'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE')")
     public java.util.Map<String, Object> verifyIntegrity(@PathVariable UUID id) {
         return decisionRepository.findById(id)
                 .map(decision -> {

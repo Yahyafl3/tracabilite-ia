@@ -5,792 +5,685 @@
   </a>
 
   @if (loading()) {
-    <p-card>
-      <p-skeleton height="2.5rem" styleClass="mb-2" />
-      <p-skeleton height="8rem" styleClass="mb-2" />
-      <p-skeleton height="16rem" />
-    </p-card>
+  <p-card>
+    <p-skeleton height="2.5rem" styleClass="mb-2" />
+    <p-skeleton height="8rem" styleClass="mb-2" />
+    <p-skeleton height="16rem" />
+  </p-card>
   } @else if (error(); as err) {
-    <p-message severity="error" [text]="err" styleClass="w-full" />
+  <p-message severity="error" [text]="err" styleClass="w-full" />
   } @else if (decision(); as item) {
-    <header class="page-header">
-      <div>
-        <p class="page-eyebrow">Accueil / Décisions / {{ reference(item) }}</p>
-        <h1>{{ item.dossierReference || item.prompt }}</h1>
-        <p class="page-subtitle">{{ item.contexte }}</p>
-      </div>
-      <div class="page-header__tags">
-        <p-tag [value]="item.domaine || 'CREDIT'" severity="info" />
-        <p-tag
-          [value]="statutLabel(item.statutValidation)"
-          [severity]="item.statutValidation === 'VALIDEE' || item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'"
-        />
-      </div>
-    </header>
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Accueil / Décisions / {{ reference(item) }}</p>
+      <h1>{{ item.dossierReference || item.prompt }}</h1>
+      <p class="page-subtitle">{{ item.contexte }}</p>
+    </div>
+    <div class="page-header__tags">
+      <p-tag [value]="item.domaine || 'CREDIT'" severity="info" />
+      <p-tag [value]="statutLabel(item.statutValidation)"
+        [severity]="item.statutValidation === 'VALIDEE' || item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'" />
+    </div>
+  </header>
 
-    @if (domainWarning(); as warn) {
-      <p-message severity="warn" [text]="warn" styleClass="w-full mb-3" />
+  @if (domainWarning(); as warn) {
+  <p-message severity="warn" [text]="warn" styleClass="w-full mb-3" />
+  }
+
+  <p-card styleClass="meta-card">
+    <dl class="metadata-grid" aria-label="Métadonnées de la décision">
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Référence</dt>
+        <dd class="metadata-grid__value"><code>{{ reference(item) }}</code></dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Domaine</dt>
+        <dd class="metadata-grid__value">{{ item.domaine || 'CREDIT' }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Date / heure</dt>
+        <dd class="metadata-grid__value">
+          {{ formatDate(item.timestamp) }} · {{ formatTime(item.timestamp) }}
+        </dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Statut</dt>
+        <dd class="metadata-grid__value">{{ statutLabel(item.statutValidation) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Créateur</dt>
+        <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Validateur</dt>
+        <dd class="metadata-grid__value">{{ validatorLabel(item) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Rôle validateur</dt>
+        <dd class="metadata-grid__value">{{ displayOrDash(item.validateurRole) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Date de validation</dt>
+        <dd class="metadata-grid__value">
+          @if (item.validatedAt) {
+          {{ formatDate(item.validatedAt) }} · {{ formatTime(item.validatedAt) }}
+          } @else {
+          —
+          }
+        </dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Modèle</dt>
+        <dd class="metadata-grid__value">{{ displayOrDash(item.modelName) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Version modèle</dt>
+        <dd class="metadata-grid__value">{{ displayOrDash(item.modelVersion) }}</dd>
+      </div>
+      <div class="metadata-grid__item">
+        <dt class="metadata-grid__label">Version dataset</dt>
+        <dd class="metadata-grid__value">{{ displayOrDash(item.datasetVersion || domainMeta().datasetVersion) }}</dd>
+      </div>
+    </dl>
+  </p-card>
+
+  <p-card styleClass="dossier-card mb-3">
+    @switch (domain()) {
+    @case ('MEDICAL') {
+    <app-medical-decision-details [decision]="item" />
     }
+    @case ('EDUCATION') {
+    <app-education-decision-details [decision]="item" />
+    }
+    @default {
+    <app-credit-decision-details [decision]="item" />
+    }
+    }
+  </p-card>
 
-    <p-card styleClass="meta-card">
-      <dl class="metadata-grid" aria-label="Métadonnées de la décision">
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Référence</dt>
-          <dd class="metadata-grid__value"><code>{{ reference(item) }}</code></dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Domaine</dt>
-          <dd class="metadata-grid__value">{{ item.domaine || 'CREDIT' }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Date / heure</dt>
-          <dd class="metadata-grid__value">
-            {{ formatDate(item.timestamp) }} · {{ formatTime(item.timestamp) }}
-          </dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Statut</dt>
-          <dd class="metadata-grid__value">{{ statutLabel(item.statutValidation) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Créateur</dt>
-          <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Validateur</dt>
-          <dd class="metadata-grid__value">{{ validatorLabel(item) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Rôle validateur</dt>
-          <dd class="metadata-grid__value">{{ displayOrDash(item.validateurRole) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Date de validation</dt>
-          <dd class="metadata-grid__value">
-            @if (item.validatedAt) {
-              {{ formatDate(item.validatedAt) }} · {{ formatTime(item.validatedAt) }}
-            } @else {
-              —
-            }
-          </dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Modèle</dt>
-          <dd class="metadata-grid__value">{{ displayOrDash(item.modelName) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Version modèle</dt>
-          <dd class="metadata-grid__value">{{ displayOrDash(item.modelVersion) }}</dd>
-        </div>
-        <div class="metadata-grid__item">
-          <dt class="metadata-grid__label">Version dataset</dt>
-          <dd class="metadata-grid__value">{{ displayOrDash(item.datasetVersion || domainMeta().datasetVersion) }}</dd>
-        </div>
-      </dl>
-    </p-card>
-
-    <p-card styleClass="dossier-card mb-3">
-      @switch (domain()) {
-        @case ('MEDICAL') {
-          <app-medical-decision-details [decision]="item" />
-        }
-        @case ('EDUCATION') {
-          <app-education-decision-details [decision]="item" />
-        }
-        @default {
-          <app-credit-decision-details [decision]="item" />
-        }
+  <p-tabs [value]="activeTab()" (valueChange)="onTabsValueChange($event)" [scrollable]="true" [selectOnFocus]="true">
+    <p-tablist>
+      @for (tab of tabs; track tab.id) {
+      <p-tab [value]="tab.id">{{ tab.label }}</p-tab>
       }
-    </p-card>
-
-    <p-tabs
-      [value]="activeTab()"
-      (valueChange)="onTabsValueChange($event)"
-      [scrollable]="true"
-      [selectOnFocus]="true"
-    >
-      <p-tablist>
-        @for (tab of tabs; track tab.id) {
-          <p-tab [value]="tab.id">{{ tab.label }}</p-tab>
-        }
-      </p-tablist>
-      <p-tabpanels>
-        @for (tab of tabs; track tab.id) {
-          <p-tabpanel [value]="tab.id">
-            @if (activeTab() === tab.id) {
-              <div class="tab-body">
-                @switch (activeTab()) {
+    </p-tablist>
+    <p-tabpanels>
+      @for (tab of tabs; track tab.id) {
+      <p-tabpanel [value]="tab.id">
+        @if (activeTab() === tab.id) {
+        <div class="tab-body">
+          @switch (activeTab()) {
           @case ('resume') {
-            <div class="summary-grid">
-              <div class="summary-item">
-                <span class="label">{{ domainMeta().riskLabel }} (ML)</span>
-                <app-status-badge
-                  [label]="mlDecision(item) || 'N/A'"
-                  [chipClass]="decisionChipClass(mlDecision(item))"
-                />
-              </div>
-              <div class="summary-item">
-                <span class="label">Confiance / probabilité</span>
-                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
-              </div>
-              <div class="summary-item">
-                <span class="label">Risque</span>
-                <app-risk-badge [riskLevel]="item.riskLevel" />
-              </div>
-              <div class="summary-item">
-                <span class="label">Statut</span>
-                <span class="value">{{ statutLabel(item.statutValidation) }}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Décision humaine</span>
-                <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
-              </div>
-              <div class="summary-item">
-                <span class="label">Accord avec l'IA</span>
-                <span class="value">
-                  @if (item.accordAvecIa == null) { — }
-                  @else if (item.accordAvecIa) { Oui }
-                  @else { Non (désaccord) }
-                </span>
-              </div>
-              <div class="summary-item summary-item--full">
-                <span class="label">Recommandation</span>
-                <p class="value value--text">{{ item.reponse }}</p>
-              </div>
-              <div class="summary-item summary-item--full">
-                <span class="label">Facteurs principaux</span>
-                <ul class="factor-list">
-                  @for (f of item.factors ?? []; track f.rank) {
-                    <li>{{ factorLabel(f.name) }} ({{ f.impact }})</li>
-                  } @empty {
-                    <li class="muted">Aucun facteur disponible</li>
-                  }
-                </ul>
-              </div>
-              <div class="summary-item summary-item--full">
-                <span class="label">Validateur attendu</span>
-                <span class="value">{{ domainMeta().validatorRole }}</span>
-              </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="label">{{ domainMeta().riskLabel }} (ML)</span>
+              <app-status-badge [label]="mlDecision(item) || 'N/A'" [chipClass]="decisionChipClass(mlDecision(item))" />
             </div>
+            <div class="summary-item">
+              <span class="label">Confiance / probabilité</span>
+              <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
+            </div>
+            <div class="summary-item">
+              <span class="label">Risque</span>
+              <app-risk-badge [riskLevel]="item.riskLevel" />
+            </div>
+            <div class="summary-item">
+              <span class="label">Statut</span>
+              <span class="value">{{ statutLabel(item.statutValidation) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Décision humaine</span>
+              <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Accord avec l'IA</span>
+              <span class="value">
+                @if (item.accordAvecIa == null) { — }
+                @else if (item.accordAvecIa) { Oui }
+                @else { Non (désaccord) }
+              </span>
+            </div>
+            <div class="summary-item summary-item--full">
+              <span class="label">Recommandation</span>
+              <p class="value value--text">{{ item.reponse }}</p>
+            </div>
+            <div class="summary-item summary-item--full">
+              <span class="label">Facteurs principaux</span>
+              <ul class="factor-list">
+                @for (f of item.factors ?? []; track f.rank) {
+                <li>{{ factorLabel(f.name) }} ({{ f.impact }})</li>
+                } @empty {
+                <li class="muted">Aucun facteur disponible</li>
+                }
+              </ul>
+            </div>
+            <div class="summary-item summary-item--full">
+              <span class="label">Validateur attendu</span>
+              <span class="value">{{ domainMeta().validatorRole }}</span>
+            </div>
+          </div>
           }
 
           @case ('prediction') {
-            <article class="ml-prediction-card">
-              <div class="ml-prediction-card__row">
-                <span class="label">Décision ML</span>
-                <app-status-badge
-                  [label]="mlDecision(item) || 'N/A'"
-                  [chipClass]="decisionChipClass(mlDecision(item))"
-                />
-              </div>
-              <div class="ml-prediction-card__row">
-                <span class="label">Confiance</span>
-                <div class="ml-prediction-card__confidence">
-                  <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
-                  <div
-                    class="confidence-progress"
-                    role="progressbar"
-                    [attr.aria-valuenow]="mlConfidence(item) ?? 0"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    [attr.aria-label]="'Confiance ML ' + (mlConfidence(item) ?? 0) + ' pour cent'"
-                  >
-                    <div
-                      class="confidence-progress__fill"
-                      [style.width.%]="mlConfidence(item) ?? 0"
-                    ></div>
-                  </div>
+          <article class="ml-prediction-card">
+            <div class="ml-prediction-card__row">
+              <span class="label">Décision ML</span>
+              <app-status-badge [label]="mlDecision(item) || 'N/A'" [chipClass]="decisionChipClass(mlDecision(item))" />
+            </div>
+            <div class="ml-prediction-card__row">
+              <span class="label">Confiance</span>
+              <div class="ml-prediction-card__confidence">
+                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
+                <div class="confidence-progress" role="progressbar" [attr.aria-valuenow]="mlConfidence(item) ?? 0"
+                  aria-valuemin="0" aria-valuemax="100"
+                  [attr.aria-label]="'Confiance ML ' + (mlConfidence(item) ?? 0) + ' pour cent'">
+                  <div class="confidence-progress__fill" [style.width.%]="mlConfidence(item) ?? 0"></div>
                 </div>
               </div>
-              <div class="ml-prediction-card__row">
-                <span class="label">Risque</span>
-                <app-risk-badge [riskLevel]="item.riskLevel" />
-              </div>
-              <app-model-identity
-                [modelName]="item.modelName"
-                [modelVersion]="item.modelVersion"
-                [analyzedAt]="item.timestamp"
-              />
-            </article>
+            </div>
+            <div class="ml-prediction-card__row">
+              <span class="label">Risque</span>
+              <app-risk-badge [riskLevel]="item.riskLevel" />
+            </div>
+            <app-model-identity [modelName]="item.modelName" [modelVersion]="item.modelVersion"
+              [analyzedAt]="item.timestamp" />
+          </article>
 
-            @if (item.probabilities && (item.probabilities | keyvalue).length > 0) {
-              <h3 class="section-title">Probabilités</h3>
-              <ul class="list-plain">
-                @for (entry of item.probabilities | keyvalue; track entry.key) {
-                  <li>{{ entry.key }} : {{ entry.value }}%</li>
-                }
-              </ul>
+          @if (item.probabilities && (item.probabilities | keyvalue).length > 0) {
+          <h3 class="section-title">Probabilités</h3>
+          <ul class="list-plain">
+            @for (entry of item.probabilities | keyvalue; track entry.key) {
+            <li>{{ entry.key }} : {{ entry.value }}%</li>
             }
+          </ul>
+          }
 
-            @if (featureEntries(item).length > 0) {
-              <h3 class="section-title">Features</h3>
-              <ul class="list-plain">
-                @for (feature of featureEntries(item); track feature.key) {
-                  <li>{{ feature.key }} : {{ feature.value }}</li>
-                }
-              </ul>
+          @if (featureEntries(item).length > 0) {
+          <h3 class="section-title">Features</h3>
+          <ul class="list-plain">
+            @for (feature of featureEntries(item); track feature.key) {
+            <li>{{ feature.key }} : {{ feature.value }}</li>
             }
+          </ul>
+          }
           }
 
           @case ('shap') {
-            <p class="tech-note">
-              Source : <strong>{{ item.explanationSource || 'SHAP' }}</strong> —
-              classe expliquée : <strong>APPROUVER</strong> (log-odds).
-              contribution % = |SHAP| / Σ|SHAP| × 100.
-            </p>
-            <div class="shap-factors">
-              @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
-                <div class="shap-factor-row">
-                  <div class="shap-factor-row__meta">
-                    <span class="shap-factor-row__name">#{{ factor.rank }} {{ factorLabel(factor.name) }}</span>
-                    <span
-                      class="shap-factor-row__impact"
-                      [class.shap-factor-row__impact--positive]="factor.impact === 'POSITIVE'"
-                      [class.shap-factor-row__impact--negative]="factor.impact === 'NEGATIVE'"
-                      [title]="shapImpactTooltip(factor.impact)"
-                    >
-                      {{ shapImpactLabel(factor) }}
-                    </span>
-                  </div>
-                  <div class="shap-factor-row__bar">
-                    <div
-                      class="shap-factor-row__fill"
-                      [style.width.%]="factor.contributionPercent"
-                    ></div>
-                  </div>
-                  <div class="shap-factor-row__values">
-                    <span>valeur: {{ factor.value }}</span>
-                    <span>{{ factor.contributionPercent | number:'1.0-2' }}%</span>
-                    <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
-                  </div>
-                </div>
-              } @empty {
-                <app-empty-state icon="lightbulb" message="Aucun facteur explicatif disponible." />
-              }
+          <p class="tech-note">
+            Source : <strong>{{ item.explanationSource || 'SHAP' }}</strong> —
+            classe expliquée : <strong>APPROUVER</strong> (log-odds).
+            contribution % = |SHAP| / Σ|SHAP| × 100.
+          </p>
+          <div class="shap-factors">
+            @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
+            <div class="shap-factor-row">
+              <div class="shap-factor-row__meta">
+                <span class="shap-factor-row__name">#{{ factor.rank }} {{ factorLabel(factor.name) }}</span>
+                <span class="shap-factor-row__impact"
+                  [class.shap-factor-row__impact--positive]="factor.impact === 'POSITIVE'"
+                  [class.shap-factor-row__impact--negative]="factor.impact === 'NEGATIVE'"
+                  [title]="shapImpactTooltip(factor.impact)">
+                  {{ shapImpactLabel(factor) }}
+                </span>
+              </div>
+              <div class="shap-factor-row__bar">
+                <div class="shap-factor-row__fill" [style.width.%]="factor.contributionPercent"></div>
+              </div>
+              <div class="shap-factor-row__values">
+                <span>valeur: {{ factor.value }}</span>
+                <span>{{ factor.contributionPercent | number:'1.0-2' }}%</span>
+                <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
+              </div>
             </div>
+            } @empty {
+            <app-empty-state icon="lightbulb" message="Aucun facteur explicatif disponible." />
+            }
+          </div>
           }
 
           @case ('agents') {
-            @if (domain() === 'MEDICAL') {
-              <p-message
-                severity="info"
-                text="Les avis générés ne remplacent pas l’évaluation d’un professionnel de santé."
-                styleClass="w-full mb-3"
-              />
-            }
-            @if (isAdmin() && hasRetryableAgents()) {
-              <div class="agent-retry-bar">
-                <button
-                  type="button"
-                  class="btn-secondary"
-                  [disabled]="retryLoading()"
-                  (click)="retryFailedAgents()"
-                >
-                  @if (retryLoading()) {
-                    Relance en cours…
-                  } @else {
-                    Relancer les agents en échec
-                  }
-                </button>
-                @if (retryError()) {
-                  <app-error-state [message]="retryError()!" />
-                }
-              </div>
-            }
-
-            @if (item.consensus) {
-              <app-consensus-card [consensus]="item.consensus" />
-            }
-
-            <div class="agent-grid">
-              @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
-                <app-agent-response-card [agent]="agent" />
-              } @empty {
-                <app-empty-state
-                  icon="bar-chart"
-                  [message]="agentsConsulted()
-                    ? 'Avis complémentaires indisponibles. L’analyse ML reste valide.'
-                    : 'Agents IA non consultés pour cette décision.'"
-                />
+          @if (domain() === 'MEDICAL') {
+          <p-message severity="info" text="Les avis générés ne remplacent pas l’évaluation d’un professionnel de santé."
+            styleClass="w-full mb-3" />
+          }
+          @if (isAdmin() && hasRetryableAgents()) {
+          <div class="agent-retry-bar">
+            <button type="button" class="btn-secondary" [disabled]="retryLoading()" (click)="retryFailedAgents()">
+              @if (retryLoading()) {
+              Relance en cours…
+              } @else {
+              Relancer les agents en échec
               }
-            </div>
+            </button>
+            @if (retryError()) {
+            <app-error-state [message]="retryError()!" />
+            }
+          </div>
+          }
+
+          @if (item.consensus) {
+          <app-consensus-card [consensus]="item.consensus" />
+          }
+
+          <div class="agent-grid">
+            @for (agent of item.agentResponses ?? []; track agent.reponseAgentId ?? agent.agentKey) {
+            <app-agent-response-card [agent]="agent" />
+            } @empty {
+            <app-empty-state icon="bar-chart" [message]="agentsConsulted()
+                    ? 'Avis complémentaires indisponibles. L’analyse ML reste valide.'
+                    : 'Agents IA non consultés pour cette décision.'" />
+            }
+          </div>
           }
 
           @case ('validation') {
-            <p-confirmdialog />
+          <p-confirmdialog />
 
-            @if (validationSuccess()) {
-              <p-message severity="success" [text]="validationSuccess()!" styleClass="w-full mb-3" />
-            }
-            @if (validationError()) {
-              <p-message severity="error" [text]="validationError()!" styleClass="w-full mb-3" />
-            }
+          @if (validationSuccess()) {
+          <p-message severity="success" [text]="validationSuccess()!" styleClass="w-full mb-3" />
+          }
+          @if (validationError()) {
+          <p-message severity="error" [text]="validationError()!" styleClass="w-full mb-3" />
+          }
 
-            @if (isPendingValidation()) {
-              <p-message
-                severity="warn"
-                text="Décision en attente de validation humaine"
-                styleClass="w-full mb-3"
-              />
-            } @else if (humanFinalLabel(item)) {
-              <p-message
-                severity="info"
-                [text]="'Décision finale humaine : ' + humanFinalLabel(item)"
-                styleClass="w-full mb-3"
-              />
-            }
+          @if (isPendingValidation()) {
+          <p-message severity="warn" text="Décision en attente de validation humaine" styleClass="w-full mb-3" />
+          } @else if (humanFinalLabel(item)) {
+          <p-message severity="info" [text]="'Décision finale humaine : ' + humanFinalLabel(item)"
+            styleClass="w-full mb-3" />
+          }
 
-            <div class="validation-block">
-              <h3 class="section-title">Dossier consulté</h3>
-              <p class="muted">
-                Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
-                La validation humaine porte toujours sur le dossier global, jamais sur un agent isolé.
-              </p>
-              <div class="summary-grid">
-                <div class="summary-item">
-                  <span class="label">Décision ML</span>
-                  <p-tag
-                    [value]="mlDecision(item) || 'N/A'"
-                    [severity]="decisionTagSeverity(mlDecision(item))"
-                  />
-                </div>
-                <div class="summary-item">
-                  <span class="label">Confiance ML</span>
-                  <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
-                </div>
-                <div class="summary-item">
-                  <span class="label">Risque ML</span>
-                  <app-risk-badge [riskLevel]="item.riskLevel" />
-                </div>
-                <div class="summary-item">
-                  <span class="label">Consensus</span>
-                  <span class="value">{{ consensusLabel(item) }}</span>
-                </div>
-                @if (item.consensus?.agreementRate != null) {
-                  <div class="summary-item">
-                    <span class="label">Taux d'accord</span>
-                    <span class="value">{{ item.consensus?.agreementRate }}%</span>
-                  </div>
-                }
+          <div class="validation-block">
+            <h3 class="section-title">Dossier consulté</h3>
+            <p class="muted">
+              Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
+              La validation humaine porte toujours sur le dossier global, jamais sur un agent isolé.
+            </p>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Décision ML</span>
+                <p-tag [value]="mlDecision(item) || 'N/A'" [severity]="decisionTagSeverity(mlDecision(item))" />
               </div>
-
-              <div class="agent-grid validation-agent-grid">
-                @for (agentKey of ['AGENT_1', 'AGENT_2', 'AGENT_3']; track agentKey) {
-                  @let agent = agentForKey(item.agentResponses, agentKey);
-                  <article class="agent-card">
-                    <header class="agent-card__head">
-                      <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
-                      <p-tag [value]="agentStatus(agent)" severity="secondary" />
-                    </header>
-                    @if (agent) {
-                      <p class="muted">{{ agent.modelId }}</p>
-                      <p>
-                        Décision :
-                        <p-tag
-                          [value]="agent.decisionProposee || '—'"
-                          [severity]="decisionTagSeverity(agent.decisionProposee)"
-                        />
-                      </p>
-                      <p>
-                        Confiance déclarée :
-                        <app-confidence-display
-                          [confidence]="agent.declaredConfidence ?? agent.confianceDeclaree"
-                        />
-                      </p>
-                      @if (agent.resume) {
-                        <p class="value value--text">{{ agent.resume }}</p>
-                      }
-                    } @else {
-                      <p class="muted">Aucune réponse enregistrée pour cet agent.</p>
-                    }
-                  </article>
-                }
+              <div class="summary-item">
+                <span class="label">Confiance ML</span>
+                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
               </div>
+              <div class="summary-item">
+                <span class="label">Risque ML</span>
+                <app-risk-badge [riskLevel]="item.riskLevel" />
+              </div>
+              <div class="summary-item">
+                <span class="label">Consensus</span>
+                <span class="value">{{ consensusLabel(item) }}</span>
+              </div>
+              @if (item.consensus?.agreementRate != null) {
+              <div class="summary-item">
+                <span class="label">Taux d'accord</span>
+                <span class="value">{{ item.consensus?.agreementRate }}%</span>
+              </div>
+              }
             </div>
 
-            @if (canValidate()) {
-              <p-divider />
-              <div class="validation-block validation-form">
-                <h3 class="section-title">Décision humaine</h3>
-                <p class="muted validation-note">
-                  La décision humaine n'efface pas les résultats IA.
+            <div class="agent-grid validation-agent-grid">
+              @for (agentKey of ['AGENT_1', 'AGENT_2', 'AGENT_3']; track agentKey) {
+              @let agent = agentForKey(item.agentResponses, agentKey);
+              <article class="agent-card">
+                <header class="agent-card__head">
+                  <strong>{{ agent ? agentName(agent) : agentKey }}</strong>
+                  <p-tag [value]="agentStatus(agent)" severity="secondary" />
+                </header>
+                @if (agent) {
+                <p class="muted">{{ agent.modelId }}</p>
+                <p>
+                  Décision :
+                  <p-tag [value]="agent.decisionProposee || '—'"
+                    [severity]="decisionTagSeverity(agent.decisionProposee)" />
                 </p>
-                <p class="muted">
-                  La validation porte sur l'ensemble du dossier (ML, SHAP, agents, consensus, sources).
-                  L'échec d'un ou plusieurs agents n'empêche pas la validation.
+                <p>
+                  Confiance déclarée :
+                  <app-confidence-display [confidence]="agent.declaredConfidence ?? agent.confianceDeclaree" />
                 </p>
-
-                <label class="field-label" for="commentaire">Justification</label>
-                <textarea
-                  pTextarea
-                  id="commentaire"
-                  rows="4"
-                  class="w-full"
-                  [formControl]="validationForm.controls.commentaire"
-                  placeholder="Justification de la décision humaine…"
-                  aria-label="Justification de la décision humaine"
-                ></textarea>
-
-                <div class="validation-confirm">
-                  <p-checkbox
-                    inputId="confirmed"
-                    [binary]="true"
-                    [formControl]="validationForm.controls.confirmed"
-                    ariaLabel="Confirmer la consultation du dossier global"
-                  />
-                  <label for="confirmed">
-                    Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
-                  </label>
-                </div>
-                @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
-                  <p class="error-inline">Veuillez confirmer avant d'enregistrer votre décision.</p>
+                @if (agent.resume) {
+                <p class="value value--text">{{ agent.resume }}</p>
                 }
+                } @else {
+                <p class="muted">Aucune réponse enregistrée pour cet agent.</p>
+                }
+              </article>
+              }
+            </div>
+          </div>
 
-                <div class="validation-actions">
-                  <p-button
-                    label="Approuver (APPROUVER)"
-                    icon="pi pi-check"
-                    severity="success"
-                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    [loading]="validationLoading()"
-                    (onClick)="approve()"
-                    ariaLabel="Approuver la décision"
-                  />
-                  <p-button
-                    label="Rejeter (REJETER)"
-                    icon="pi pi-times"
-                    severity="danger"
-                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    [loading]="validationLoading()"
-                    (onClick)="reject()"
-                    ariaLabel="Rejeter la décision"
-                  />
-                  <p-button
-                    label="Demander revue (REVIEW)"
-                    icon="pi pi-eye"
-                    severity="warn"
-                    [outlined]="true"
-                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    [loading]="validationLoading()"
-                    (onClick)="review()"
-                    ariaLabel="Demander une revue"
-                  />
-                </div>
+          @if (canValidate()) {
+          <p-divider />
+          <div class="validation-block validation-form">
+            <h3 class="section-title">Décision humaine</h3>
+            <p class="muted validation-note">
+              La décision humaine n'efface pas les résultats IA.
+            </p>
+            <p class="muted">
+              La validation porte sur l'ensemble du dossier (ML, SHAP, agents, consensus, sources).
+              L'échec d'un ou plusieurs agents n'empêche pas la validation.
+            </p>
 
-                <div class="modify-block">
-                  <h4 class="section-subtitle">Réviser la décision humaine (MODIFIER)</h4>
-                  <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
-                  <p-select
-                    inputId="decisionHumaine"
-                    [options]="humanDecisionOptions()"
-                    optionLabel="label"
-                    optionValue="value"
-                    [formControl]="validationForm.controls.decisionHumaine"
-                    styleClass="w-full"
-                    ariaLabel="Décision humaine finale"
-                  />
-                  <p-button
-                    label="Enregistrer la révision humaine"
-                    icon="pi pi-save"
-                    [outlined]="true"
-                    styleClass="mt-2"
-                    [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                    [loading]="validationLoading()"
-                    (onClick)="modify()"
-                    ariaLabel="Enregistrer la révision de la décision humaine"
-                  />
-                </div>
+            <div class="field mb-3 mt-4">
+              <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
+              <p-select inputId="decisionHumaine" [options]="humanDecisionOptions()" optionLabel="label"
+                optionValue="value" [formControl]="validationForm.controls.decisionHumaine" styleClass="w-full"
+                placeholder="Sélectionnez la décision" ariaLabel="Décision humaine finale" />
+              @if (validationForm.controls.decisionHumaine.touched && validationForm.controls.decisionHumaine.invalid) {
+                <p class="error-inline">La décision est requise.</p>
+              }
+            </div>
+
+            <div class="field mb-3 mt-3">
+              <label class="field-label" for="commentaire">Justification</label>
+              <textarea pTextarea id="commentaire" rows="4" class="w-full"
+                [formControl]="validationForm.controls.commentaire" placeholder="Justification de la décision humaine (minimum 10 caractères)…"
+                aria-label="Justification de la décision humaine"></textarea>
+              @if (validationForm.controls.commentaire.touched && validationForm.controls.commentaire.invalid) {
+                <p class="error-inline">La justification est requise et doit contenir au moins 10 caractères.</p>
+              }
+            </div>
+
+            <div class="field mb-4 mt-3">
+              <p-checkbox inputId="accordAvecIa" [binary]="true" [formControl]="validationForm.controls.accordAvecIa"
+                ariaLabel="Accord avec l'IA" />
+              <label for="accordAvecIa" class="ml-2">
+                Je suis en accord avec la recommandation de l'IA (décochez en cas de désaccord)
+              </label>
+            </div>
+
+            <div class="validation-confirm mb-4">
+              <p-checkbox inputId="confirmed" [binary]="true" [formControl]="validationForm.controls.confirmed"
+                ariaLabel="Confirmer la consultation du dossier global" />
+              <label for="confirmed" class="ml-2">
+                Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
+              </label>
+              @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
+                <p class="error-inline mt-1">Veuillez confirmer avant d'enregistrer votre décision.</p>
+              }
+            </div>
+
+            <div class="validation-actions">
+              <p-button label="Valider la décision" icon="pi pi-check" severity="primary"
+                [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
+                [loading]="validationLoading()" (onClick)="submitDomainValidation()" ariaLabel="Valider la décision" />
+            </div>
+          </div>
+          } @else if (!isPendingValidation()) {
+          <p-divider />
+          <div class="validation-block validation-result">
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Décision humaine finale</span>
+                <p-tag [value]="humanFinalLabel(item) || '—'" [severity]="decisionTagSeverity(humanFinalLabel(item))" />
               </div>
-            } @else if (!isPendingValidation()) {
-              <p-divider />
-              <div class="validation-block validation-result">
-                <div class="summary-grid">
-                  <div class="summary-item">
-                    <span class="label">Décision humaine finale</span>
-                    <p-tag
-                      [value]="humanFinalLabel(item) || '—'"
-                      [severity]="decisionTagSeverity(humanFinalLabel(item))"
-                    />
-                  </div>
-                  <div class="summary-item">
-                    <span class="label">Validateur</span>
-                    <span class="value">{{ item.validatorEmail || '—' }}</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="label">Date</span>
-                    <span class="value">{{ item.validatedAt | date:'short' }}</span>
-                  </div>
-                </div>
+              <div class="summary-item">
+                <span class="label">Validateur</span>
+                <span class="value">{{ item.validatorEmail || '—' }}</span>
               </div>
-            } @else {
-              <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
-            }
+              <div class="summary-item">
+                <span class="label">Date</span>
+                <span class="value">{{ item.validatedAt | date:'short' }}</span>
+              </div>
+            </div>
+          </div>
+          } @else {
+          <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
+          }
 
-            <p-divider />
-            <h3 class="section-title">Historique des validations</h3>
-            <div class="validation-history">
-              @for (action of item.validations ?? []; track action.validationActionId) {
-                <article class="history-item">
-                  <div class="history-item__head">
-                    <strong>{{ action.validateurNom }}</strong>
-                    <p-tag
-                      [value]="statutLabel(action.statutApres)"
-                      [severity]="
+          <p-divider />
+          <h3 class="section-title">Historique des validations</h3>
+          <div class="validation-history">
+            @for (action of item.validations ?? []; track action.validationActionId) {
+            <article class="history-item">
+              <div class="history-item__head">
+                <strong>{{ action.validateurNom }}</strong>
+                <p-tag [value]="statutLabel(action.statutApres)" [severity]="
                         action.statutApres === 'APPROUVEE'
                           ? 'success'
                           : action.statutApres === 'REJETEE'
                             ? 'danger'
                             : 'secondary'
-                      "
-                    />
-                  </div>
-                  <p class="muted">
-                    {{ action.typeAction }} · {{ action.timestamp | date:'short' }}
-                    @if (action.decisionHumaine) {
-                      · Décision humaine :
-                      <p-tag
-                        [value]="action.decisionHumaine"
-                        [severity]="decisionTagSeverity(action.decisionHumaine)"
-                      />
-                    }
-                  </p>
-                  @if (action.commentaire) {
-                    <p class="value value--text">{{ action.commentaire }}</p>
-                  }
-                </article>
-              } @empty {
-                <p class="muted">Aucune validation humaine enregistrée.</p>
+                      " />
+              </div>
+              <p class="muted">
+                {{ action.typeAction }} · {{ action.timestamp | date:'short' }}
+                @if (action.decisionHumaine) {
+                · Décision humaine :
+                <p-tag [value]="action.decisionHumaine" [severity]="decisionTagSeverity(action.decisionHumaine)" />
+                }
+              </p>
+              @if (action.commentaire) {
+              <p class="value value--text">{{ action.commentaire }}</p>
               }
-            </div>
+            </article>
+            } @empty {
+            <p class="muted">Aucune validation humaine enregistrée.</p>
+            }
+          </div>
           }
 
           @case ('history') {
-            @if (traceLoading()) {
-              <app-loading-skeleton [lines]="5" label="Chargement de l'historique…" />
-            } @else if (historyEntries().length === 0) {
-              <app-empty-state
-                icon="history"
-                message="Aucun événement de traçabilité enregistré pour cette décision."
-              />
-            } @else {
-              <app-timeline [entries]="historyEntries()" />
-            }
+          @if (traceLoading()) {
+          <app-loading-skeleton [lines]="5" label="Chargement de l'historique…" />
+          } @else if (historyEntries().length === 0) {
+          <app-empty-state icon="history" message="Aucun événement de traçabilité enregistré pour cette décision." />
+          } @else {
+          <app-timeline [entries]="historyEntries()" />
+          }
           }
 
           @case ('sources') {
-            @if (traceLoading()) {
-              <app-loading-skeleton [lines]="5" label="Chargement des sources…" />
-            } @else {
-              @if (sourceError()) {
-                <app-error-state [message]="sourceError()!" />
-              }
+          @if (traceLoading()) {
+          <app-loading-skeleton [lines]="5" label="Chargement des sources…" />
+          } @else {
+          @if (sourceError()) {
+          <app-error-state [message]="sourceError()!" />
+          }
 
-              @if (item.sourcesMeta; as meta) {
-                <div class="summary-grid mb-3">
-                  <div class="summary-item"><span class="label">Source données</span><span class="value">{{ meta.sourceDonnees || '—' }}</span></div>
-                  <div class="summary-item"><span class="label">Dataset</span><span class="value">{{ meta.datasetVersion || domainMeta().datasetVersion }}</span></div>
-                  <div class="summary-item"><span class="label">Pipeline</span><span class="value">{{ meta.pipelineName || domainMeta().modelLabel }}</span></div>
-                  <div class="summary-item"><span class="label">Modèle</span><span class="value">{{ meta.modelVersion || item.modelVersion || '—' }}</span></div>
-                  <div class="summary-item"><span class="label">Type</span><span class="value">{{ meta.dataType || domainMeta().sourceMeta.dataType }}</span></div>
-                  <div class="summary-item"><span class="label">Synthétique</span><span class="value">{{ meta.synthetic !== false ? 'Oui' : 'Non' }}</span></div>
-                  <div class="summary-item summary-item--full"><span class="label">Usage</span><span class="value">{{ domainMeta().sourceMeta.usage }}</span></div>
-                  <div class="summary-item summary-item--full"><span class="label">Limite</span><span class="value">{{ meta.usageLimit || domainMeta().sourceMeta.limit }}</span></div>
-                  <div class="summary-item summary-item--full"><span class="label">Disclaimer</span><span class="value">{{ meta.disclaimer || domainMeta().disclaimer || '—' }}</span></div>
-                  <div class="summary-item"><span class="label">Nb features</span><span class="value">{{ meta.featureCount || domainMeta().featureCount }}</span></div>
-                </div>
-              }
+          @if (item.sourcesMeta; as meta) {
+          <div class="summary-grid mb-3">
+            <div class="summary-item"><span class="label">Source données</span><span class="value">{{ meta.sourceDonnees
+                || '—' }}</span></div>
+            <div class="summary-item"><span class="label">Dataset</span><span class="value">{{ meta.datasetVersion ||
+                domainMeta().datasetVersion }}</span></div>
+            <div class="summary-item"><span class="label">Pipeline</span><span class="value">{{ meta.pipelineName ||
+                domainMeta().modelLabel }}</span></div>
+            <div class="summary-item"><span class="label">Modèle</span><span class="value">{{ meta.modelVersion ||
+                item.modelVersion || '—' }}</span></div>
+            <div class="summary-item"><span class="label">Type</span><span class="value">{{ meta.dataType ||
+                domainMeta().sourceMeta.dataType }}</span></div>
+            <div class="summary-item"><span class="label">Synthétique</span><span class="value">{{ meta.synthetic !==
+                false ? 'Oui' : 'Non' }}</span></div>
+            <div class="summary-item summary-item--full"><span class="label">Usage</span><span class="value">{{
+                domainMeta().sourceMeta.usage }}</span></div>
+            <div class="summary-item summary-item--full"><span class="label">Limite</span><span class="value">{{
+                meta.usageLimit || domainMeta().sourceMeta.limit }}</span></div>
+            <div class="summary-item summary-item--full"><span class="label">Disclaimer</span><span class="value">{{
+                meta.disclaimer || domainMeta().disclaimer || '—' }}</span></div>
+            <div class="summary-item"><span class="label">Nb features</span><span class="value">{{ meta.featureCount ||
+                domainMeta().featureCount }}</span></div>
+          </div>
+          }
 
-              @if (sources().length === 0) {
-                <p class="muted">Aucune source documentaire additionnelle enregistrée (métadonnées modèle/dataset ci-dessus).</p>
-              } @else {
-                <div class="table-scroll">
-                  <table class="decisions-table sources-table" aria-label="Sources documentaires">
-                    <thead>
-                      <tr>
-                        <th scope="col">Type</th>
-                        <th scope="col">Nom</th>
-                        <th scope="col" class="col-hide-sm">Description</th>
-                        <th scope="col">URL / Réf.</th>
-                        <th scope="col">Hash</th>
-                        <th scope="col" class="col-hide-sm">Date</th>
-                        <th scope="col" class="col-hide-sm">Auteur</th>
-                        @if (canManageSources()) {
-                          <th scope="col">Actions</th>
-                        }
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (source of sources(); track source.sourceId) {
-                        <tr>
-                          <td>
-                            <span class="status-chip chip--pending">{{ source.sourceType }}</span>
-                          </td>
-                          <td><strong>{{ source.name }}</strong></td>
-                          <td class="col-hide-sm">{{ source.description || '—' }}</td>
-                          <td>
-                            @if (source.url) {
-                              <a [href]="source.url" target="_blank" rel="noopener noreferrer">
-                                {{ source.url }}
-                              </a>
-                            } @else {
-                              {{ source.documentReference || '—' }}
-                            }
-                          </td>
-                          <td>
-                            <app-copy-hash [hash]="source.contentHash" />
-                          </td>
-                          <td class="col-hide-sm td-time">
-                            <span class="time-date">{{ formatDate(source.createdAt) }}</span>
-                            <span class="time-hour">{{ formatTime(source.createdAt) }}</span>
-                          </td>
-                          <td class="col-hide-sm">{{ source.createdByEmail || '—' }}</td>
-                          @if (canManageSources()) {
-                            <td>
-                              <button
-                                type="button"
-                                class="btn-link btn-link--danger"
-                                (click)="removeSource(source.sourceId)"
-                              >
-                                Supprimer
-                              </button>
-                            </td>
-                          }
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              }
-
-              @if (canValidate()) {
-                <form class="source-form" [formGroup]="sourceForm" (ngSubmit)="addSource()">
-                  <h3 class="section-title">Ajouter une source</h3>
-                  <div class="source-form__grid">
-                    <div class="field">
-                      <label for="sourceType">Type</label>
-                      <select id="sourceType" formControlName="sourceType">
-                        @for (type of sourceTypes; track type) {
-                          <option [value]="type">{{ type }}</option>
-                        }
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="sourceName">Nom</label>
-                      <input id="sourceName" formControlName="name" placeholder="Nom de la source" />
-                    </div>
-                    <div class="field source-form__field--wide">
-                      <label for="sourceDescription">Description</label>
-                      <textarea
-                        id="sourceDescription"
-                        formControlName="description"
-                        rows="2"
-                        placeholder="Description optionnelle"
-                      ></textarea>
-                    </div>
-                    <div class="field">
-                      <label for="sourceUrl">URL</label>
-                      <input id="sourceUrl" formControlName="url" placeholder="https://…" />
-                    </div>
-                    <div class="field">
-                      <label for="sourceRef">Référence document</label>
-                      <input
-                        id="sourceRef"
-                        formControlName="documentReference"
-                        placeholder="Réf. interne ou externe"
-                      />
-                    </div>
-                  </div>
-                  <button type="submit" class="btn-secondary" [disabled]="sourceLoading()">
-                    @if (sourceLoading()) {
-                      Ajout en cours…
+          @if (sources().length === 0) {
+          <p class="muted">Aucune source documentaire additionnelle enregistrée (métadonnées modèle/dataset ci-dessus).
+          </p>
+          } @else {
+          <div class="table-scroll">
+            <table class="decisions-table sources-table" aria-label="Sources documentaires">
+              <thead>
+                <tr>
+                  <th scope="col">Type</th>
+                  <th scope="col">Nom</th>
+                  <th scope="col" class="col-hide-sm">Description</th>
+                  <th scope="col">URL / Réf.</th>
+                  <th scope="col">Hash</th>
+                  <th scope="col" class="col-hide-sm">Date</th>
+                  <th scope="col" class="col-hide-sm">Auteur</th>
+                  @if (canManageSources()) {
+                  <th scope="col">Actions</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (source of sources(); track source.sourceId) {
+                <tr>
+                  <td>
+                    <span class="status-chip chip--pending">{{ source.sourceType }}</span>
+                  </td>
+                  <td><strong>{{ source.name }}</strong></td>
+                  <td class="col-hide-sm">{{ source.description || '—' }}</td>
+                  <td>
+                    @if (source.url) {
+                    <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+                      {{ source.url }}
+                    </a>
                     } @else {
-                      Ajouter la source
+                    {{ source.documentReference || '—' }}
                     }
-                  </button>
-                </form>
+                  </td>
+                  <td>
+                    <app-copy-hash [hash]="source.contentHash" />
+                  </td>
+                  <td class="col-hide-sm td-time">
+                    <span class="time-date">{{ formatDate(source.createdAt) }}</span>
+                    <span class="time-hour">{{ formatTime(source.createdAt) }}</span>
+                  </td>
+                  <td class="col-hide-sm">{{ source.createdByEmail || '—' }}</td>
+                  @if (canManageSources()) {
+                  <td>
+                    <button type="button" class="btn-link btn-link--danger" (click)="removeSource(source.sourceId)">
+                      Supprimer
+                    </button>
+                  </td>
+                  }
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          }
+
+          @if (canValidate()) {
+          <form class="source-form" [formGroup]="sourceForm" (ngSubmit)="addSource()">
+            <h3 class="section-title">Ajouter une source</h3>
+            <div class="source-form__grid">
+              <div class="field">
+                <label for="sourceType">Type</label>
+                <select id="sourceType" formControlName="sourceType">
+                  @for (type of sourceTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="sourceName">Nom</label>
+                <input id="sourceName" formControlName="name" placeholder="Nom de la source" />
+              </div>
+              <div class="field source-form__field--wide">
+                <label for="sourceDescription">Description</label>
+                <textarea id="sourceDescription" formControlName="description" rows="2"
+                  placeholder="Description optionnelle"></textarea>
+              </div>
+              <div class="field">
+                <label for="sourceUrl">URL</label>
+                <input id="sourceUrl" formControlName="url" placeholder="https://…" />
+              </div>
+              <div class="field">
+                <label for="sourceRef">Référence document</label>
+                <input id="sourceRef" formControlName="documentReference" placeholder="Réf. interne ou externe" />
+              </div>
+            </div>
+            <button type="submit" class="btn-secondary" [disabled]="sourceLoading()">
+              @if (sourceLoading()) {
+              Ajout en cours…
+              } @else {
+              Ajouter la source
               }
-            }
+            </button>
+          </form>
+          }
+          }
           }
 
           @case ('integrity') {
-            <article class="integrity-card">
-              <div class="integrity-card__head">
-                <h3 class="section-title">Chaîne d'intégrité</h3>
-                @if (canAudit()) {
-                  <button
-                    type="button"
-                    class="btn-secondary"
-                    [disabled]="auditLoading()"
-                    (click)="verifyIntegrity()"
-                  >
-                    @if (auditLoading()) {
-                      Vérification…
-                    } @else {
-                      Vérifier l'intégrité
-                    }
-                  </button>
-                }
-              </div>
-
-              @if (auditError()) {
-                <app-error-state [message]="auditError()!" />
-              }
-
-              <div class="integrity-card__body">
-                <p class="muted mb-3">
-                  {{ item.integrity?.explanation || 'Le hash SHA-256 permet de vérifier l’intégrité du snapshot de la décision. Il ne bloque pas directement les modifications.' }}
-                </p>
-                <div class="integrity-card__row">
-                  <span class="label">Hash courant</span>
-                  @if (item.currentHash || item.integrity?.currentHash) {
-                    <app-copy-hash [hash]="(item.currentHash || item.integrity?.currentHash)!" label="Hash courant" />
-                  } @else {
-                    <span class="value value--muted">—</span>
-                  }
-                </div>
-                <div class="integrity-card__row">
-                  <span class="label">Hash précédent</span>
-                  <span class="value">{{ displayOrDash(item.integrity?.previousHash) }}</span>
-                </div>
-                <div class="integrity-card__row">
-                  <span class="label">Hash agents</span>
-                  <span class="value">{{ displayOrDash(item.integrity?.agentResponsesHash) }}</span>
-                </div>
-
-                @if (canAudit()) {
-                  <div class="integrity-card__status">
-                    @if (auditLoading()) {
-                      <app-loading-skeleton [lines]="2" label="Vérification de l'intégrité…" />
-                    } @else if (integrityValid() === true) {
-                      <p class="integrity-card__badge integrity-card__badge--ok">
-                        <app-icon name="shield-check" [size]="18" />
-                        Intégrité valide — la chaîne de hash est cohérente.
-                      </p>
-                    } @else if (integrityValid() === false) {
-                      <p class="integrity-card__badge integrity-card__badge--warn">
-                        <app-icon name="shield-alert" [size]="18" />
-                        Intégrité compromise — incohérence détectée dans la chaîne.
-                      </p>
-                    } @else {
-                      <p class="muted">
-                        Cliquez sur « Vérifier l'intégrité » pour contrôler la cohérence du dossier.
-                      </p>
-                    }
-                  </div>
+          <article class="integrity-card">
+            <div class="integrity-card__head">
+              <h3 class="section-title">Chaîne d'intégrité</h3>
+              @if (canAudit()) {
+              <button type="button" class="btn-secondary" [disabled]="auditLoading()" (click)="verifyIntegrity()">
+                @if (auditLoading()) {
+                Vérification…
                 } @else {
-                  <p class="muted">
-                    Hash de traçabilité enregistré pour cette décision. La vérification complète est réservée aux auditeurs.
-                  </p>
+                Vérifier l'intégrité
                 }
-              </div>
-            </article>
-          }
-                }
-              </div>
+              </button>
+              }
+            </div>
+
+            @if (auditError()) {
+            <app-error-state [message]="auditError()!" />
             }
-          </p-tabpanel>
+
+            <div class="integrity-card__body">
+              <p class="muted mb-3">
+                {{ item.integrity?.explanation || 'Le hash SHA-256 permet de vérifier l’intégrité du snapshot de la
+                décision. Il ne bloque pas directement les modifications.' }}
+              </p>
+              <div class="integrity-card__row">
+                <span class="label">Hash courant</span>
+                @if (item.currentHash || item.integrity?.currentHash) {
+                <app-copy-hash [hash]="(item.currentHash || item.integrity?.currentHash)!" label="Hash courant" />
+                } @else {
+                <span class="value value--muted">—</span>
+                }
+              </div>
+              <div class="integrity-card__row">
+                <span class="label">Hash précédent</span>
+                <span class="value">{{ displayOrDash(item.integrity?.previousHash) }}</span>
+              </div>
+              <div class="integrity-card__row">
+                <span class="label">Hash agents</span>
+                <span class="value">{{ displayOrDash(item.integrity?.agentResponsesHash) }}</span>
+              </div>
+
+              @if (canAudit()) {
+              <div class="integrity-card__status">
+                @if (auditLoading()) {
+                <app-loading-skeleton [lines]="2" label="Vérification de l'intégrité…" />
+                } @else if (integrityValid() === true) {
+                <p class="integrity-card__badge integrity-card__badge--ok">
+                  <app-icon name="shield-check" [size]="18" />
+                  Intégrité valide — la chaîne de hash est cohérente.
+                </p>
+                } @else if (integrityValid() === false) {
+                <p class="integrity-card__badge integrity-card__badge--warn">
+                  <app-icon name="shield-alert" [size]="18" />
+                  Intégrité compromise — incohérence détectée dans la chaîne.
+                </p>
+                } @else {
+                <p class="muted">
+                  Cliquez sur « Vérifier l'intégrité » pour contrôler la cohérence du dossier.
+                </p>
+                }
+              </div>
+              } @else {
+              <p class="muted">
+                Hash de traçabilité enregistré pour cette décision. La vérification complète est réservée aux auditeurs.
+              </p>
+              }
+            </div>
+          </article>
+          }
+          }
+        </div>
         }
-      </p-tabpanels>
-    </p-tabs>
+      </p-tabpanel>
+      }
+    </p-tabpanels>
+  </p-tabs>
   }
 </div>
