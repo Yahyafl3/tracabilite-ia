@@ -91,17 +91,9 @@ export class AuthService {
 
   /**
    * User logout
+   * JWT is stateless, so logout is client-side only
    */
   logout(): void {
-    const token = this.getToken();
-
-    if (token) {
-      // Notify backend (fire and forget)
-      this.http.post(`${this.API_URL}/logout`, {}).subscribe({
-        error: () => console.warn('Logout notification failed')
-      });
-    }
-
     this.clearAuthData();
     this.router.navigate(['/auth/login']);
   }
