@@ -48,16 +48,23 @@ export interface User {
   derniereConnexion?: Date;
 }
 
-/** Rôles des comptes internes. UTILISATEUR = Agent métier (pas le client). */
+/** Rôles des comptes internes. UTILISATEUR/VALIDATEUR sont LEGACY (compatibilité uniquement). */
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
-  VALIDATEUR = 'VALIDATEUR',
   AUDITEUR = 'AUDITEUR',
-  /** Agent métier — valeur technique backend inchangée. */
-  UTILISATEUR = 'UTILISATEUR',
+  /** Agent créateur — décisions CREDIT, lecture propres dossiers. */
+  AGENT_CREDIT = 'AGENT_CREDIT',
+  /** Agent créateur — décisions MEDICAL, lecture propres dossiers. */
+  AGENT_SANTE = 'AGENT_SANTE',
+  /** Agent créateur — décisions EDUCATION, lecture propres dossiers. */
+  AGENT_PEDAGOGIQUE = 'AGENT_PEDAGOGIQUE',
   RESPONSABLE_CREDIT = 'RESPONSABLE_CREDIT',
   PROFESSIONNEL_SANTE = 'PROFESSIONNEL_SANTE',
   RESPONSABLE_PEDAGOGIQUE = 'RESPONSABLE_PEDAGOGIQUE',
+  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
+  UTILISATEUR = 'UTILISATEUR',
+  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
+  VALIDATEUR = 'VALIDATEUR',
 }
 
 export interface TokenPayload {

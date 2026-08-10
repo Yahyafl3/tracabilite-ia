@@ -29,8 +29,9 @@ export interface UpdateManagedUserRequest {
 
 /** Ordre d’affichage du dropdown admin. Valeurs = RoleEnum backend. */
 export const MANAGED_USER_ROLES: UserRole[] = [
-  UserRole.UTILISATEUR,
-  UserRole.VALIDATEUR,
+  UserRole.AGENT_CREDIT,
+  UserRole.AGENT_SANTE,
+  UserRole.AGENT_PEDAGOGIQUE,
   UserRole.RESPONSABLE_CREDIT,
   UserRole.PROFESSIONNEL_SANTE,
   UserRole.RESPONSABLE_PEDAGOGIQUE,

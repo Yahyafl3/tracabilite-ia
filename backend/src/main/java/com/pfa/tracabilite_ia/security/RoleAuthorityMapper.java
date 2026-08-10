@@ -23,6 +23,12 @@ public final class RoleAuthorityMapper {
                 || upper.equals("RESPONSABLE_PEDAGOGIQUE")) {
             return domainAuthorities(upper);
         }
+        // Agent roles get domain-scoped USER authority so the security layer knows their domain
+        if (upper.equals("AGENT_CREDIT")
+                || upper.equals("AGENT_SANTE")
+                || upper.equals("AGENT_PEDAGOGIQUE")) {
+            return agentAuthorities(upper);
+        }
         return List.of(new SimpleGrantedAuthority(mapToSpringRole(role)));
     }
 
@@ -49,7 +55,8 @@ public final class RoleAuthorityMapper {
     public static String mapToSpringRole(String role) {
         return switch (role.toUpperCase()) {
             case "ADMIN", "ADMINISTRATEUR" -> "ROLE_ADMIN";
-            case "USER", "UTILISATEUR" -> "ROLE_USER";
+            case "USER", "UTILISATEUR",
+                 "AGENT_CREDIT", "AGENT_SANTE", "AGENT_PEDAGOGIQUE" -> "ROLE_USER";
             case "VALIDATOR", "VALIDATEUR",
                  "RESPONSABLE_CREDIT", "PROFESSIONNEL_SANTE", "RESPONSABLE_PEDAGOGIQUE"
                     -> "ROLE_VALIDATOR";
@@ -79,6 +86,30 @@ public final class RoleAuthorityMapper {
                     new SimpleGrantedAuthority("ROLE_EDUCATION_VALIDATOR")
             );
             default -> fromRoleClaim(role);
+        };
+    }
+
+    /**
+     * Autorités pour les agents créateurs par domaine (ROLE_USER + domaine spécifique).
+     */
+    public static Collection<GrantedAuthority> agentAuthorities(String role) {
+        if (role == null || role.isBlank()) {
+            return List.of();
+        }
+        return switch (role.toUpperCase()) {
+            case "AGENT_CREDIT" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("ROLE_AGENT_CREDIT")
+            );
+            case "AGENT_SANTE" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("ROLE_AGENT_SANTE")
+            );
+            case "AGENT_PEDAGOGIQUE" -> List.of(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("ROLE_AGENT_PEDAGOGIQUE")
+            );
+            default -> List.of(new SimpleGrantedAuthority("ROLE_USER"));
         };
     }
 }

@@ -106,7 +106,7 @@ export class UsersAdminComponent {
     nom: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     motDePasse: ['', [Validators.minLength(6)]],
-    role: [UserRole.UTILISATEUR, Validators.required],
+    role: [UserRole.AGENT_CREDIT, Validators.required],
   });
 
   constructor() {
@@ -135,7 +135,7 @@ export class UsersAdminComponent {
       nom: '',
       email: '',
       motDePasse: '',
-      role: UserRole.UTILISATEUR,
+      role: UserRole.AGENT_CREDIT,
     });
     this.form.controls.motDePasse.setValidators([Validators.required, Validators.minLength(6)]);
     this.form.controls.motDePasse.updateValueAndValidity();
@@ -259,10 +259,21 @@ export class UsersAdminComponent {
 
   roleLabel = roleLabel;
 
-  roleSeverity(role: UserRole): 'danger' | 'warn' | 'info' | 'secondary' {
+  roleSeverity(role: UserRole | string): 'danger' | 'warn' | 'info' | 'success' | 'secondary' {
     if (role === UserRole.ADMINISTRATEUR) return 'danger';
-    if (role === UserRole.VALIDATEUR) return 'warn';
+    if (
+      role === UserRole.RESPONSABLE_CREDIT ||
+      role === UserRole.PROFESSIONNEL_SANTE ||
+      role === UserRole.RESPONSABLE_PEDAGOGIQUE ||
+      role === UserRole.VALIDATEUR
+    ) return 'warn';
     if (role === UserRole.AUDITEUR) return 'info';
+    if (
+      role === UserRole.AGENT_CREDIT ||
+      role === UserRole.AGENT_SANTE ||
+      role === UserRole.AGENT_PEDAGOGIQUE ||
+      role === UserRole.UTILISATEUR
+    ) return 'success';
     return 'secondary';
   }
 

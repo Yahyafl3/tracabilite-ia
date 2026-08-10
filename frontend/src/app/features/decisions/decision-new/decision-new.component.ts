@@ -1,4 +1,4 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -16,6 +16,8 @@ import {
 } from '../../../shared/ui';
 import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels';
 import { DecisionService } from '../../../core/services/decision.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserRole } from '../../../core/models/auth.models';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
 import {
@@ -26,6 +28,15 @@ import {
 import { CreditDecisionFormComponent } from '../forms/credit-decision-form.component';
 import { MedicalDecisionFormComponent } from '../forms/medical-decision-form.component';
 import { EducationDecisionFormComponent } from '../forms/education-decision-form.component';
+
+/** Map role → unique allowed domain (null = all domains). */
+const ROLE_DOMAIN_MAP: Partial<Record<string, DecisionDomain>> = {
+  [UserRole.AGENT_CREDIT]:      'CREDIT',
+  [UserRole.AGENT_SANTE]:       'MEDICAL',
+  [UserRole.AGENT_PEDAGOGIQUE]: 'EDUCATION',
+  // Legacy
+  [UserRole.UTILISATEUR]:       'CREDIT',
+};
 
 @Component({
   selector: 'app-decision-new',
@@ -51,12 +62,12 @@ import { EducationDecisionFormComponent } from '../forms/education-decision-form
   templateUrl: './decision-new.component.html',
   styleUrl: './decision-new.component.scss',
 })
-export class DecisionNewComponent {
+export class DecisionNewComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly decisions = inject(DecisionService);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  readonly domains = DECISION_DOMAINS;
   readonly multiAgentLabels = MULTI_AGENT_UI_LABELS;
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -68,10 +79,33 @@ export class DecisionNewComponent {
   readonly medicalForm = viewChild(MedicalDecisionFormComponent);
   readonly educationForm = viewChild(EducationDecisionFormComponent);
 
+  /** Domains available to the current user based on role. */
+  get allowedDomains(): { value: DecisionDomain; label: string; description: string }[] {
+    const role = this.authService.currentUser?.role as string | undefined;
+    const locked = role ? ROLE_DOMAIN_MAP[role] : undefined;
+    if (locked) {
+      return DECISION_DOMAINS.filter((d) => d.value === locked);
+    }
+    return DECISION_DOMAINS;
+  }
+
+  /** True when the user is restricted to exactly one domain. */
+  get domainLocked(): boolean {
+    const role = this.authService.currentUser?.role as string | undefined;
+    return role ? !!ROLE_DOMAIN_MAP[role] : false;
+  }
+
   readonly shellForm: FormGroup = this.fb.group({
     domaine: ['CREDIT' as DecisionDomain, Validators.required],
     includeOpenRouter: [true],
   });
+
+  ngOnInit(): void {
+    const domains = this.allowedDomains;
+    if (domains.length === 1) {
+      this.shellForm.patchValue({ domaine: domains[0].value });
+    }
+  }
 
   get selectedDomain(): DecisionDomain {
     return this.shellForm.get('domaine')!.value as DecisionDomain;

@@ -30,13 +30,17 @@
           <p-select
             inputId="domaine"
             formControlName="domaine"
-            [options]="domains"
+            [options]="allowedDomains"
             optionLabel="label"
             optionValue="value"
             styleClass="w-full"
             (onChange)="onDomainChange()"
+            [disabled]="domainLocked"
             ariaLabel="Domaine de décision"
           />
+          @if (domainLocked) {
+            <small class="muted">Domaine fixé par votre rôle.</small>
+          }
         </div>
       </form>
 

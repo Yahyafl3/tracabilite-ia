@@ -113,7 +113,8 @@ public class DataInitializer {
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
                 CHECK (role IN (
                     'ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR',
-                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE'
+                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE',
+                    'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE'
                 ))
                 """);
     }

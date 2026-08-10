@@ -73,12 +73,16 @@ export function decisionLabel(decision?: string | null): string {
 export function roleLabel(role: UserRole | string): string {
   const map: Record<string, string> = {
     [UserRole.ADMINISTRATEUR]: 'Administrateur',
-    [UserRole.VALIDATEUR]: 'Validateur',
     [UserRole.AUDITEUR]: 'Auditeur',
-    [UserRole.UTILISATEUR]: 'Agent de crédit',
-    [UserRole.RESPONSABLE_CREDIT]: 'Responsable crédit',
-    [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de santé',
-    [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable pédagogique',
+    [UserRole.AGENT_CREDIT]: 'Agent Crédit',
+    [UserRole.AGENT_SANTE]: 'Agent Santé',
+    [UserRole.AGENT_PEDAGOGIQUE]: 'Agent Pédagogique',
+    [UserRole.RESPONSABLE_CREDIT]: 'Responsable Crédit',
+    [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de Santé',
+    [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable Pédagogique',
+    // Legacy
+    [UserRole.VALIDATEUR]: 'Validateur (legacy)',
+    [UserRole.UTILISATEUR]: 'Agent de crédit (legacy)',
   };
   return map[String(role)] ?? String(role);
 }
@@ -88,15 +92,18 @@ export function roleChipClass(role: UserRole | string): string {
   switch (role) {
     case UserRole.ADMINISTRATEUR:
       return 'chip--info';
-    case UserRole.VALIDATEUR:
     case UserRole.RESPONSABLE_CREDIT:
     case UserRole.PROFESSIONNEL_SANTE:
     case UserRole.RESPONSABLE_PEDAGOGIQUE:
+    case UserRole.VALIDATEUR:
       return 'chip--approved';
-    case UserRole.AUDITEUR:
-      return 'chip--modified';
+    case UserRole.AGENT_CREDIT:
+    case UserRole.AGENT_SANTE:
+    case UserRole.AGENT_PEDAGOGIQUE:
     case UserRole.UTILISATEUR:
       return 'chip--pending';
+    case UserRole.AUDITEUR:
+      return 'chip--modified';
     default:
       return 'chip--pending';
   }

@@ -70,6 +70,9 @@ export const routes: Routes = [
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
             UserRole.RESPONSABLE_PEDAGOGIQUE,
+            UserRole.AGENT_CREDIT,
+            UserRole.AGENT_SANTE,
+            UserRole.AGENT_PEDAGOGIQUE,
           ]),
         ],
         loadComponent: () =>
@@ -79,7 +82,13 @@ export const routes: Routes = [
       },
       {
         path: 'decisions/new',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR, UserRole.UTILISATEUR])],
+        canActivate: [roleGuard([
+          UserRole.ADMINISTRATEUR,
+          UserRole.UTILISATEUR,
+          UserRole.AGENT_CREDIT,
+          UserRole.AGENT_SANTE,
+          UserRole.AGENT_PEDAGOGIQUE,
+        ])],
         loadComponent: () =>
           import('./features/decisions/decision-new/decision-new.component').then(
             (m) => m.DecisionNewComponent,
@@ -96,6 +105,9 @@ export const routes: Routes = [
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
             UserRole.RESPONSABLE_PEDAGOGIQUE,
+            UserRole.AGENT_CREDIT,
+            UserRole.AGENT_SANTE,
+            UserRole.AGENT_PEDAGOGIQUE,
           ]),
         ],
         loadComponent: () =>

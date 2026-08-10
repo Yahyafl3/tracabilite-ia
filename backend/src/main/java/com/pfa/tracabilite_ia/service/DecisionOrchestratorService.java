@@ -62,6 +62,7 @@ public class DecisionOrchestratorService {
     @Transactional
     public DecisionResponse createAndAnalyzeCredit(CreateCreditDecisionRequest request) {
         Utilisateur user = authService.getCurrentUser();
+        assertCanCreate(user, DecisionDomain.CREDIT);
         DomainPredictionResponse prediction = mlDecisionService.predictCredit(request);
 
         Decision decision = baseDecision(DecisionDomain.CREDIT, user, request.getDescription(), prediction);
@@ -92,6 +93,7 @@ public class DecisionOrchestratorService {
     @Transactional
     public DecisionResponse createAndAnalyzeMedical(CreateMedicalDecisionRequest request) {
         Utilisateur user = authService.getCurrentUser();
+        assertCanCreate(user, DecisionDomain.MEDICAL);
         DomainPredictionResponse prediction = mlDecisionService.predictMedical(request);
 
         Decision decision = baseDecision(DecisionDomain.MEDICAL, user, request.getDescription(), prediction);
@@ -122,6 +124,7 @@ public class DecisionOrchestratorService {
     @Transactional
     public DecisionResponse createAndAnalyzeEducation(CreateEducationDecisionRequest request) {
         Utilisateur user = authService.getCurrentUser();
+        assertCanCreate(user, DecisionDomain.EDUCATION);
         DomainPredictionResponse prediction = mlDecisionService.predictEducation(request);
 
         Decision decision = baseDecision(DecisionDomain.EDUCATION, user, request.getDescription(), prediction);
@@ -360,6 +363,31 @@ public class DecisionOrchestratorService {
             decision.setExplanationFactors(factors);
         }
         decision.setCurrentHash(decision.calculerHash());
+    }
+
+    /**
+     * Vérifie que l'utilisateur courant est autorisé à créer une décision pour ce domaine.
+     * ADMINISTRATEUR : tous les domaines.
+     * AGENT_CREDIT / UTILISATEUR (legacy) : CREDIT uniquement.
+     * AGENT_SANTE : MEDICAL uniquement.
+     * AGENT_PEDAGOGIQUE : EDUCATION uniquement.
+     * Tout autre rôle (validateurs, auditeur) : interdit.
+     */
+    private void assertCanCreate(Utilisateur user, DecisionDomain domain) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié");
+        }
+        RoleEnum role = user.getRole();
+        if (role == RoleEnum.ADMINISTRATEUR) return; // all domains
+        boolean allowed = switch (domain) {
+            case CREDIT    -> role == RoleEnum.AGENT_CREDIT    || role == RoleEnum.UTILISATEUR;
+            case MEDICAL   -> role == RoleEnum.AGENT_SANTE;
+            case EDUCATION -> role == RoleEnum.AGENT_PEDAGOGIQUE;
+        };
+        if (!allowed) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Votre rôle " + role + " ne permet pas de créer une décision du domaine " + domain);
+        }
     }
 
     private void assertCanValidate(Utilisateur user, Decision decision) {

@@ -19,8 +19,17 @@ export class AppMenuComponent {
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
     const isValidateur = role === UserRole.VALIDATEUR;
-    const isDomainValidator = role === UserRole.RESPONSABLE_CREDIT || role === UserRole.PROFESSIONNEL_SANTE || role === UserRole.RESPONSABLE_PEDAGOGIQUE;
+    const isDomainValidator =
+      role === UserRole.RESPONSABLE_CREDIT ||
+      role === UserRole.PROFESSIONNEL_SANTE ||
+      role === UserRole.RESPONSABLE_PEDAGOGIQUE;
+    const isAgent =
+      role === UserRole.AGENT_CREDIT ||
+      role === UserRole.AGENT_SANTE ||
+      role === UserRole.AGENT_PEDAGOGIQUE ||
+      role === UserRole.UTILISATEUR;
     const canValidate = isValidateur || isDomainValidator || isAdmin;
+    const canCreate = isAdmin || isAgent;
 
     // Auditeur — audit only
     if (isAuditeur) {
@@ -47,15 +56,16 @@ export class AppMenuComponent {
       ];
     }
 
+    const appItems: AppMenuItem[] = [
+      { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
+      { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+    ];
+    if (canCreate) {
+      appItems.push({ label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' });
+    }
+
     const items: AppMenuItem[] = [
-      {
-        label: 'Application',
-        items: [
-          { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
-          { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
-          { label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' },
-        ],
-      },
+      { label: 'Application', items: appItems },
     ];
 
     // Analyse : réservée aux rôles effectivement autorisés côté API

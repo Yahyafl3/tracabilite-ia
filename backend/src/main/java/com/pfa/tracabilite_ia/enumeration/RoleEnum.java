@@ -3,19 +3,28 @@ package com.pfa.tracabilite_ia.enumeration;
 /**
  * Rôles métier des comptes internes.
  * <p>
- * {@link #UTILISATEUR} = Agent métier (interne). Mapped to Spring {@code ROLE_USER}.
- * Les rôles {@link #RESPONSABLE_CREDIT}, {@link #PROFESSIONNEL_SANTE},
- * {@link #RESPONSABLE_PEDAGOGIQUE} sont des validateurs spécialisés par domaine.
- * {@link #VALIDATEUR} reste supporté pour compatibilité (validation générique).
- * {@link #ADMINISTRATEUR} administre mais n'est pas validateur métier par défaut.
+ * {@link #AGENT_CREDIT}, {@link #AGENT_SANTE}, {@link #AGENT_PEDAGOGIQUE} sont les agents
+ * créateurs de décisions par domaine. Ils ne valident pas.
+ * {@link #RESPONSABLE_CREDIT}, {@link #PROFESSIONNEL_SANTE},
+ * {@link #RESPONSABLE_PEDAGOGIQUE} sont les validateurs spécialisés par domaine.
+ * {@link #UTILISATEUR} et {@link #VALIDATEUR} sont des rôles LEGACY conservés pour
+ * compatibilité ; ils ne sont plus proposés à la création de nouveaux comptes.
+ * {@link #ADMINISTRATEUR} gère les comptes et a une visibilité globale.
  */
 public enum RoleEnum {
     ADMINISTRATEUR,
-    VALIDATEUR,
     AUDITEUR,
-    /** Agent métier (interne). Spring: ROLE_USER. */
-    UTILISATEUR,
+    /** Agent créateur — décisions CREDIT uniquement, lecture propres dossiers. */
+    AGENT_CREDIT,
+    /** Agent créateur — décisions MEDICAL uniquement, lecture propres dossiers. */
+    AGENT_SANTE,
+    /** Agent créateur — décisions EDUCATION uniquement, lecture propres dossiers. */
+    AGENT_PEDAGOGIQUE,
     RESPONSABLE_CREDIT,
     PROFESSIONNEL_SANTE,
-    RESPONSABLE_PEDAGOGIQUE
+    RESPONSABLE_PEDAGOGIQUE,
+    /** Legacy — compatibilité. Ne plus proposer à la création. */
+    UTILISATEUR,
+    /** Legacy — compatibilité. Ne plus proposer à la création. */
+    VALIDATEUR
 }

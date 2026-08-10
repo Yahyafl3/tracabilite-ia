@@ -25,13 +25,17 @@ import java.util.UUID;
 public class UtilisateurServiceImpl implements UtilisateurService {
 
     private static final Set<RoleEnum> MANAGED_ROLES = EnumSet.of(
-            RoleEnum.UTILISATEUR,
-            RoleEnum.VALIDATEUR,
+            RoleEnum.AGENT_CREDIT,
+            RoleEnum.AGENT_SANTE,
+            RoleEnum.AGENT_PEDAGOGIQUE,
             RoleEnum.RESPONSABLE_CREDIT,
             RoleEnum.PROFESSIONNEL_SANTE,
             RoleEnum.RESPONSABLE_PEDAGOGIQUE,
             RoleEnum.AUDITEUR,
-            RoleEnum.ADMINISTRATEUR
+            RoleEnum.ADMINISTRATEUR,
+            // Legacy — kept for existing accounts; backend still accepts them on update
+            RoleEnum.UTILISATEUR,
+            RoleEnum.VALIDATEUR
     );
 
     private final UtilisateurRepository utilisateurRepository;
