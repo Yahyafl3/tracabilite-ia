@@ -74,6 +74,89 @@ public interface DecisionRepository extends JpaRepository<Decision, UUID> {
             Pageable pageable
     );
 
+    @Query("""
+            SELECT d FROM Decision d
+            WHERE (:search IS NULL OR :search = '' OR
+                   LOWER(d.prompt) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(d.contexte) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.suggestedDecision, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.dossierReference, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.humanDecision, '')) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:statut IS NULL OR d.statutValidation = :statut)
+              AND (
+                    :domaine IS NULL
+                    OR d.domaine = :domaine
+                    OR (:domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.CREDIT AND d.domaine IS NULL)
+                  )
+              AND (:riskLevel IS NULL OR :riskLevel = '' OR UPPER(COALESCE(d.riskLevel, '')) = UPPER(:riskLevel))
+              AND (:decisionFinale IS NULL OR :decisionFinale = '' OR UPPER(COALESCE(d.humanDecision, '')) = UPPER(:decisionFinale))
+              AND (
+                    :validateur IS NULL OR :validateur = ''
+                    OR LOWER(COALESCE(d.validatorEmail, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
+                    OR LOWER(COALESCE(d.validateurRole, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
+                  )
+              AND d.timestamp >= :fromDate
+              AND d.timestamp <= :toDate
+              AND (:createdBy = '' OR LOWER(COALESCE(d.createdBy, '')) = LOWER(:createdBy))
+            """)
+    Page<Decision> searchFilteredWithCreator(
+            @Param("search") String search,
+            @Param("statut") StatutDecisionEnum statut,
+            @Param("domaine") DecisionDomain domaine,
+            @Param("riskLevel") String riskLevel,
+            @Param("decisionFinale") String decisionFinale,
+            @Param("validateur") String validateur,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            @Param("createdBy") String createdBy,
+            Pageable pageable
+    );
+
+    /**
+     * Search for domain agents: shows own decisions + decisions created by ADMINISTRATEUR in their domain
+     */
+    @Query("""
+            SELECT d FROM Decision d
+            LEFT JOIN Utilisateur u ON LOWER(d.createdBy) = LOWER(u.email)
+            WHERE (:search IS NULL OR :search = '' OR
+                   LOWER(d.prompt) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(d.contexte) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.suggestedDecision, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.dossierReference, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                   LOWER(COALESCE(d.humanDecision, '')) LIKE LOWER(CONCAT('%', :search, '%')))
+              AND (:statut IS NULL OR d.statutValidation = :statut)
+              AND (
+                    :domaine IS NULL
+                    OR d.domaine = :domaine
+                    OR (:domaine = com.pfa.tracabilite_ia.enumeration.DecisionDomain.CREDIT AND d.domaine IS NULL)
+                  )
+              AND (:riskLevel IS NULL OR :riskLevel = '' OR UPPER(COALESCE(d.riskLevel, '')) = UPPER(:riskLevel))
+              AND (:decisionFinale IS NULL OR :decisionFinale = '' OR UPPER(COALESCE(d.humanDecision, '')) = UPPER(:decisionFinale))
+              AND (
+                    :validateur IS NULL OR :validateur = ''
+                    OR LOWER(COALESCE(d.validatorEmail, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
+                    OR LOWER(COALESCE(d.validateurRole, '')) LIKE LOWER(CONCAT('%', :validateur, '%'))
+                  )
+              AND d.timestamp >= :fromDate
+              AND d.timestamp <= :toDate
+              AND (
+                    LOWER(COALESCE(d.createdBy, '')) = LOWER(:createdBy)
+                    OR u.role = com.pfa.tracabilite_ia.enumeration.RoleEnum.ADMINISTRATEUR
+                  )
+            """)
+    Page<Decision> searchFilteredForDomainAgent(
+            @Param("search") String search,
+            @Param("statut") StatutDecisionEnum statut,
+            @Param("domaine") DecisionDomain domaine,
+            @Param("riskLevel") String riskLevel,
+            @Param("decisionFinale") String decisionFinale,
+            @Param("validateur") String validateur,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            @Param("createdBy") String createdBy,
+            Pageable pageable
+    );
+
     /**
      * Dates toujours bornées côté service (évite PKIX/null typing PostgreSQL sur {@code ? IS NULL} timestamp).
      */

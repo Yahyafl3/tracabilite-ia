@@ -293,16 +293,39 @@ public class DecisionServiceImpl implements DecisionService {
             int size
     ) {
         Utilisateur user = authService.getCurrentUser();
+        log.info(">>> RECHERCHER: user={}, role={}", 
+                user != null ? user.getEmail() : "null", 
+                user != null && user.getRole() != null ? user.getRole().name() : "null");
+        
         DecisionDomain enforcedDomain = domaine;
+        String enforcedCreatedBy = null;
 
         if (user != null && user.getRole() != null) {
             RoleEnum role = user.getRole();
+            log.info(">>> RECHERCHER: Checking role, role={}", role.name());
             if (role == RoleEnum.RESPONSABLE_CREDIT) {
                 enforcedDomain = DecisionDomain.CREDIT;
             } else if (role == RoleEnum.PROFESSIONNEL_SANTE) {
                 enforcedDomain = DecisionDomain.MEDICAL;
             } else if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) {
                 enforcedDomain = DecisionDomain.EDUCATION;
+            }
+            // Domain agents can see their own decisions + decisions created by ADMINISTRATEUR
+            // Note: filtering by createdBy will be done in repository query, but we need special handling
+            // for ADMINISTRATEUR-created decisions. We'll handle this via a modified query.
+            else if (role == RoleEnum.AGENT_CREDIT) {
+                log.info(">>> RECHERCHER: Detected AGENT_CREDIT role");
+                enforcedDomain = DecisionDomain.CREDIT;
+                // Will be handled by custom repository query to include ADMINISTRATEUR decisions
+                enforcedCreatedBy = user.getEmail();
+            } else if (role == RoleEnum.AGENT_SANTE) {
+                log.info(">>> RECHERCHER: Detected AGENT_SANTE role");
+                enforcedDomain = DecisionDomain.MEDICAL;
+                enforcedCreatedBy = user.getEmail();
+            } else if (role == RoleEnum.AGENT_PEDAGOGIQUE) {
+                log.info(">>> RECHERCHER: Detected AGENT_PEDAGOGIQUE role");
+                enforcedDomain = DecisionDomain.EDUCATION;
+                enforcedCreatedBy = user.getEmail();
             }
             // If the role is VALIDATEUR, we default to CREDIT for legacy compatibility,
             // unless they requested another domain and they actually have access to it?
@@ -317,8 +340,20 @@ public class DecisionServiceImpl implements DecisionService {
         LocalDateTime fromBound = fromDate != null ? fromDate : LocalDateTime.of(1970, 1, 1, 0, 0);
         LocalDateTime toBound = toDate != null ? toDate : LocalDateTime.of(2999, 12, 31, 23, 59, 59);
         String validateurBound = validateur != null ? validateur : "";
-        Page<Decision> result = decisionRepository.searchFiltered(
-                search, statut, enforcedDomain, riskLevel, decisionFinale, validateurBound, fromBound, toBound, pageable);
+        String createdByBound = enforcedCreatedBy != null ? enforcedCreatedBy : "";
+        
+        Page<Decision> result;
+        // Domain agents use special query that includes ADMINISTRATEUR decisions
+        if (enforcedCreatedBy != null && !enforcedCreatedBy.isEmpty()) {
+            log.info(">>> AGENT ISOLATION: Using searchFilteredForDomainAgent for user={}, domain={}, createdBy={}", 
+                    user.getEmail(), enforcedDomain, createdByBound);
+            result = decisionRepository.searchFilteredForDomainAgent(
+                    search, statut, enforcedDomain, riskLevel, decisionFinale, validateurBound, fromBound, toBound, createdByBound, pageable);
+            log.info(">>> AGENT ISOLATION: Query returned {} decisions", result.getTotalElements());
+        } else {
+            result = decisionRepository.searchFilteredWithCreator(
+                    search, statut, enforcedDomain, riskLevel, decisionFinale, validateurBound, fromBound, toBound, createdByBound, pageable);
+        }
         return DecisionPageResponse.builder()
                 .content(decisionMapper.toResponseList(result.getContent()))
                 .page(result.getNumber())

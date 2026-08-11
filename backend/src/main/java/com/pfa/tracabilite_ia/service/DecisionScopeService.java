@@ -8,6 +8,7 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.exception.ResourceNotFoundException;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
 import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
+import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +26,16 @@ public class DecisionScopeService {
     private final DecisionRepository decisionRepository;
     private final ReponseAgentIARepository reponseAgentIARepository;
     private final AuthService authService;
+    private final UtilisateurRepository utilisateurRepository;
 
     public DecisionScopeService(DecisionRepository decisionRepository,
                                 ReponseAgentIARepository reponseAgentIARepository,
-                                AuthService authService) {
+                                AuthService authService,
+                                UtilisateurRepository utilisateurRepository) {
         this.decisionRepository = decisionRepository;
         this.reponseAgentIARepository = reponseAgentIARepository;
         this.authService = authService;
+        this.utilisateurRepository = utilisateurRepository;
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +79,27 @@ public class DecisionScopeService {
         // Users can view their own decisions
         if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(decision.getCreatedBy())) {
             return;
+        }
+
+        // Domain agents can view decisions created by ADMINISTRATEUR in their domain
+        if (decision.getCreatedBy() != null && !decision.getCreatedBy().isEmpty()) {
+            // Check if creator is ADMINISTRATEUR
+            try {
+                Utilisateur creator = utilisateurRepository.findByEmail(decision.getCreatedBy()).orElse(null);
+                if (creator != null && creator.getRole() == RoleEnum.ADMINISTRATEUR) {
+                    DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
+                    boolean isDomainAgent = switch (domain) {
+                        case CREDIT -> role == RoleEnum.AGENT_CREDIT;
+                        case MEDICAL -> role == RoleEnum.AGENT_SANTE;
+                        case EDUCATION -> role == RoleEnum.AGENT_PEDAGOGIQUE;
+                    };
+                    if (isDomainAgent) {
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                // If we can't find the creator, continue with normal access check
+            }
         }
 
         DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
