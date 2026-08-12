@@ -11,3 +11,5 @@ export { AgentResponseCardComponent } from './agent-response-card.component';
 export { CopyHashComponent } from './copy-hash.component';
 export { TimelineComponent } from './timeline.component';
 export { ModelIdentityComponent } from './model-identity.component';
+export { DonutChartComponent, type DonutChartDataPoint } from './donut-chart.component';
+export { LineChartComponent, type LineChartDataPoint } from './line-chart.component';

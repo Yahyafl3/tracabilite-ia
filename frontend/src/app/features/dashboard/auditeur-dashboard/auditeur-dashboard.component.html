@@ -1,0 +1,236 @@
+<div class="dashboard-container">
+  <!-- Dashboard Header (NO "Nouvelle Décision" button for AUDITEUR) -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Tableau de bord Auditeur</h1>
+      <p class="header-subtitle">Vue globale en lecture seule (Tous les domaines)</p>
+    </div>
+    <!-- Requirement 15.4: No creation button for auditor role (read-only) -->
+  </header>
+
+  <!-- Loading State: Skeleton Loaders -->
+  <!-- Requirement 13.1-13.2: Display skeleton loaders during data fetching -->
+  @if (loading()) {
+    <div class="skeleton-grid">
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="20rem" styleClass="mb-3" />
+      <p-skeleton height="20rem" styleClass="mb-3" />
+      <p-skeleton height="20rem" styleClass="mb-3" />
+    </div>
+  } 
+  <!-- Error State: Error Card with Retry Button -->
+  <!-- Requirement 13.4-13.6: Display error message with retry button on failure -->
+  @else if (error()) {
+    <p-card styleClass="error-card">
+      <div class="error-content">
+        <i class="pi pi-exclamation-triangle error-icon"></i>
+        <p class="error-message">{{ error() }}</p>
+        <button 
+          pButton 
+          label="Réessayer" 
+          icon="pi pi-refresh" 
+          class="p-button-secondary"
+          (click)="retry()">
+        </button>
+      </div>
+    </p-card>
+  } 
+  <!-- Success State: Dashboard Content -->
+  <!-- Requirement 9.5: Display data in KPI cards and charts when loaded -->
+  @else if (stats()) {
+    <!-- KPI Cards Grid -->
+    <!-- Requirement 8.1-8.4: Display global audit KPIs across all domains -->
+    <div class="kpi-grid">
+      <app-kpi-card
+        label="Total Décisions"
+        [value]="stats()?.kpiValues?.totalDecisions ?? 0"
+        icon="pi pi-file"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="Décisions Validées"
+        [value]="stats()?.kpiValues?.validatedDecisions ?? 0"
+        icon="pi pi-check-circle"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="Décisions Rejetées"
+        [value]="stats()?.kpiValues?.rejectedDecisions ?? 0"
+        icon="pi pi-times-circle"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="Taux de Conformité"
+        [value]="stats()?.kpiValues?.complianceRate ?? 0"
+        icon="pi pi-shield"
+        unit="%"
+        [loading]="loading()"
+      />
+    </div>
+
+    <!-- Charts Section -->
+    <!-- Requirement 8.5-8.7: Display domain distribution, status distribution, and 30-day timeline -->
+    <div class="charts-grid">
+      <!-- Domain Distribution Chart -->
+      <app-donut-chart
+        title="Répartition par Domaine"
+        [data]="getDomainChartData()"
+      />
+
+      <!-- Status Distribution Chart -->
+      <app-donut-chart
+        title="Répartition par Statut (Tous domaines)"
+        [data]="getStatusChartData()"
+      />
+
+      <!-- Timeline Evolution Chart -->
+      <app-line-chart
+        title="Évolution sur 30 jours (Tous domaines)"
+        [data]="getTimelineChartData()"
+      />
+    </div>
+
+    <!-- All Decisions Table (Read-Only) -->
+    <!-- Requirement 8.9: Display all decisions with read-only access -->
+    <div class="decisions-section">
+      <p-card header="Toutes les Décisions (Lecture seule)">
+        @if (stats()?.recentDecisions && stats()!.recentDecisions.length > 0) {
+          <p-table 
+            [value]="stats()!.recentDecisions" 
+            [tableStyle]="{ 'min-width': '60rem' }"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Référence</th>
+                <th>Domaine</th>
+                <th>Statut</th>
+                <th>Date de création</th>
+                <th>Créateur</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-decision>
+              <tr 
+                class="clickable-row" 
+                (click)="router.navigate(['/decisions', decision.decisionId])">
+                <td>{{ decision.reference }}</td>
+                <td>
+                  <p-tag 
+                    [value]="decision.domaine" 
+                    [severity]="
+                      decision.domaine === 'CREDIT' ? 'info' :
+                      decision.domaine === 'MEDICAL' ? 'success' :
+                      'warn'
+                    ">
+                  </p-tag>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="
+                      decision.statutValidation === 'VALIDEE' ? 'Validée' :
+                      decision.statutValidation === 'REJETEE' ? 'Rejetée' :
+                      'En attente'
+                    " 
+                    [severity]="
+                      decision.statutValidation === 'VALIDEE' ? 'success' : 
+                      decision.statutValidation === 'REJETEE' ? 'danger' : 
+                      'warn'
+                    ">
+                  </p-tag>
+                </td>
+                <td>{{ decision.createdAt | date:'short':'':'fr-FR' }}</td>
+                <td>{{ decision.creatorName || decision.createdBy }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <!-- Requirement 14.4: Display empty state for auditor when no data exists -->
+          <div class="empty-state">
+            <i class="pi pi-inbox empty-icon"></i>
+            <p class="empty-message">Aucune donnée disponible pour l'audit</p>
+            <p class="empty-hint">Les décisions apparaîtront ici</p>
+          </div>
+        }
+      </p-card>
+    </div>
+
+    <!-- Validation Actions Audit Trail -->
+    <!-- Requirement 8.10: Display audit trail entries -->
+    <div class="audit-trail-section">
+      <p-card header="Piste d'Audit des Validations">
+        @if (stats()?.recentValidations && stats()!.recentValidations && stats()!.recentValidations!.length > 0) {
+          <p-table 
+            [value]="stats()!.recentValidations!" 
+            [tableStyle]="{ 'min-width': '50rem' }"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Référence Décision</th>
+                <th>Action</th>
+                <th>Validateur</th>
+                <th>Date de validation</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-validation>
+              <tr 
+                class="clickable-row" 
+                (click)="router.navigate(['/decisions', validation.decisionId])">
+                <td>{{ validation.decisionReference }}</td>
+                <td>
+                  <p-tag 
+                    [value]="validation.action" 
+                    [severity]="validation.action === 'VALIDEE' ? 'success' : 'danger'">
+                  </p-tag>
+                </td>
+                <td>{{ validation.validatorName || validation.validatorEmail }}</td>
+                <td>{{ validation.validatedAt | date:'short':'':'fr-FR' }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <!-- Requirement 14.4: Display empty state when no audit trail exists -->
+          <div class="empty-state">
+            <i class="pi pi-history empty-icon"></i>
+            <p class="empty-message">Aucune entrée dans la piste d'audit</p>
+            <p class="empty-hint">Les actions de validation apparaîtront ici</p>
+          </div>
+        }
+      </p-card>
+    </div>
+
+    <!-- Validation Activity by Validator -->
+    <!-- Requirement 8.8: Display validation activity statistics by validator -->
+    <div class="validators-section">
+      <p-card header="Activité de Validation par Validateur">
+        @if (stats()?.topCreators && stats()!.topCreators && stats()!.topCreators!.length > 0) {
+          <p-table 
+            [value]="stats()!.topCreators!" 
+            [tableStyle]="{ 'min-width': '30rem' }"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Validateur</th>
+                <th>Nombre de validations</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-validator>
+              <tr>
+                <td>{{ validator.creatorName || validator.creatorEmail }}</td>
+                <td><strong>{{ validator.decisionCount }}</strong></td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <!-- Requirement 14.4: Display empty state when no validator activity exists -->
+          <div class="empty-state">
+            <i class="pi pi-users empty-icon"></i>
+            <p class="empty-message">Aucune activité de validation</p>
+            <p class="empty-hint">Les statistiques de validation apparaîtront ici</p>
+          </div>
+        }
+      </p-card>
+    </div>
+  }
+</div>

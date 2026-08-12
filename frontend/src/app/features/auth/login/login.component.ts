@@ -76,10 +76,46 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (response) => {
         const role = response.user?.role;
-        let defaultUrl = '/decisions';
-        if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
-        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
-        const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        
+        // Redirect to role-specific dashboard
+        let dashboardUrl = '/dashboard/admin'; // Default for ADMINISTRATEUR
+        
+        switch (role) {
+          case UserRole.ADMINISTRATEUR:
+            dashboardUrl = '/dashboard/admin';
+            break;
+          case UserRole.AGENT_CREDIT:
+            dashboardUrl = '/dashboard/agent-credit';
+            break;
+          case UserRole.AGENT_SANTE:
+            dashboardUrl = '/dashboard/agent-sante';
+            break;
+          case UserRole.AGENT_PEDAGOGIQUE:
+            dashboardUrl = '/dashboard/agent-pedagogique';
+            break;
+          case UserRole.VALIDATEUR:
+            dashboardUrl = '/dashboard/validateur';
+            break;
+          case UserRole.RESPONSABLE_CREDIT:
+            dashboardUrl = '/dashboard/responsable-credit';
+            break;
+          case UserRole.PROFESSIONNEL_SANTE:
+            dashboardUrl = '/dashboard/professionnel-sante';
+            break;
+          case UserRole.RESPONSABLE_PEDAGOGIQUE:
+            dashboardUrl = '/dashboard/responsable-pedagogique';
+            break;
+          case UserRole.AUDITEUR:
+            dashboardUrl = '/dashboard/auditeur';
+            break;
+          default:
+            // Legacy roles or unknown - fallback to decisions list
+            dashboardUrl = '/decisions';
+            break;
+        }
+        
+        // Allow returnUrl to override dashboard redirect if specified
+        const target = this.route.snapshot.queryParams['returnUrl'] || dashboardUrl;
         void this.router.navigate([target]);
       },
       error: (error: Error & { status?: number }) => {

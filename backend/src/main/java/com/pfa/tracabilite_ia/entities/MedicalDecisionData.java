@@ -24,9 +24,19 @@ public class MedicalDecisionData {
 
     private Integer age;
     private Integer grossesses;
+    
+    @Column(name = "glycemie_mg_dl")
     private Double glycemieMgDl;
+    
+    @Column(name = "pression_arterielle_mmhg")
     private Double pressionArterielleMmhg;
+    
+    @Column(name = "epaisseur_pli_cutane_mm")
     private Double epaisseurPliCutaneMm;
+    
+    @Column(name = "insuline_micro_u_ml")
     private Double insulineMicroUMl;
+    
+    @Column(name = "imc_kg_m2")
     private Double imcKgM2;
 }

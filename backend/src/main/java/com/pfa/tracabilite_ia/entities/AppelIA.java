@@ -19,6 +19,7 @@ public class AppelIA {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "appel_ia_id")
     private UUID appelIaId;
 
     @Column(nullable = false)
@@ -27,18 +28,20 @@ public class AppelIA {
     @Column(nullable = false)
     private String model;
 
+    @Column(name = "model_version")
     private String modelVersion;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "system_prompt", nullable = false, columnDefinition = "TEXT")
     private String systemPrompt;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "user_prompt", nullable = false, columnDefinition = "TEXT")
     private String userPrompt;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime timestamp;
 
+    @Column(name = "duration_ms")
     private Long durationMs;
 
     @Enumerated(EnumType.STRING)
@@ -48,10 +51,10 @@ public class AppelIA {
     @Column(columnDefinition = "TEXT")
     private String response;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    @Column(nullable = false)
+    @Column(name = "correlation_id", nullable = false)
     private String correlationId;
 
     @ManyToOne(fetch = FetchType.LAZY)

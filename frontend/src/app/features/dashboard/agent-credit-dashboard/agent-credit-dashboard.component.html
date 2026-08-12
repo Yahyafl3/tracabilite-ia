@@ -1,0 +1,182 @@
+<div class="dashboard-container">
+  <!-- Dashboard Header (NO "Nouvelle Décision" button - creation exists in sidebar menu) -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Tableau de bord Agent Crédit</h1>
+      <p class="header-subtitle">Mon activité dans le domaine CREDIT</p>
+    </div>
+  </header>
+
+  <!-- Loading State: Skeleton Loaders -->
+  @if (loading()) {
+    <div class="skeleton-grid">
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="8rem" styleClass="mb-3" />
+      <p-skeleton height="20rem" styleClass="mb-3" />
+      <p-skeleton height="20rem" styleClass="mb-3" />
+    </div>
+  } 
+  <!-- Error State: Error Card with Retry Button -->
+  @else if (error()) {
+    <p-card styleClass="error-card">
+      <div class="error-content">
+        <i class="pi pi-exclamation-triangle error-icon"></i>
+        <p class="error-message">{{ error() }}</p>
+        <button 
+          pButton 
+          label="Réessayer" 
+          icon="pi pi-refresh" 
+          class="p-button-secondary"
+          (click)="retry()">
+        </button>
+      </div>
+    </p-card>
+  } 
+  <!-- Success State: Dashboard Content -->
+  @else if (stats()) {
+    <!-- KPI Cards Grid -->
+    <div class="kpi-grid">
+      <app-kpi-card
+        label="Mes Décisions"
+        [value]="stats()?.kpiValues?.totalDecisions ?? 0"
+        icon="pi pi-chart-line"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="En Attente de Validation"
+        [value]="stats()?.kpiValues?.pendingValidations ?? 0"
+        icon="pi pi-clock"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="Décisions Validées"
+        [value]="stats()?.kpiValues?.validatedDecisions ?? 0"
+        icon="pi pi-check-circle"
+        [loading]="loading()"
+      />
+      <app-kpi-card
+        label="Taux d'Acceptation"
+        [value]="stats()?.kpiValues?.acceptanceRate ?? 0"
+        icon="pi pi-percentage"
+        unit="%"
+        [loading]="loading()"
+      />
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-row">
+      <!-- Status Distribution Chart -->
+      <app-donut-chart
+        title="Répartition par Statut"
+        [data]="getStatusChartData()"
+      />
+
+      <!-- Timeline Evolution Chart -->
+      <app-line-chart
+        title="Évolution sur 7 jours"
+        [data]="getTimelineChartData()"
+      />
+    </div>
+
+    <!-- Recent Decisions Table -->
+    <div class="decisions-section">
+      <p-card header="Décisions Récentes">
+        @if (stats()?.recentDecisions && stats()!.recentDecisions.length > 0) {
+          <p-table 
+            [value]="stats()!.recentDecisions" 
+            [tableStyle]="{ 'min-width': '50rem' }"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Référence</th>
+                <th>Domaine</th>
+                <th>Statut</th>
+                <th>Date de création</th>
+                <th>Créateur</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-decision>
+              <tr 
+                class="clickable-row" 
+                (click)="router.navigate(['/decisions', decision.decisionId])">
+                <td>{{ decision.reference }}</td>
+                <td>
+                  <p-tag 
+                    [value]="decision.domaine" 
+                    severity="info">
+                  </p-tag>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="
+                      decision.statutValidation === 'VALIDEE' ? 'Validée' :
+                      decision.statutValidation === 'REJETEE' ? 'Rejetée' :
+                      'En attente'
+                    " 
+                    [severity]="
+                      decision.statutValidation === 'VALIDEE' ? 'success' : 
+                      decision.statutValidation === 'REJETEE' ? 'danger' : 
+                      'warn'
+                    ">
+                  </p-tag>
+                </td>
+                <td>{{ decision.createdAt | date:'short':'':'fr-FR' }}</td>
+                <td>{{ decision.creatorName || decision.createdBy }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <div class="empty-state">
+            <i class="pi pi-inbox empty-icon"></i>
+            <p class="empty-message">Aucune décision récente</p>
+            <p class="empty-hint">Créez votre première décision pour voir vos statistiques</p>
+          </div>
+        }
+      </p-card>
+    </div>
+
+    <!-- Pending Validations List -->
+    <div class="validations-section">
+      <p-card header="Décisions en Attente de Validation">
+        @if (stats()?.recentValidations && stats()?.recentValidations && stats()!.recentValidations!.length > 0) {
+          <p-table 
+            [value]="stats()!.recentValidations!" 
+            [tableStyle]="{ 'min-width': '50rem' }"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Référence</th>
+                <th>Date de création</th>
+                <th>Action</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-validation>
+              <tr 
+                class="clickable-row" 
+                (click)="router.navigate(['/decisions', validation.decisionId])">
+                <td>{{ validation.decisionReference }}</td>
+                <td>{{ validation.validatedAt | date:'short':'':'fr-FR' }}</td>
+                <td>
+                  <button 
+                    pButton 
+                    label="Voir détails" 
+                    icon="pi pi-eye" 
+                    class="p-button-sm p-button-text"
+                    (click)="$event.stopPropagation(); router.navigate(['/decisions', validation.decisionId])">
+                  </button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <div class="empty-state">
+            <i class="pi pi-check-circle empty-icon"></i>
+            <p class="empty-message">Aucune décision en attente de validation</p>
+          </div>
+        }
+      </p-card>
+    </div>
+  }
+</div>

@@ -34,6 +34,9 @@ class DecisionIsolationTest {
     @Mock
     private AuthService authService;
 
+    @Mock
+    private com.pfa.tracabilite_ia.repository.UtilisateurRepository utilisateurRepository;
+
     private DecisionScopeService scopeService;
 
     @BeforeEach
@@ -41,7 +44,7 @@ class DecisionIsolationTest {
         Utilisateur admin = new Utilisateur();
         admin.setRole(RoleEnum.ADMINISTRATEUR);
         lenient().when(authService.getCurrentUser()).thenReturn(admin);
-        scopeService = new DecisionScopeService(decisionRepository, reponseAgentIARepository, authService);
+        scopeService = new DecisionScopeService(decisionRepository, reponseAgentIARepository, authService, utilisateurRepository);
     }
 
     @Test

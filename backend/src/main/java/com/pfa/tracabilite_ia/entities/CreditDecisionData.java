@@ -24,17 +24,27 @@ public class CreditDecisionData {
 
     private Integer age;
 
+    @Column(name = "duree_mois")
     private Integer dureeMois;
 
-    @Column(length = 32)
+    @Column(name = "type_contrat", length = 32)
     private String typeContrat;
 
-    @Column(length = 32)
+    @Column(name = "statut_logement", length = 32)
     private String statutLogement;
 
+    @Column(name = "incident_paiement_bam")
     private Integer incidentPaiementBam;
+    
+    @Column(name = "montant_demande_mad")
     private Double montantDemandeMad;
+    
+    @Column(name = "nouvelle_echeance_mad")
     private Double nouvelleEcheanceMad;
+    
+    @Column(name = "revenu_mensuel_mad")
     private Double revenuMensuelMad;
+    
+    @Column(name = "taux_endettement")
     private Double tauxEndettement;
 }
