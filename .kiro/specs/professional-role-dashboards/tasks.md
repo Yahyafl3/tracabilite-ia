@@ -227,8 +227,8 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Apply responsive styling
   - _Requirements: 6.1-6.9, 9.1-9.10, 15.3, 18.1-18.10, 19.1-19.8_
 
-- [ ] 12. Implement Manager Dashboards (RESPONSABLE_CREDIT, PROFESSIONNEL_SANTE, RESPONSABLE_PEDAGOGIQUE)
-  - [-] 12.1 Create ResponsableCreditDashboardComponent
+- [x] 12. Implement Manager Dashboards (RESPONSABLE_CREDIT, PROFESSIONNEL_SANTE, RESPONSABLE_PEDAGOGIQUE)
+  - [x] 12.1 Create ResponsableCreditDashboardComponent
     - Create frontend/src/app/features/dashboard/responsable-credit-dashboard/responsable-credit-dashboard.component.ts
     - Implement component structure (loading, error, stats, retry)
     - Do NOT include "Nouvelle Décision" button (manager role)
@@ -240,7 +240,7 @@ This implementation plan breaks down the creation of 9 role-specific professiona
     - Apply responsive styling
     - _Requirements: 7.1-7.11, 9.1-9.10, 15.3, 18.1-18.10, 19.1-19.8_
 
-  - [-] 12.2 Create ProfessionnelSanteDashboardComponent
+  - [x] 12.2 Create ProfessionnelSanteDashboardComponent
     - Create frontend/src/app/features/dashboard/professionnel-sante-dashboard/professionnel-sante-dashboard.component.ts
     - Implement same structure as ResponsableCreditDashboardComponent but scoped to MEDICAL domain
     - Apply responsive styling
@@ -266,13 +266,13 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Apply responsive styling
   - _Requirements: 8.1-8.10, 9.1-9.10, 15.4, 18.1-18.10, 19.1-19.8_
 
-- [ ] 14. Checkpoint - All Dashboard Components Complete
+- [x] 14. Checkpoint - All Dashboard Components Complete
   - Ensure all 9 dashboard components compile without TypeScript errors
   - Ensure Angular build completes successfully
   - Verify routing configuration includes all dashboard components
   - Ask the user if questions arise
 
-- [~] 15. Implement Dashboard Routing and Role-Based Display
+- [x] 15. Implement Dashboard Routing and Role-Based Display
   - Update frontend routing configuration to map roles to dashboard components
   - Implement route guard checking user authentication
   - Implement dashboard component selector based on authenticated user's role
@@ -280,8 +280,8 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Test navigation from login to appropriate dashboard for each role
   - _Requirements: 9.1, 9.2_
 
-- [ ] 16. Implement Empty States for All Dashboards
-  - [~] 16.1 Add empty state messages to all dashboard components
+- [x] 16. Implement Empty States for All Dashboards
+  - [x] 16.1 Add empty state messages to all dashboard components
     - For Agent roles: "Créez votre première décision pour voir vos statistiques"
     - For Validator roles: "Aucune décision en attente de validation"
     - For Manager roles: "Aucune décision dans votre domaine"
@@ -289,13 +289,13 @@ This implementation plan breaks down the creation of 9 role-specific professiona
     - For Admin role: "Aucune décision dans le système"
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-  - [~] 16.2 Add empty state styling
+  - [x] 16.2 Add empty state styling
     - Create empty-state CSS class with icon, message, and optional action button
     - Ensure empty states use PrimeNG Sakai patterns
     - Apply to all sections: KPI grids, charts, tables
     - _Requirements: 14.5, 14.6, 14.7, 14.8_
 
-- [~] 17. Implement Real Data Enforcement
+- [x] 17. Implement Real Data Enforcement
   - Audit all dashboard components to ensure no Math.random() or hardcoded mock data
   - Verify all displayed values come from DashboardService API calls
   - Replace any placeholder/demo data with API-driven values
@@ -304,7 +304,7 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Add console warnings if API errors occur (no fake data fallback)
   - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7_
 
-- [~] 18. Implement Loading and Error State Handling
+- [x] 18. Implement Loading and Error State Handling
   - Verify all dashboard components display skeleton loaders during API calls
   - Verify all dashboard components display error messages on API failures
   - Verify all dashboard components provide retry buttons on errors
@@ -313,7 +313,7 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Test 401/403 error handling with appropriate messages
   - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
 
-- [~] 19. Implement Recent Decisions Table Component
+- [x] 19. Implement Recent Decisions Table Component
   - Create shared DecisionsTableComponent (if not already existing)
   - Accept @Input decisions array
   - Display columns: Reference, Domain, Status, Creation Date, Creator
@@ -325,22 +325,22 @@ This implementation plan breaks down the creation of 9 role-specific professiona
   - Display empty state when no decisions exist
   - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9_
 
-- [ ] 20. Final Integration and Testing
-  - [~] 20.1 Backend compilation and test execution
+- [x] 20. Final Integration and Testing
+  - [x] 20.1 Backend compilation and test execution
     - Run Maven clean install
     - Verify all backend tests pass (including new scoping tests)
     - Verify backend compiles without errors
     - Verify backend starts successfully
     - _Requirements: 20.1, 20.2, 20.3, 20.7_
 
-  - [~] 20.2 Frontend build and compilation
+  - [x] 20.2 Frontend build and compilation
     - Run Angular build (ng build)
     - Verify no TypeScript compilation errors
     - Verify no linting errors
     - Verify frontend build completes within 90 seconds
     - _Requirements: 20.4, 20.5, 20.6, 20.8_
 
-  - [~] 20.3 End-to-end manual testing
+  - [x] 20.3 End-to-end manual testing
     - Test each of the 9 role dashboards with appropriate user accounts
     - Verify data isolation: agents see only own+admin decisions, validators see only domain decisions
     - Test responsive layout on desktop, tablet, and mobile screen sizes
@@ -351,7 +351,7 @@ This implementation plan breaks down the creation of 9 role-specific professiona
     - Test chart interactivity (hover tooltips)
     - _Requirements: 9.7, 9.8, 9.9, 9.10, 18.10, 19.8_
 
-- [~] 21. Final Checkpoint - Complete Feature
+- [x] 21. Final Checkpoint - Complete Feature
   - Ensure all 9 dashboards display correct role-specific data
   - Ensure data isolation is enforced at backend layer
   - Ensure frontend build and backend compilation succeed
