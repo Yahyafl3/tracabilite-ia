@@ -54,12 +54,18 @@ export interface LineChartDataPoint {
 
     ::ng-deep .p-card .p-card-body {
       padding: 1rem;
+      min-height: 350px; /* Ensure minimum height for chart visibility */
     }
 
     ::ng-deep .p-chart {
       display: flex;
       justify-content: center;
       padding: 1rem;
+      min-height: 300px; /* Ensure chart has minimum height */
+    }
+
+    ::ng-deep .p-chart canvas {
+      max-height: 400px !important; /* Limit maximum height */
     }
   `]
 })
@@ -85,15 +91,15 @@ export class LineChartComponent implements OnChanges {
     // Check if data is empty or all counts are zero
     this.isEmpty = !this.data || 
                    this.data.length === 0 || 
-                   this.data.every(d => d.count === 0);
+                   this.data.every(d => d?.count === 0);
 
     if (!this.isEmpty) {
-      // Build Chart.js line data structure
+      // Build Chart.js line data structure with null-safe operations
       this.chartData = {
-        labels: this.data.map(d => this.formatDate(d.date)),
+        labels: this.data.filter(d => d && d.date).map(d => this.formatDate(d.date)),
         datasets: [{
           label: 'Décisions',
-          data: this.data.map(d => d.count),
+          data: this.data.filter(d => d && d.count != null).map(d => d.count),
           fill: false,
           borderColor: '#3b82f6',
           backgroundColor: '#3b82f6',
@@ -106,7 +112,7 @@ export class LineChartComponent implements OnChanges {
         }]
       };
 
-      // Configure chart options with Y-axis starting at zero
+      // Configure chart options with Y-axis starting at zero and CSS variable fallbacks
       this.chartOptions = {
         responsive: true,
         maintainAspectRatio: true,
@@ -115,17 +121,17 @@ export class LineChartComponent implements OnChanges {
             display: false
           },
           tooltip: {
-            backgroundColor: 'var(--surface-overlay)',
-            titleColor: 'var(--text-color)',
-            bodyColor: 'var(--text-color)',
-            borderColor: 'var(--surface-border)',
+            backgroundColor: this.getCssVariable('--surface-overlay', '#ffffff'),
+            titleColor: this.getCssVariable('--text-color', '#000000'),
+            bodyColor: this.getCssVariable('--text-color', '#000000'),
+            borderColor: this.getCssVariable('--surface-border', '#dee2e6'),
             borderWidth: 1,
             callbacks: {
               title: (context: any) => {
-                return context[0].label;
+                return context[0]?.label || '';
               },
               label: (context: any) => {
-                return `Décisions: ${context.parsed.y}`;
+                return `Décisions: ${context.parsed?.y || 0}`;
               }
             }
           }
@@ -135,32 +141,44 @@ export class LineChartComponent implements OnChanges {
             beginAtZero: true,
             ticks: {
               stepSize: 1,
-              color: 'var(--text-color-secondary)',
+              color: this.getCssVariable('--text-color-secondary', '#6c757d'),
               font: {
-                family: 'var(--font-family)',
+                family: this.getCssVariable('--font-family', 'system-ui'),
                 size: 11
               }
             },
             grid: {
-              color: 'var(--surface-border)',
+              color: this.getCssVariable('--surface-border', '#dee2e6'),
               drawBorder: false
             }
           },
           x: {
             ticks: {
-              color: 'var(--text-color-secondary)',
+              color: this.getCssVariable('--text-color-secondary', '#6c757d'),
               font: {
-                family: 'var(--font-family)',
+                family: this.getCssVariable('--font-family', 'system-ui'),
                 size: 11
               }
             },
             grid: {
-              color: 'var(--surface-border)',
+              color: this.getCssVariable('--surface-border', '#dee2e6'),
               drawBorder: false
             }
           }
         }
       };
+    }
+  }
+
+  /**
+   * Safely get CSS variable value with fallback
+   */
+  private getCssVariable(varName: string, fallback: string): string {
+    try {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return value || fallback;
+    } catch {
+      return fallback;
     }
   }
 

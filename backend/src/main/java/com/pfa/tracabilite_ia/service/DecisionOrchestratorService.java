@@ -279,7 +279,7 @@ public class DecisionOrchestratorService {
         if (role != RoleEnum.ADMINISTRATEUR && role != RoleEnum.AUDITEUR) {
              DecisionDomain checkDomain = domain != null ? domain : DecisionDomain.CREDIT;
              boolean allowed = switch (checkDomain) {
-                case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
+                case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT;
                 case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
                 case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
              };
@@ -307,7 +307,7 @@ public class DecisionOrchestratorService {
                 .filter(d -> {
                     if (role == RoleEnum.ADMINISTRATEUR || role == RoleEnum.AUDITEUR) return true;
                     DecisionDomain domain = d.getDomaine() != null ? d.getDomaine() : DecisionDomain.CREDIT;
-                    if (role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR) return domain == DecisionDomain.CREDIT;
+                    if (role == RoleEnum.RESPONSABLE_CREDIT) return domain == DecisionDomain.CREDIT;
                     if (role == RoleEnum.PROFESSIONNEL_SANTE) return domain == DecisionDomain.MEDICAL;
                     if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) return domain == DecisionDomain.EDUCATION;
                     return false;
@@ -399,9 +399,9 @@ public class DecisionOrchestratorService {
         DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
 
         boolean allowed = switch (domain) {
-            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
-            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE || role == RoleEnum.VALIDATEUR;
-            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE || role == RoleEnum.VALIDATEUR;
+            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT;
+            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
+            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
         };
         if (!allowed) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,

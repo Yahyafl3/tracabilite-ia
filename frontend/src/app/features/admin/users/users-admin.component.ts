@@ -264,8 +264,7 @@ export class UsersAdminComponent {
     if (
       role === UserRole.RESPONSABLE_CREDIT ||
       role === UserRole.PROFESSIONNEL_SANTE ||
-      role === UserRole.RESPONSABLE_PEDAGOGIQUE ||
-      role === UserRole.VALIDATEUR
+      role === UserRole.RESPONSABLE_PEDAGOGIQUE
     ) return 'warn';
     if (role === UserRole.AUDITEUR) return 'info';
     if (

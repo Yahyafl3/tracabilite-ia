@@ -51,16 +51,15 @@
         [loading]="loading()"
       />
       <app-kpi-card
-        label="Décisions Validées"
-        [value]="stats()?.kpiValues?.validatedDecisions ?? 0"
-        icon="pi pi-check-circle"
+        label="Décisions Aujourd'hui"
+        [value]="stats()?.kpiValues?.todaysDecisions ?? 0"
+        icon="pi pi-calendar"
         [loading]="loading()"
       />
       <app-kpi-card
-        label="Taux de Validation"
-        [value]="stats()?.kpiValues?.validationRate ?? 0"
-        icon="pi pi-percentage"
-        unit="%"
+        label="Utilisateurs Actifs"
+        [value]="stats()?.kpiValues?.activeUsers ?? 0"
+        icon="pi pi-users"
         [loading]="loading()"
       />
     </div>

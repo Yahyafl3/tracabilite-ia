@@ -79,7 +79,7 @@ public class ValidationServiceImpl implements ValidationService {
                 .filter(d -> {
                     if (role == RoleEnum.ADMINISTRATEUR || role == RoleEnum.AUDITEUR) return true;
                     DecisionDomain domain = d.getDomaine() != null ? d.getDomaine() : DecisionDomain.CREDIT;
-                    if (role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR) return domain == DecisionDomain.CREDIT;
+                    if (role == RoleEnum.RESPONSABLE_CREDIT) return domain == DecisionDomain.CREDIT;
                     if (role == RoleEnum.PROFESSIONNEL_SANTE) return domain == DecisionDomain.MEDICAL;
                     if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) return domain == DecisionDomain.EDUCATION;
                     return false;
@@ -233,7 +233,7 @@ public class ValidationServiceImpl implements ValidationService {
     private Utilisateur assertValidateur() {
         Utilisateur user = authService.getCurrentUser();
         RoleEnum role = user.getRole();
-        if (role != RoleEnum.VALIDATEUR && role != RoleEnum.ADMINISTRATEUR
+        if (role != RoleEnum.ADMINISTRATEUR
             && role != RoleEnum.RESPONSABLE_CREDIT
             && role != RoleEnum.PROFESSIONNEL_SANTE
             && role != RoleEnum.RESPONSABLE_PEDAGOGIQUE) {

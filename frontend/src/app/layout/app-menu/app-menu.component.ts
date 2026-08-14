@@ -18,7 +18,6 @@ export class AppMenuComponent {
     const role = this.authService.currentUser?.role;
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
-    const isValidateur = role === UserRole.VALIDATEUR;
     const isDomainValidator =
       role === UserRole.RESPONSABLE_CREDIT ||
       role === UserRole.PROFESSIONNEL_SANTE ||
@@ -28,7 +27,7 @@ export class AppMenuComponent {
       role === UserRole.AGENT_SANTE ||
       role === UserRole.AGENT_PEDAGOGIQUE ||
       role === UserRole.UTILISATEUR;
-    const canValidate = isValidateur || isDomainValidator || isAdmin;
+    const canValidate = isDomainValidator || isAdmin;
     const canCreate = isAdmin || isAgent;
 
     // Auditeur — audit only
@@ -43,8 +42,8 @@ export class AppMenuComponent {
       ];
     }
 
-    // Validateur (generic or domain) — validation queue only + mes décisions
-    if (isValidateur || isDomainValidator) {
+    // Domain validators — validation queue only + mes décisions
+    if (isDomainValidator) {
       return [
         {
           label: 'Validation',

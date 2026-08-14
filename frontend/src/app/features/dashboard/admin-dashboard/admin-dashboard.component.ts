@@ -71,6 +71,7 @@ export class AdminDashboardComponent implements OnInit {
    * Requirement 9.3: Implement ngOnInit() calling loadDashboardData()
    */
   ngOnInit(): void {
+    console.log('[AdminDashboard] Component initialized');
     this.loadDashboardData();
   }
 
@@ -85,13 +86,25 @@ export class AdminDashboardComponent implements OnInit {
 
     this.dashboardService.getDashboardStats().subscribe({
       next: (data) => {
+        console.log('[AdminDashboard] Received dashboard data from API:', data);
+        console.log('[AdminDashboard] Setting stats signal...');
         this.stats.set(data);
+        console.log('[AdminDashboard] Stats signal set. Current value:', this.stats());
         this.loading.set(false);
+        console.log('[AdminDashboard] Loading set to false. Current value:', this.loading());
+        
+        // Trigger chart data transformations to log their output
+        console.log('[AdminDashboard] Calling getDomainChartData()...');
+        this.getDomainChartData();
+        console.log('[AdminDashboard] Calling getStatusChartData()...');
+        this.getStatusChartData();
+        console.log('[AdminDashboard] Calling getTimelineChartData()...');
+        this.getTimelineChartData();
       },
       error: (err) => {
+        console.error('[AdminDashboard] Error loading dashboard data:', err);
         this.error.set(err.message || 'Erreur lors du chargement des statistiques');
         this.loading.set(false);
-        console.error('Dashboard error:', err);
       }
     });
   }
@@ -119,9 +132,13 @@ export class AdminDashboardComponent implements OnInit {
    */
   getDomainChartData(): DonutChartDataPoint[] {
     const domain = this.stats()?.domainDistribution;
-    if (!domain) return [];
+    console.log('[AdminDashboard] Domain distribution data:', domain);
+    if (!domain) {
+      console.log('[AdminDashboard] No domain distribution data available');
+      return [];
+    }
 
-    return [
+    const chartData = [
       {
         label: 'Crédit',
         value: domain.creditCount || 0,
@@ -138,6 +155,8 @@ export class AdminDashboardComponent implements OnInit {
         color: '#10b981' // Green
       }
     ];
+    console.log('[AdminDashboard] Transformed domain chart data:', chartData);
+    return chartData;
   }
 
   /**
@@ -146,9 +165,13 @@ export class AdminDashboardComponent implements OnInit {
    */
   getStatusChartData(): DonutChartDataPoint[] {
     const status = this.stats()?.statusDistribution;
-    if (!status) return [];
+    console.log('[AdminDashboard] Status distribution data:', status);
+    if (!status) {
+      console.log('[AdminDashboard] No status distribution data available');
+      return [];
+    }
 
-    return [
+    const chartData = [
       {
         label: 'Validée',
         value: status.validee || 0,
@@ -165,6 +188,8 @@ export class AdminDashboardComponent implements OnInit {
         color: '#ef4444' // Red
       }
     ];
+    console.log('[AdminDashboard] Transformed status chart data:', chartData);
+    return chartData;
   }
 
   /**
@@ -173,11 +198,17 @@ export class AdminDashboardComponent implements OnInit {
    */
   getTimelineChartData(): LineChartDataPoint[] {
     const timeline = this.stats()?.timelineData;
-    if (!timeline || timeline.length === 0) return [];
+    console.log('[AdminDashboard] Timeline data:', timeline);
+    if (!timeline || timeline.length === 0) {
+      console.log('[AdminDashboard] No timeline data available');
+      return [];
+    }
 
-    return timeline.map(point => ({
+    const chartData = timeline.map(point => ({
       date: point.date,
       count: point.decisionCount || 0
     }));
+    console.log('[AdminDashboard] Transformed timeline chart data:', chartData);
+    return chartData;
   }
 }

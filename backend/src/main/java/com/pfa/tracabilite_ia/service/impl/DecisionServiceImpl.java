@@ -327,13 +327,7 @@ public class DecisionServiceImpl implements DecisionService {
                 enforcedDomain = DecisionDomain.EDUCATION;
                 enforcedCreatedBy = user.getEmail();
             }
-            // If the role is VALIDATEUR, we default to CREDIT for legacy compatibility,
-            // unless they requested another domain and they actually have access to it?
-            // The prompt says "Un VALIDATEUR générique ne doit jamais pouvoir contourner l'isolation par domaine".
-            // So if they are VALIDATEUR, they might only see CREDIT since it's the legacy behavior.
-            else if (role == RoleEnum.VALIDATEUR) {
-                enforcedDomain = DecisionDomain.CREDIT;
-            }
+
         }
 
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));

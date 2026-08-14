@@ -7,8 +7,8 @@ package com.pfa.tracabilite_ia.enumeration;
  * créateurs de décisions par domaine. Ils ne valident pas.
  * {@link #RESPONSABLE_CREDIT}, {@link #PROFESSIONNEL_SANTE},
  * {@link #RESPONSABLE_PEDAGOGIQUE} sont les validateurs spécialisés par domaine.
- * {@link #UTILISATEUR} et {@link #VALIDATEUR} sont des rôles LEGACY conservés pour
- * compatibilité ; ils ne sont plus proposés à la création de nouveaux comptes.
+ * {@link #UTILISATEUR} est un rôle LEGACY conservé pour compatibilité ; 
+ * il n'est plus proposé à la création de nouveaux comptes.
  * {@link #ADMINISTRATEUR} gère les comptes et a une visibilité globale.
  */
 public enum RoleEnum {
@@ -24,7 +24,5 @@ public enum RoleEnum {
     PROFESSIONNEL_SANTE,
     RESPONSABLE_PEDAGOGIQUE,
     /** Legacy — compatibilité. Ne plus proposer à la création. */
-    UTILISATEUR,
-    /** Legacy — compatibilité. Ne plus proposer à la création. */
-    VALIDATEUR
+    UTILISATEUR
 }

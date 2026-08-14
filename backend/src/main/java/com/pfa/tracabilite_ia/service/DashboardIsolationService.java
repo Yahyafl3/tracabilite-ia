@@ -42,10 +42,10 @@ public class DashboardIsolationService {
             case AGENT_CREDIT -> agentScopeSpec(user, DecisionDomain.CREDIT);
             case AGENT_SANTE -> agentScopeSpec(user, DecisionDomain.MEDICAL);
             case AGENT_PEDAGOGIQUE -> agentScopeSpec(user, DecisionDomain.EDUCATION);
-            case VALIDATEUR -> domainOnlySpec(DecisionDomain.CREDIT);
             case RESPONSABLE_CREDIT -> domainOnlySpec(DecisionDomain.CREDIT);
             case PROFESSIONNEL_SANTE -> domainOnlySpec(DecisionDomain.MEDICAL);
             case RESPONSABLE_PEDAGOGIQUE -> domainOnlySpec(DecisionDomain.EDUCATION);
+            case UTILISATEUR -> throw new IllegalStateException("UTILISATEUR role does not have dashboard access");
             default -> throw new IllegalStateException("Unsupported role: " + role);
         };
     }

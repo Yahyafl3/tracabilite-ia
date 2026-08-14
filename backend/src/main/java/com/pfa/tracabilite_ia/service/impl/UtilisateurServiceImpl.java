@@ -34,8 +34,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             RoleEnum.AUDITEUR,
             RoleEnum.ADMINISTRATEUR,
             // Legacy — kept for existing accounts; backend still accepts them on update
-            RoleEnum.UTILISATEUR,
-            RoleEnum.VALIDATEUR
+            RoleEnum.UTILISATEUR
     );
 
     private final UtilisateurRepository utilisateurRepository;
@@ -146,7 +145,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private void assertManagedRole(RoleEnum role) {
         if (role == null || !MANAGED_ROLES.contains(role)) {
             throw new IllegalArgumentException(
-                    "Role non autorise. Roles geres : UTILISATEUR, VALIDATEUR, AUDITEUR, ADMINISTRATEUR.");
+                    "Role non autorise. Roles geres : UTILISATEUR, AUDITEUR, ADMINISTRATEUR, agents et responsables de domaine.");
         }
     }
 }

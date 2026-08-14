@@ -55,12 +55,18 @@ export interface DonutChartDataPoint {
 
     ::ng-deep .p-card .p-card-body {
       padding: 1rem;
+      min-height: 300px; /* Ensure minimum height for chart visibility */
     }
 
     ::ng-deep .p-chart {
       display: flex;
       justify-content: center;
       padding: 1rem;
+      min-height: 250px; /* Ensure chart has minimum height */
+    }
+
+    ::ng-deep .p-chart canvas {
+      max-height: 300px !important; /* Limit maximum height */
     }
   `]
 })
@@ -76,9 +82,11 @@ export class DonutChartComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
+      console.log('[DonutChart] Data changed, updating chart. New data:', this.data);
       this.updateChart();
       // Force change detection with OnPush strategy
       this.cdr.markForCheck();
+      console.log('[DonutChart] Chart updated. isEmpty:', this.isEmpty, 'chartData:', this.chartData);
     }
   }
 
@@ -86,17 +94,17 @@ export class DonutChartComponent implements OnChanges {
     // Check if data is empty or all values are zero
     this.isEmpty = !this.data || 
                    this.data.length === 0 || 
-                   this.data.every(d => d.value === 0);
+                   this.data.every(d => d?.value === 0);
 
     if (!this.isEmpty) {
-      // Build Chart.js data structure
+      // Build Chart.js data structure with null-safe operations
       this.chartData = {
-        labels: this.data.map(d => d.label),
+        labels: this.data.filter(d => d && d.label).map(d => d.label),
         datasets: [{
-          data: this.data.map(d => d.value),
-          backgroundColor: this.data.map(d => d.color),
+          data: this.data.filter(d => d && d.value != null).map(d => d.value),
+          backgroundColor: this.data.filter(d => d && d.color).map(d => d.color),
           borderWidth: 2,
-          borderColor: 'var(--surface-card)'
+          borderColor: this.getCssVariable('--surface-card', '#ffffff')
         }]
       };
 
@@ -108,9 +116,9 @@ export class DonutChartComponent implements OnChanges {
           legend: {
             position: 'bottom',
             labels: {
-              color: 'var(--text-color)',
+              color: this.getCssVariable('--text-color', '#000000'),
               font: {
-                family: 'var(--font-family)',
+                family: this.getCssVariable('--font-family', 'system-ui'),
                 size: 12
               },
               padding: 15,
@@ -118,10 +126,10 @@ export class DonutChartComponent implements OnChanges {
             }
           },
           tooltip: {
-            backgroundColor: 'var(--surface-overlay)',
-            titleColor: 'var(--text-color)',
-            bodyColor: 'var(--text-color)',
-            borderColor: 'var(--surface-border)',
+            backgroundColor: this.getCssVariable('--surface-overlay', '#ffffff'),
+            titleColor: this.getCssVariable('--text-color', '#000000'),
+            bodyColor: this.getCssVariable('--text-color', '#000000'),
+            borderColor: this.getCssVariable('--surface-border', '#dee2e6'),
             borderWidth: 1,
             callbacks: {
               label: (context: any) => {
@@ -137,6 +145,18 @@ export class DonutChartComponent implements OnChanges {
         },
         cutout: '60%'
       };
+    }
+  }
+
+  /**
+   * Safely get CSS variable value with fallback
+   */
+  private getCssVariable(varName: string, fallback: string): string {
+    try {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return value || fallback;
+    } catch {
+      return fallback;
     }
   }
 }

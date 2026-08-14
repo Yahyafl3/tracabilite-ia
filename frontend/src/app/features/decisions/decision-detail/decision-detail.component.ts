@@ -188,7 +188,7 @@ export class DecisionDetailComponent {
 
   readonly canManageSources = computed(() => {
     const role = this.authService.currentUser?.role;
-    return role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
+    return role === UserRole.ADMINISTRATEUR;
   });
 
   readonly hasRetryableAgents = computed(() =>
@@ -230,7 +230,6 @@ export class DecisionDetailComponent {
     const expected = DOMAIN_META[domain].validatorRole as UserRole;
     const allowed =
       role === expected ||
-      role === UserRole.VALIDATEUR ||
       role === UserRole.ADMINISTRATEUR ||
       role === UserRole.RESPONSABLE_CREDIT ||
       role === UserRole.PROFESSIONNEL_SANTE ||

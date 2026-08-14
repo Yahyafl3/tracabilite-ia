@@ -54,7 +54,7 @@ export class ValidationQueueComponent {
   /** Domain allowed for the current user's role. null = admin/auditor (all domains). */
   private readonly allowedDomain = computed<DecisionDomain | null>(() => {
     const role = this.authService.currentUser?.role as UserRole | undefined;
-    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) return 'CREDIT';
+    if (role === UserRole.RESPONSABLE_CREDIT) return 'CREDIT';
     if (role === UserRole.PROFESSIONNEL_SANTE) return 'MEDICAL';
     if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) return 'EDUCATION';
     return null; // ADMIN / AUDITEUR see all

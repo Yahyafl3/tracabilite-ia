@@ -14,7 +14,6 @@ import { UserRole } from '../../core/models/auth.models';
  * - AGENT_CREDIT → agent-credit-dashboard
  * - AGENT_SANTE → agent-sante-dashboard
  * - AGENT_PEDAGOGIQUE → agent-pedagogique-dashboard
- * - VALIDATEUR → validateur-dashboard
  * - RESPONSABLE_CREDIT → responsable-credit-dashboard
  * - PROFESSIONNEL_SANTE → professionnel-sante-dashboard
  * - RESPONSABLE_PEDAGOGIQUE → responsable-pedagogique-dashboard
@@ -64,9 +63,6 @@ export class DashboardRouterComponent implements OnInit {
       
       case UserRole.AGENT_PEDAGOGIQUE:
         return '/dashboard/agent-pedagogique';
-      
-      case UserRole.VALIDATEUR:
-        return '/dashboard/validateur';
       
       case UserRole.RESPONSABLE_CREDIT:
         return '/dashboard/responsable-credit';

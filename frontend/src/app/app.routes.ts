@@ -83,12 +83,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/agent-pedagogique-dashboard/agent-pedagogique-dashboard.component').then((m) => m.AgentPedagogiqueDashboardComponent),
       },
-      {
-        path: 'dashboard/validateur',
-        canActivate: [roleGuard([UserRole.VALIDATEUR])],
-        loadComponent: () =>
-          import('./features/dashboard/validateur-dashboard/validateur-dashboard.component').then((m) => m.ValidateurDashboardComponent),
-      },
+
       {
         path: 'dashboard/responsable-credit',
         canActivate: [roleGuard([UserRole.RESPONSABLE_CREDIT])],
@@ -120,7 +115,6 @@ export const routes: Routes = [
             UserRole.ADMINISTRATEUR,
             UserRole.UTILISATEUR,
             UserRole.AUDITEUR,
-            UserRole.VALIDATEUR,
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
             UserRole.RESPONSABLE_PEDAGOGIQUE,
@@ -153,7 +147,6 @@ export const routes: Routes = [
         canActivate: [
           roleGuard([
             UserRole.ADMINISTRATEUR,
-            UserRole.VALIDATEUR,
             UserRole.UTILISATEUR,
             UserRole.AUDITEUR,
             UserRole.RESPONSABLE_CREDIT,
@@ -172,7 +165,7 @@ export const routes: Routes = [
       {
         path: 'comparaison',
         canActivate: [
-          roleGuard([UserRole.ADMINISTRATEUR, UserRole.VALIDATEUR, UserRole.AUDITEUR]),
+          roleGuard([UserRole.ADMINISTRATEUR, UserRole.AUDITEUR]),
         ],
         loadComponent: () =>
           import('./features/comparaison/comparaison.component').then((m) => m.ComparaisonComponent),
@@ -188,7 +181,6 @@ export const routes: Routes = [
         canActivate: [
           roleGuard([
             UserRole.ADMINISTRATEUR,
-            UserRole.VALIDATEUR,
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
             UserRole.RESPONSABLE_PEDAGOGIQUE,

@@ -48,7 +48,7 @@ export interface User {
   derniereConnexion?: Date;
 }
 
-/** Rôles des comptes internes. UTILISATEUR/VALIDATEUR sont LEGACY (compatibilité uniquement). */
+/** Rôles des comptes internes. UTILISATEUR est LEGACY (compatibilité uniquement). */
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
   AUDITEUR = 'AUDITEUR',
@@ -63,8 +63,6 @@ export enum UserRole {
   RESPONSABLE_PEDAGOGIQUE = 'RESPONSABLE_PEDAGOGIQUE',
   /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
   UTILISATEUR = 'UTILISATEUR',
-  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
-  VALIDATEUR = 'VALIDATEUR',
 }
 
 export interface TokenPayload {

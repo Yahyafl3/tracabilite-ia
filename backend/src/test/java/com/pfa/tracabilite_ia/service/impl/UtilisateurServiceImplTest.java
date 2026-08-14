@@ -163,7 +163,7 @@ class UtilisateurServiceImplTest {
         when(authService.getCurrentUser()).thenReturn(current);
         when(utilisateurRepository.findAll()).thenReturn(List.of(lastAdmin, current));
         // current is also admin → not last; make current a non-admin for last-admin case
-        current.setRole(RoleEnum.VALIDATEUR);
+        current.setRole(RoleEnum.RESPONSABLE_CREDIT);
 
         assertThatThrownBy(() -> service.desactiver(adminId))
                 .isInstanceOf(IllegalStateException.class)

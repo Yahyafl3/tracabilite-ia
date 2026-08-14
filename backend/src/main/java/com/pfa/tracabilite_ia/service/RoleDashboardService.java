@@ -103,14 +103,6 @@ public class RoleDashboardService {
                 builder.validatedDecisions(validated);
                 builder.acceptanceRate(calculateRate(validated, total));
             }
-            case VALIDATEUR -> {
-                long validated = countValidatedByUser(decisions, user.getEmail());
-                long rejected = countRejectedByUser(decisions, user.getEmail());
-                builder.pendingValidations(countByStatus(decisions, StatutDecisionEnum.EN_ATTENTE_VALIDATION));
-                builder.validatedDecisions(validated);
-                builder.rejectedDecisions(rejected);
-                builder.processedDecisions(validated + rejected);
-            }
             case RESPONSABLE_CREDIT, PROFESSIONNEL_SANTE, RESPONSABLE_PEDAGOGIQUE -> {
                 long validated = countValidatedThisMonth(decisions);
                 builder.pendingValidations(countByStatus(decisions, StatutDecisionEnum.EN_ATTENTE_VALIDATION));
@@ -328,8 +320,7 @@ public class RoleDashboardService {
     }
     
     private boolean isValidatorManagerAdminOrAuditor(RoleEnum role) {
-        return role == RoleEnum.VALIDATEUR
-            || role == RoleEnum.ADMINISTRATEUR
+        return role == RoleEnum.ADMINISTRATEUR
             || role == RoleEnum.AUDITEUR
             || role == RoleEnum.RESPONSABLE_CREDIT 
             || role == RoleEnum.PROFESSIONNEL_SANTE 

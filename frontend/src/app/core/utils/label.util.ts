@@ -81,7 +81,6 @@ export function roleLabel(role: UserRole | string): string {
     [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de Santé',
     [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable Pédagogique',
     // Legacy
-    [UserRole.VALIDATEUR]: 'Validateur (legacy)',
     [UserRole.UTILISATEUR]: 'Agent de crédit (legacy)',
   };
   return map[String(role)] ?? String(role);
@@ -95,7 +94,6 @@ export function roleChipClass(role: UserRole | string): string {
     case UserRole.RESPONSABLE_CREDIT:
     case UserRole.PROFESSIONNEL_SANTE:
     case UserRole.RESPONSABLE_PEDAGOGIQUE:
-    case UserRole.VALIDATEUR:
       return 'chip--approved';
     case UserRole.AGENT_CREDIT:
     case UserRole.AGENT_SANTE:

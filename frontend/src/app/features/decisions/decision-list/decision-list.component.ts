@@ -79,7 +79,7 @@ export class DecisionListComponent {
   readonly domaineOptions = computed(() => {
     const role = this.authService.currentUser?.role as UserRole | undefined;
     // Specialist roles only see their own domain — no "Tous" option
-    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) {
+    if (role === UserRole.RESPONSABLE_CREDIT) {
       return [{ label: 'Crédit', value: 'CREDIT' }];
     }
     if (role === UserRole.PROFESSIONNEL_SANTE) {

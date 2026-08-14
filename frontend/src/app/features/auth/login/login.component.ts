@@ -93,9 +93,6 @@ export class LoginComponent {
           case UserRole.AGENT_PEDAGOGIQUE:
             dashboardUrl = '/dashboard/agent-pedagogique';
             break;
-          case UserRole.VALIDATEUR:
-            dashboardUrl = '/dashboard/validateur';
-            break;
           case UserRole.RESPONSABLE_CREDIT:
             dashboardUrl = '/dashboard/responsable-credit';
             break;

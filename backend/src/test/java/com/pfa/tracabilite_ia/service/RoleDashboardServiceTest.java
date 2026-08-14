@@ -41,7 +41,6 @@ class RoleDashboardServiceTest {
     private Utilisateur agentCredit;
     private Utilisateur agentSante;
     private Utilisateur agentPedagogique;
-    private Utilisateur validateur;
     private Utilisateur responsableCredit;
     private Utilisateur professionnelSante;
     private Utilisateur responsablePedagogique;
@@ -58,7 +57,6 @@ class RoleDashboardServiceTest {
         agentCredit = createUser("agent.credit@test.com", "Agent Credit", RoleEnum.AGENT_CREDIT);
         agentSante = createUser("agent.sante@test.com", "Agent Sante", RoleEnum.AGENT_SANTE);
         agentPedagogique = createUser("agent.pedagogique@test.com", "Agent Pedagogique", RoleEnum.AGENT_PEDAGOGIQUE);
-        validateur = createUser("validateur@test.com", "Validateur", RoleEnum.VALIDATEUR);
         responsableCredit = createUser("responsable.credit@test.com", "Responsable Credit", RoleEnum.RESPONSABLE_CREDIT);
         professionnelSante = createUser("professionnel.sante@test.com", "Professionnel Sante", RoleEnum.PROFESSIONNEL_SANTE);
         responsablePedagogique = createUser("responsable.pedagogique@test.com", "Responsable Pedagogique", RoleEnum.RESPONSABLE_PEDAGOGIQUE);
@@ -209,24 +207,7 @@ class RoleDashboardServiceTest {
         assertThat(stats.getKpiValues().getTotalDecisions()).isEqualTo(3); // Not 4
     }
 
-    @Test
-    void validateur_seesOnlyCreditDomain() {
-        DashboardStatsDTO stats = dashboardService.calculateDashboardStats(validateur);
 
-        assertThat(stats).isNotNull();
-
-        // Should see all CREDIT decisions = 5
-        assertThat(stats.getKpiValues().getTotalDecisions()).isEqualTo(5);
-
-        // Should NOT see domain distribution (single domain role)
-        assertThat(stats.getDomainDistribution()).isNull();
-
-        // Verify it's only CREDIT decisions
-        if (!stats.getRecentDecisions().isEmpty()) {
-            assertThat(stats.getRecentDecisions())
-                    .allMatch(d -> d.getDomaine() == DecisionDomain.CREDIT);
-        }
-    }
 
     @Test
     void responsableCredit_seesOnlyCreditDomain() {
@@ -363,10 +344,6 @@ class RoleDashboardServiceTest {
         // Agent should NOT see top creators
         DashboardStatsDTO agentStats = dashboardService.calculateDashboardStats(agentCredit);
         assertThat(agentStats.getTopCreators()).isEmpty();
-
-        // Validateur should NOT see top creators
-        DashboardStatsDTO validateurStats = dashboardService.calculateDashboardStats(validateur);
-        assertThat(validateurStats.getTopCreators()).isEmpty();
     }
 
     // Helper methods

@@ -41,7 +41,6 @@ public class DataInitializer {
                 // First bootstrap only — do not recreate accounts after an admin deletes them.
                 seedAdmin(utilisateurRepository, passwordEncoder);
                 seedUser(utilisateurRepository, passwordEncoder);
-                seedValidateur(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed initial des utilisateurs de demo termine");
@@ -49,7 +48,6 @@ public class DataInitializer {
                 ensureAtLeastOneAdmin(utilisateurRepository, passwordEncoder);
                 // Comptes démo manquants (bases Docker déjà peuplées avec d'autres emails).
                 seedUser(utilisateurRepository, passwordEncoder);
-                seedValidateur(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed utilisateurs ignore (base deja initialisee, {} compte(s))", userCount);
@@ -112,9 +110,9 @@ public class DataInitializer {
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
                 CHECK (role IN (
-                    'ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR',
-                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE',
-                    'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE'
+                    'ADMINISTRATEUR', 'AUDITEUR', 'UTILISATEUR',
+                    'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE',
+                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE'
                 ))
                 """);
     }
@@ -173,19 +171,6 @@ public class DataInitializer {
             auditor.setRole(RoleEnum.AUDITEUR);
             utilisateurRepository.save(auditor);
             log.info(">>> Utilisateur auditeur cree : {} / auditor123", email);
-        }
-    }
-
-    private void seedValidateur(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
-        String email = "validateur@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
-            Utilisateur validateur = new Utilisateur();
-            validateur.setNom("Validateur");
-            validateur.setEmail(email);
-            validateur.setMotDePasseHash(passwordEncoder.encode("validateur123"));
-            validateur.setRole(RoleEnum.VALIDATEUR);
-            utilisateurRepository.save(validateur);
-            log.info(">>> Utilisateur validateur cree : {} / validateur123", email);
         }
     }
 
