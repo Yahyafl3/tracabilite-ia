@@ -104,6 +104,12 @@ public class DataInitializer {
     }
 
     private void updateRoleCheckConstraint(JdbcTemplate jdbcTemplate) {
+        // CRITICAL: Delete any remaining VALIDATEUR accounts before applying the new constraint
+        // This ensures the constraint can be applied without violating existing data
+        jdbcTemplate.execute("""
+                DELETE FROM utilisateur WHERE role = 'VALIDATEUR'
+                """);
+        
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur DROP CONSTRAINT IF EXISTS utilisateur_role_check
                 """);
