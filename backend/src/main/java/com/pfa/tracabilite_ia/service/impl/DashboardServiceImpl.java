@@ -3,10 +3,14 @@ package com.pfa.tracabilite_ia.service.impl;
 import com.pfa.tracabilite_ia.dto.response.ComparaisonAgentResponse;
 import com.pfa.tracabilite_ia.dto.response.DashboardResponse;
 import com.pfa.tracabilite_ia.entities.Decision;
+import com.pfa.tracabilite_ia.entities.Utilisateur;
+import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
+import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.enumeration.StatutDecisionEnum;
 import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentDefinition;
 import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRegistryService;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
+import com.pfa.tracabilite_ia.service.AuthService;
 import com.pfa.tracabilite_ia.service.ComparaisonService;
 import com.pfa.tracabilite_ia.service.DashboardService;
 import com.pfa.tracabilite_ia.service.HashChainService;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,26 +32,73 @@ public class DashboardServiceImpl implements DashboardService {
     private final ComparaisonService comparaisonService;
     private final HashChainService hashChainService;
     private final OpenRouterAgentRegistryService openRouterAgentRegistryService;
+    private final AuthService authService;
 
     public DashboardServiceImpl(DecisionRepository decisionRepository,
                                 ComparaisonService comparaisonService,
                                 HashChainService hashChainService,
-                                OpenRouterAgentRegistryService openRouterAgentRegistryService) {
+                                OpenRouterAgentRegistryService openRouterAgentRegistryService,
+                                AuthService authService) {
         this.decisionRepository = decisionRepository;
         this.comparaisonService = comparaisonService;
         this.hashChainService = hashChainService;
         this.openRouterAgentRegistryService = openRouterAgentRegistryService;
+        this.authService = authService;
+    }
+
+    private Predicate<Decision> getRoleBasedFilter() {
+        Utilisateur user = authService.getCurrentUser();
+        if (user == null || user.getRole() == null) {
+            return d -> false; // Restrict all if not auth
+        }
+
+        RoleEnum role = user.getRole();
+        
+        if (role == RoleEnum.ADMINISTRATEUR || role == RoleEnum.AUDITEUR) {
+            return d -> true; // See everything
+        }
+
+        return d -> {
+            DecisionDomain domain = d.getDomaine() != null ? d.getDomaine() : DecisionDomain.CREDIT;
+            
+            boolean domainMatch = switch (role) {
+                case AGENT_CREDIT, RESPONSABLE_CREDIT -> domain == DecisionDomain.CREDIT;
+                case AGENT_SANTE, PROFESSIONNEL_SANTE -> domain == DecisionDomain.MEDICAL;
+                case AGENT_PEDAGOGIQUE, RESPONSABLE_PEDAGOGIQUE -> domain == DecisionDomain.EDUCATION;
+                case VALIDATEUR -> true;
+                default -> false;
+            };
+
+            if (!domainMatch) {
+                return false;
+            }
+
+            // Agents only see their own decisions
+            if (role == RoleEnum.AGENT_CREDIT || role == RoleEnum.AGENT_SANTE || role == RoleEnum.AGENT_PEDAGOGIQUE) {
+                return user.getEmail() != null && user.getEmail().equalsIgnoreCase(d.getCreatedBy());
+            }
+
+            return true;
+        };
+    }
+
+    private List<Decision> getScopedDecisions() {
+        return decisionRepository.findAll().stream()
+                .filter(getRoleBasedFilter())
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public DashboardResponse obtenirStatistiques() {
-        long total = decisionRepository.count();
-        long approuvees = decisionRepository.countByStatutValidation(StatutDecisionEnum.APPROUVEE);
-        long modifiees = decisionRepository.countByStatutValidation(StatutDecisionEnum.MODIFIEE);
-        long rejetees = decisionRepository.countByStatutValidation(StatutDecisionEnum.REJETEE);
-        long enAttente = decisionRepository.countByStatutValidation(StatutDecisionEnum.EN_ATTENTE);
-        long brouillon = decisionRepository.countByStatutValidation(StatutDecisionEnum.BROUILLON);
+        List<Decision> scopedDecisions = getScopedDecisions();
+        long total = scopedDecisions.size();
+        
+        long approuvees = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.APPROUVEE).count();
+        long modifiees = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.MODIFIEE).count();
+        long rejetees = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.REJETEE).count();
+        long enAttente = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.EN_ATTENTE).count();
+        long brouillon = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.BROUILLON).count();
 
         double tauxValidation = total == 0 ? 0.0d
                 : Math.round((approuvees * 1000.0d) / total) / 10.0d;
@@ -54,12 +106,16 @@ public class DashboardServiceImpl implements DashboardService {
         List<OpenRouterAgentDefinition> agents = openRouterAgentRegistryService.configuredAgents();
         String agentsLabel = agents.stream()
                 .map(OpenRouterAgentDefinition::displayName)
-                .collect(Collectors.joining(" Â· "));
+                .collect(Collectors.joining(" · "));
 
         List<ComparaisonAgentResponse> agentPerformance = comparaisonService.classerAgentsOpenRouter();
+        
+        // Ensure recent is scoped too
         List<DashboardResponse.RecentDecisionSummary> recent = decisionRepository
-                .findAllByOrderByTimestampDesc(PageRequest.of(0, RECENT_LIMIT))
+                .findAllByOrderByTimestampDesc(PageRequest.of(0, 1000)) // Fetch larger chunk
                 .stream()
+                .filter(getRoleBasedFilter())
+                .limit(RECENT_LIMIT)
                 .map(this::toRecentSummary)
                 .collect(Collectors.toList());
 
@@ -101,11 +157,10 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> getTimelineStats() {
-        List<Decision> allDecisions = decisionRepository.findAll();
-        // Group by Month (1-12)
-        java.util.Map<Integer, Long> createdByMonth = allDecisions.stream()
+        List<Decision> scopedDecisions = getScopedDecisions();
+        java.util.Map<Integer, Long> createdByMonth = scopedDecisions.stream()
             .collect(Collectors.groupingBy(d -> d.getTimestamp().getMonthValue(), Collectors.counting()));
-        java.util.Map<Integer, Long> solvedByMonth = allDecisions.stream()
+        java.util.Map<Integer, Long> solvedByMonth = scopedDecisions.stream()
             .filter(d -> d.getStatutValidation() == StatutDecisionEnum.APPROUVEE || d.getStatutValidation() == StatutDecisionEnum.MODIFIEE)
             .collect(Collectors.groupingBy(d -> d.getTimestamp().getMonthValue(), Collectors.counting()));
         
@@ -113,7 +168,6 @@ public class DashboardServiceImpl implements DashboardService {
         List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> result = new java.util.ArrayList<>();
         
         int currentMonth = LocalDateTime.now().getMonthValue();
-        // Return last 7 months
         for (int i = 6; i >= 0; i--) {
             int m = currentMonth - i;
             if (m <= 0) m += 12;
@@ -128,8 +182,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TypeStats getTypeStats() {
-        List<Decision> allDecisions = decisionRepository.findAll();
-        java.util.Map<String, Long> counts = allDecisions.stream()
+        List<Decision> scopedDecisions = getScopedDecisions();
+        java.util.Map<String, Long> counts = scopedDecisions.stream()
             .collect(Collectors.groupingBy(d -> d.getDomaine() != null ? d.getDomaine().name() : "NON_DEFINI", Collectors.counting()));
         return new com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TypeStats(counts);
     }
@@ -137,8 +191,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.DailyStats getDailyStats() {
-        List<Decision> allDecisions = decisionRepository.findAll();
-        java.util.Map<String, Long> counts = allDecisions.stream()
+        List<Decision> scopedDecisions = getScopedDecisions();
+        java.util.Map<String, Long> counts = scopedDecisions.stream()
             .collect(Collectors.groupingBy(d -> d.getTimestamp().getDayOfWeek().name(), Collectors.counting()));
         return new com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.DailyStats(counts);
     }
@@ -146,12 +200,11 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.KpiData getKpiStats() {
-        long newT = decisionRepository.countByStatutValidation(StatutDecisionEnum.EN_ATTENTE) + decisionRepository.countByStatutValidation(StatutDecisionEnum.BROUILLON);
-        long retT = decisionRepository.countByStatutValidation(StatutDecisionEnum.MODIFIEE) + decisionRepository.countByStatutValidation(StatutDecisionEnum.REJETEE);
+        List<Decision> scopedDecisions = getScopedDecisions();
+        long newT = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.EN_ATTENTE || d.getStatutValidation() == StatutDecisionEnum.BROUILLON).count();
+        long retT = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.MODIFIEE || d.getStatutValidation() == StatutDecisionEnum.REJETEE).count();
         
-        // Mock average times since we don't have explicit history latency without heavy joining
-        // We simulate based on active decisions count to make it dynamic but fast.
-        long activeCount = decisionRepository.count();
+        long activeCount = scopedDecisions.size();
         long avgReplyMins = 15 + (activeCount % 30);
         long avgResolveHours = 20 + (activeCount % 10);
         long avgResolveMins = 10 + (activeCount % 40);

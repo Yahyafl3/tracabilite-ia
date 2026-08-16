@@ -42,6 +42,32 @@ export class DashboardComponent {
     );
   });
 
+  readonly dashboardTitle = computed(() => {
+    const role = this.authService.currentUser?.role;
+    switch (role) {
+      case UserRole.AGENT_CREDIT:
+      case UserRole.RESPONSABLE_CREDIT:
+      case UserRole.VALIDATEUR:
+        return 'Espace Crédit - Tableau de bord';
+      case UserRole.AGENT_SANTE:
+      case UserRole.PROFESSIONNEL_SANTE:
+        return 'Espace Santé - Tableau de bord';
+      case UserRole.AGENT_PEDAGOGIQUE:
+      case UserRole.RESPONSABLE_PEDAGOGIQUE:
+        return 'Espace Pédagogique - Tableau de bord';
+      case UserRole.AUDITEUR:
+        return 'Espace Audit - Tableau de bord';
+      case UserRole.ADMINISTRATEUR:
+      default:
+        return 'Administration - Tableau de bord';
+    }
+  });
+
+  readonly isDomainRestricted = computed(() => {
+    const role = this.authService.currentUser?.role;
+    return role !== UserRole.ADMINISTRATEUR && role !== UserRole.AUDITEUR;
+  });
+
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly stats = signal<import('../../core/services/dashboard.service').DashboardResponse | null>(null);

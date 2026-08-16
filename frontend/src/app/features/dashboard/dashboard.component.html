@@ -2,7 +2,7 @@
   <header class="dashboard-header">
     <div>
       <p class="dashboard-eyebrow">Accueil / Tableau de bord CRM</p>
-      <h1>Tableau de bord CRM</h1>
+      <h1>{{ dashboardTitle() }}</h1>
       <p class="dashboard-subtitle">
         Suivi des performances et de la résolution des décisions
       </p>
@@ -76,13 +76,15 @@
         </div>
       </p-card>
 
-      <!-- Bottom Left 1: Donut 1 -->
-      <p-card styleClass="crm-card bottom-card">
-        <h3 class="crm-card-title">Décisions par Type</h3>
-        <div class="chart-container-donut">
-          <p-chart type="doughnut" [data]="donutTypeData" [options]="donutTypeOptions"></p-chart>
-        </div>
-      </p-card>
+      <!-- Bottom Left 1: Donut 1 (Hidden if domain is restricted since it's 100% one type) -->
+      @if (!isDomainRestricted()) {
+        <p-card styleClass="crm-card bottom-card">
+          <h3 class="crm-card-title">Décisions par Type</h3>
+          <div class="chart-container-donut">
+            <p-chart type="doughnut" [data]="donutTypeData" [options]="donutTypeOptions"></p-chart>
+          </div>
+        </p-card>
+      }
 
       <!-- Bottom Left 2: Donut 2 -->
       <p-card styleClass="crm-card bottom-card relative">
