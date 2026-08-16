@@ -31,35 +31,19 @@ export class AppMenuComponent {
     const canValidate = isValidateur || isDomainValidator || isAdmin;
     const canCreate = isAdmin || isAgent;
 
-    // Auditeur — audit only
-    if (isAuditeur) {
-      return [
-        {
-          label: 'Audit',
-          items: [
-            { label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' },
-          ],
-        },
-      ];
-    }
-
-    // Validateur (generic or domain) — validation queue only + mes décisions
-    if (isValidateur || isDomainValidator) {
-      return [
-        {
-          label: 'Validation',
-          items: [
-            { label: 'File de validation', icon: 'pi pi-check-square', routerLink: '/validation' },
-            { label: 'Historique des validations', icon: 'pi pi-file', routerLink: '/decisions' },
-          ],
-        },
-      ];
-    }
-
+    // All roles see Dashboard
     const appItems: AppMenuItem[] = [
-      { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' },
-      { label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' },
+      { label: 'Tableau de bord', icon: 'pi pi-home', routerLink: '/dashboard' }
     ];
+
+    if (!isAuditeur) {
+      if (isValidateur || isDomainValidator) {
+         appItems.push({ label: 'Historique des validations', icon: 'pi pi-file', routerLink: '/decisions' });
+      } else {
+         appItems.push({ label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' });
+      }
+    }
+
     if (canCreate) {
       appItems.push({ label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' });
     }
@@ -68,12 +52,10 @@ export class AppMenuComponent {
       { label: 'Application', items: appItems },
     ];
 
-    // Analyse : réservée aux rôles effectivement autorisés côté API
-    // (ComparaisonController = ADMIN / VALIDATOR / AUDITOR — pas ROLE_USER).
     const analysisItems: AppMenuItem[] = [];
     if (canValidate) {
       analysisItems.push({
-        label: 'Validation humaine',
+        label: 'File de validation',
         icon: 'pi pi-check-square',
         routerLink: '/validation',
       });
@@ -84,7 +66,9 @@ export class AppMenuComponent {
         icon: 'pi pi-chart-bar',
         routerLink: '/comparaison',
       });
-      analysisItems.push({ label: 'Audit', icon: 'pi pi-shield', routerLink: '/audit' });
+    }
+    if (isAdmin || isAuditeur) {
+      analysisItems.push({ label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' });
     }
 
     if (analysisItems.length > 0) {

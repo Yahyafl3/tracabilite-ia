@@ -63,6 +63,27 @@ export class DashboardComponent {
     }
   });
 
+  readonly activeDomainCode = computed(() => {
+    const role = this.authService.currentUser?.role;
+    switch (role) {
+      case UserRole.AGENT_CREDIT:
+      case UserRole.RESPONSABLE_CREDIT:
+      case UserRole.VALIDATEUR:
+        return 'CREDIT';
+      case UserRole.AGENT_SANTE:
+      case UserRole.PROFESSIONNEL_SANTE:
+        return 'MEDICAL';
+      case UserRole.AGENT_PEDAGOGIQUE:
+      case UserRole.RESPONSABLE_PEDAGOGIQUE:
+        return 'EDUCATION';
+      case UserRole.AUDITEUR:
+        return 'AUDIT';
+      case UserRole.ADMINISTRATEUR:
+      default:
+        return 'ADMIN';
+    }
+  });
+
   readonly isDomainRestricted = computed(() => {
     const role = this.authService.currentUser?.role;
     return role !== UserRole.ADMINISTRATEUR && role !== UserRole.AUDITEUR;
@@ -84,8 +105,8 @@ export class DashboardComponent {
   // Chart Data Signals
   lineChartData: any;
   lineChartOptions: any;
-  areaChartData: any;
-  areaChartOptions: any;
+  donutRiskData: any;
+  donutRiskOptions: any;
   donutTypeData: any;
   donutTypeOptions: any;
   donutNewRetData: any;
@@ -203,42 +224,46 @@ export class DashboardComponent {
       interaction: { mode: 'nearest', axis: 'x', intersect: false }
     };
 
-    // 2. Area Chart (First Reply and Full Resolve Time - dynamic mock based on KPIs)
-    // We didn't add a specific endpoint for area chart trend, so we create a dynamic visual
-    this.areaChartData = {
-      labels: ['1', '2', '3', '4', '5', '6', '7'],
+    // 2. Risk Breakdown Donut Chart
+    const kpiData = this.kpiStats();
+    const riskBreakdown = kpiData?.riskBreakdown || {};
+    const riskLabels = Object.keys(riskBreakdown);
+    const riskValues = Object.values(riskBreakdown);
+    
+    this.donutRiskData = {
+      labels: riskLabels.length ? riskLabels : ['Aucune Donnée'],
       datasets: [
         {
-          label: 'Temps de Résolution',
-          data: [2.1, 2.5, 2.0, 2.8, 2.4, 3.0, 2.6],
-          fill: true,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          tension: 0.4,
-          pointRadius: 0
-        },
-        {
-          label: 'Temps de Réponse',
-          data: [1.2, 1.8, 1.5, 2.0, 1.6, 2.2, 1.8],
-          fill: true,
-          borderColor: '#8b5cf6',
-          backgroundColor: 'rgba(139, 92, 246, 0.2)',
-          tension: 0.4,
-          pointRadius: 0
+          data: riskValues.length ? riskValues : [1],
+          backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#6b7280'], // Élevé, Modéré, Faible, Non Spécifié mapping (rough)
+          hoverBackgroundColor: ['#f87171', '#fbbf24', '#34d399', '#9ca3af'],
+          borderWidth: 0,
+          cutout: '75%'
         }
       ]
     };
-    this.areaChartOptions = {
-      maintainAspectRatio: false,
+
+    // Color mapping for exact labels if present
+    if (riskLabels.length > 0) {
+      const bgColors = [];
+      const hoverColors = [];
+      for (const label of riskLabels) {
+        if (label === 'Élevé') { bgColors.push('#ef4444'); hoverColors.push('#f87171'); }
+        else if (label === 'Modéré') { bgColors.push('#f59e0b'); hoverColors.push('#fbbf24'); }
+        else if (label === 'Faible') { bgColors.push('#10b981'); hoverColors.push('#34d399'); }
+        else { bgColors.push('#6b7280'); hoverColors.push('#9ca3af'); }
+      }
+      this.donutRiskData.datasets[0].backgroundColor = bgColors;
+      this.donutRiskData.datasets[0].hoverBackgroundColor = hoverColors;
+    }
+
+    this.donutRiskOptions = {
       plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        x: { display: false },
-        y: { display: false, min: 0, max: 4 }
-      },
-      elements: { line: { borderWidth: 2 } }
+        legend: {
+          position: 'right',
+          labels: { color: textColor, usePointStyle: true, pointStyle: 'circle' }
+        }
+      }
     };
 
     // 3. Donut 1: Tickets By Type

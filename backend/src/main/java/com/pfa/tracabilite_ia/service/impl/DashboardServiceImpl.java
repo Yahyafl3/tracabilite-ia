@@ -151,6 +151,9 @@ public class DashboardServiceImpl implements DashboardService {
                 .agentLabel(agentLabel)
                 .statutValidation(decision.getStatutValidation())
                 .timestamp(decision.getTimestamp())
+                .riskLevel(decision.getRiskLevel())
+                .confidenceScore(decision.getConfidenceScore())
+                .reference(decision.getDossierReference())
                 .build();
     }
 
@@ -159,10 +162,19 @@ public class DashboardServiceImpl implements DashboardService {
     public List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> getTimelineStats() {
         List<Decision> scopedDecisions = getScopedDecisions();
         java.util.Map<Integer, Long> createdByMonth = scopedDecisions.stream()
-            .collect(Collectors.groupingBy(d -> d.getTimestamp().getMonthValue(), Collectors.counting()));
+            .collect(Collectors.groupingBy(d -> {
+                LocalDateTime ts = d.getSubmittedAt() != null ? d.getSubmittedAt() : d.getTimestamp();
+                return ts != null ? ts.getMonthValue() : LocalDateTime.now().getMonthValue();
+            }, Collectors.counting()));
+        
         java.util.Map<Integer, Long> solvedByMonth = scopedDecisions.stream()
-            .filter(d -> d.getStatutValidation() == StatutDecisionEnum.APPROUVEE || d.getStatutValidation() == StatutDecisionEnum.MODIFIEE)
-            .collect(Collectors.groupingBy(d -> d.getTimestamp().getMonthValue(), Collectors.counting()));
+            .filter(d -> d.getStatutValidation() == StatutDecisionEnum.APPROUVEE || 
+                         d.getStatutValidation() == StatutDecisionEnum.MODIFIEE || 
+                         d.getStatutValidation() == StatutDecisionEnum.REJETEE)
+            .collect(Collectors.groupingBy(d -> {
+                LocalDateTime ts = d.getValidatedAt() != null ? d.getValidatedAt() : (d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getTimestamp());
+                return ts != null ? ts.getMonthValue() : LocalDateTime.now().getMonthValue();
+            }, Collectors.counting()));
         
         String[] months = {"Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"};
         List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> result = new java.util.ArrayList<>();
@@ -205,13 +217,85 @@ public class DashboardServiceImpl implements DashboardService {
         long retT = scopedDecisions.stream().filter(d -> d.getStatutValidation() == StatutDecisionEnum.MODIFIEE || d.getStatutValidation() == StatutDecisionEnum.REJETEE).count();
         
         long activeCount = scopedDecisions.size();
-        long avgReplyMins = 15 + (activeCount % 30);
-        long avgResolveHours = 20 + (activeCount % 10);
-        long avgResolveMins = 10 + (activeCount % 40);
+        long validated = scopedDecisions.stream().filter(d -> 
+            d.getStatutValidation() == StatutDecisionEnum.APPROUVEE || 
+            d.getStatutValidation() == StatutDecisionEnum.MODIFIEE || 
+            d.getStatutValidation() == StatutDecisionEnum.REJETEE).count();
+        double approvalRate = activeCount == 0 ? 0.0 : (validated * 100.0) / activeCount;
+        approvalRate = Math.round(approvalRate * 10.0) / 10.0;
 
-        String avgReplyStr = (avgReplyMins > 60 ? (avgReplyMins / 60) + "h " : "") + (avgReplyMins % 60) + "min";
-        String avgResolveStr = avgResolveHours + "h " + avgResolveMins + "min";
+        long highRiskCount = scopedDecisions.stream().filter(d -> "HIGH".equalsIgnoreCase(d.getRiskLevel())).count();
+        long mediumRiskCount = scopedDecisions.stream().filter(d -> "MEDIUM".equalsIgnoreCase(d.getRiskLevel())).count();
+        long lowRiskCount = scopedDecisions.stream().filter(d -> "LOW".equalsIgnoreCase(d.getRiskLevel())).count();
+        long unknownRiskCount = activeCount - highRiskCount - mediumRiskCount - lowRiskCount;
 
-        return new com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.KpiData(avgReplyStr, avgResolveStr, newT, retT);
+        java.util.Map<String, Long> riskBreakdown = new java.util.HashMap<>();
+        riskBreakdown.put("Élevé", highRiskCount);
+        riskBreakdown.put("Modéré", mediumRiskCount);
+        riskBreakdown.put("Faible", lowRiskCount);
+        if (unknownRiskCount > 0) riskBreakdown.put("Non Spécifié", unknownRiskCount);
+
+        java.util.Map<String, Object> domainMetrics = new java.util.HashMap<>();
+        Utilisateur user = authService.getCurrentUser();
+        RoleEnum role = user != null ? user.getRole() : null;
+
+        if (role == RoleEnum.AGENT_CREDIT || role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR) {
+            double totalMontant = scopedDecisions.stream()
+                .filter(d -> d.getCreditData() != null && d.getCreditData().getMontantDemandeMad() != null)
+                .mapToDouble(d -> d.getCreditData().getMontantDemandeMad())
+                .sum();
+            double avgTaux = scopedDecisions.stream()
+                .filter(d -> d.getCreditData() != null && d.getCreditData().getTauxEndettement() != null)
+                .mapToDouble(d -> d.getCreditData().getTauxEndettement())
+                .average().orElse(0.0);
+            domainMetrics.put("totalMontant", totalMontant);
+            domainMetrics.put("avgTaux", Math.round(avgTaux * 10.0) / 10.0);
+        } else if (role == RoleEnum.AGENT_SANTE || role == RoleEnum.PROFESSIONNEL_SANTE) {
+            double avgGlycemie = scopedDecisions.stream()
+                .filter(d -> d.getMedicalData() != null && d.getMedicalData().getGlycemieMgDl() != null)
+                .mapToDouble(d -> d.getMedicalData().getGlycemieMgDl())
+                .average().orElse(0.0);
+            double avgImc = scopedDecisions.stream()
+                .filter(d -> d.getMedicalData() != null && d.getMedicalData().getImcKgM2() != null)
+                .mapToDouble(d -> d.getMedicalData().getImcKgM2())
+                .average().orElse(0.0);
+            domainMetrics.put("avgGlycemie", Math.round(avgGlycemie * 10.0) / 10.0);
+            domainMetrics.put("avgImc", Math.round(avgImc * 10.0) / 10.0);
+        } else if (role == RoleEnum.AGENT_PEDAGOGIQUE || role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) {
+            double avgMoyenneS1 = scopedDecisions.stream()
+                .filter(d -> d.getEducationData() != null && d.getEducationData().getMoyenneS1() != null)
+                .mapToDouble(d -> d.getEducationData().getMoyenneS1())
+                .average().orElse(0.0);
+            double avgMoyenneS2 = scopedDecisions.stream()
+                .filter(d -> d.getEducationData() != null && d.getEducationData().getMoyenneS2() != null)
+                .mapToDouble(d -> d.getEducationData().getMoyenneS2())
+                .average().orElse(0.0);
+            long boursierCount = scopedDecisions.stream()
+                .filter(d -> d.getEducationData() != null && "OUI".equalsIgnoreCase(d.getEducationData().getBoursier()))
+                .count();
+            domainMetrics.put("avgMoyenneS1", Math.round(avgMoyenneS1 * 100.0) / 100.0);
+            domainMetrics.put("avgMoyenneS2", Math.round(avgMoyenneS2 * 100.0) / 100.0);
+            domainMetrics.put("boursierCount", boursierCount);
+        } else if (role == RoleEnum.AUDITEUR) {
+            long totalTraceable = scopedDecisions.stream()
+                .filter(d -> d.getCurrentHash() != null)
+                .count();
+            long verifiedTraces = scopedDecisions.stream()
+                .filter(d -> d.getCurrentHash() != null && d.getCurrentHash().equals(d.calculerHash()))
+                .count();
+            double complianceRatio = totalTraceable == 0 ? 100.0 : (verifiedTraces * 100.0) / totalTraceable;
+            domainMetrics.put("complianceRatio", Math.round(complianceRatio * 10.0) / 10.0);
+            domainMetrics.put("verifiedTraces", verifiedTraces);
+            domainMetrics.put("totalTraceable", totalTraceable);
+        }
+
+        return com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.KpiData.builder()
+            .approvalRate(approvalRate)
+            .highRiskCount(highRiskCount)
+            .newTickets(newT)
+            .returnedTickets(retT)
+            .domainMetrics(domainMetrics)
+            .riskBreakdown(riskBreakdown)
+            .build();
     }
 }

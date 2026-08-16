@@ -39,7 +39,7 @@ export class LoginComponent {
   readonly emailReadonly = signal(true);
   /** UI-only: hide broken video and keep CSS gradient fallback. */
   readonly videoFailed = signal(false);
-  returnUrl = '/decisions';
+  returnUrl = '/dashboard';
 
   constructor() {
     this.loginForm = this.fb.nonNullable.group({
@@ -47,7 +47,7 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
   onVideoError(): void {
@@ -75,11 +75,7 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        const role = response.user?.role;
-        let defaultUrl = '/decisions';
-        if (role === UserRole.AUDITEUR) defaultUrl = '/audit';
-        if (role === UserRole.VALIDATEUR) defaultUrl = '/validation';
-        const target = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+        const target = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
         void this.router.navigate([target]);
       },
       error: (error: Error & { status?: number }) => {

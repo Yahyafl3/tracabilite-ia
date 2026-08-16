@@ -32,37 +32,78 @@
     <div class="crm-dashboard-grid">
       
       <!-- Top Left: 2 large KPI cards -->
-      <div class="crm-kpi-large kpi-purple">
-        <span class="kpi-title">Temps Moyen de Réponse</span>
-        <div class="kpi-val">{{ kpiStats()?.avgFirstReplyTime || '0min' }}</div>
-      </div>
-      <div class="crm-kpi-large kpi-teal">
-        <span class="kpi-title">Temps de Résolution Complexe</span>
-        <div class="kpi-val">{{ kpiStats()?.avgFullResolveTime || '0min' }}</div>
-      </div>
+      @switch (activeDomainCode()) {
+        @case ('CREDIT') {
+          <div class="crm-kpi-large kpi-purple">
+            <span class="kpi-title">Montant Total Demandé (MAD)</span>
+            <div class="kpi-val">{{ (kpiStats()?.domainMetrics?.['totalMontant'] || 0) | number:'1.0-0' }}</div>
+          </div>
+          <div class="crm-kpi-large kpi-teal">
+            <span class="kpi-title">Taux Endettement Moyen</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['avgTaux'] || 0 }}%</div>
+          </div>
+        }
+        @case ('MEDICAL') {
+          <div class="crm-kpi-large kpi-purple">
+            <span class="kpi-title">Glycémie Moyenne (mg/dL)</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['avgGlycemie'] || 0 }}</div>
+          </div>
+          <div class="crm-kpi-large kpi-teal">
+            <span class="kpi-title">IMC Moyen (kg/m²)</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['avgImc'] || 0 }}</div>
+          </div>
+        }
+        @case ('EDUCATION') {
+          <div class="crm-kpi-large kpi-purple">
+            <span class="kpi-title">Moyenne Générale S1 / S2</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['avgMoyenneS1'] || 0 }} / {{ kpiStats()?.domainMetrics?.['avgMoyenneS2'] || 0 }}</div>
+          </div>
+          <div class="crm-kpi-large kpi-teal">
+            <span class="kpi-title">Étudiants Boursiers</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['boursierCount'] || 0 }}</div>
+          </div>
+        }
+        @case ('AUDIT') {
+          <div class="crm-kpi-large kpi-purple">
+            <span class="kpi-title">Taux de Conformité Hash</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['complianceRatio'] || 100 }}%</div>
+          </div>
+          <div class="crm-kpi-large kpi-teal">
+            <span class="kpi-title">Traces Vérifiées</span>
+            <div class="kpi-val">{{ kpiStats()?.domainMetrics?.['verifiedTraces'] || 0 }} / {{ kpiStats()?.domainMetrics?.['totalTraceable'] || 0 }}</div>
+          </div>
+        }
+        @default {
+          <div class="crm-kpi-large kpi-purple">
+            <span class="kpi-title">Taux de Validation Humaine</span>
+            <div class="kpi-val">{{ kpiStats()?.approvalRate || 0 }}%</div>
+          </div>
+          <div class="crm-kpi-large kpi-teal">
+            <span class="kpi-title">Décisions à Risque Élevé</span>
+            <div class="kpi-val">{{ kpiStats()?.highRiskCount || 0 }}</div>
+          </div>
+        }
+      }
 
       <!-- Top Right: 2 small KPI cards -->
       <div class="crm-kpi-small-col">
         <div class="crm-kpi-small">
-          <div class="kpi-icon bg-pink"><i class="pi pi-comments"></i></div>
-          <span class="kpi-label">Messages</span>
-          <span class="kpi-badge badge-red">-20%</span>
+          <div class="kpi-icon bg-pink"><i class="pi pi-check-circle"></i></div>
+          <span class="kpi-label">Nouvelles</span>
+          <span class="kpi-badge badge-green">{{ kpiStats()?.newTickets || 0 }}</span>
         </div>
         <div class="crm-kpi-small">
-          <div class="kpi-icon bg-blue"><i class="pi pi-envelope"></i></div>
-          <span class="kpi-label">E-mails</span>
-          <span class="kpi-badge badge-green">+33%</span>
+          <div class="kpi-icon bg-blue"><i class="pi pi-exclamation-circle"></i></div>
+          <span class="kpi-label">Retraitées</span>
+          <span class="kpi-badge badge-red">{{ kpiStats()?.returnedTickets || 0 }}</span>
         </div>
       </div>
 
-      <!-- Right Column: Area Chart -->
+      <!-- Right Column: Risk Breakdown Donut Chart -->
       <p-card styleClass="crm-card right-col-card crm-area-card">
-        <h3 class="crm-card-title">Temps de Réponse et Résolution</h3>
-        <div class="chart-container-area">
-          <p-chart type="line" [data]="areaChartData" [options]="areaChartOptions"></p-chart>
-        </div>
-        <div class="crm-card-footer mt-4">
-          <button class="btn btn-secondary btn-block">Voir le rapport complet <i class="pi pi-ellipsis-h ml-auto"></i></button>
+        <h3 class="crm-card-title">Répartition du Niveau de Risque</h3>
+        <div class="chart-container-donut mt-4">
+          <p-chart type="doughnut" [data]="donutRiskData" [options]="donutRiskOptions"></p-chart>
         </div>
       </p-card>
 
@@ -107,5 +148,44 @@
       </p-card>
 
     </div>
+
+    <!-- Recent Decisions Table added below the grid -->
+    <p-card styleClass="crm-card mt-6">
+      <h3 class="crm-card-title mb-3">Décisions Récentes</h3>
+      <p-table [value]="stats()?.recentDecisions || []" [paginator]="true" [rows]="5" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID Décision</th>
+            <th>Date</th>
+            <th>Agent IA</th>
+            <th>Statut</th>
+            @if (activeDomainCode() === 'CREDIT') {
+              <th>Niveau de Risque</th>
+            }
+            @if (activeDomainCode() === 'EDUCATION' || activeDomainCode() === 'MEDICAL') {
+              <th>Confiance IA</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-dec>
+          <tr>
+            <td><span class="text-sm font-medium">{{ dec.decisionId | slice:0:8 }}...</span></td>
+            <td><span class="text-sm text-gray-400">{{ formatGeneratedAt(dec.timestamp) }}</span></td>
+            <td><p-tag severity="info" [value]="dec.agentLabel"></p-tag></td>
+            <td>
+              <p-tag [severity]="dec.statutValidation === 'APPROUVEE' ? 'success' : (dec.statutValidation === 'MODIFIEE' ? 'warn' : 'danger')" [value]="dec.statutValidation"></p-tag>
+            </td>
+            @if (activeDomainCode() === 'CREDIT') {
+              <td>
+                <p-tag [severity]="dec.riskLevel === 'HIGH' ? 'danger' : 'success'" [value]="dec.riskLevel || 'N/A'"></p-tag>
+              </td>
+            }
+            @if (activeDomainCode() === 'EDUCATION' || activeDomainCode() === 'MEDICAL') {
+              <td>{{ dec.confidenceScore ? (dec.confidenceScore | percent) : 'N/A' }}</td>
+            }
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
   }
 </div>

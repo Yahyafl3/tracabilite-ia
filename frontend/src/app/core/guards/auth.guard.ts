@@ -66,6 +66,6 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/decisions']);
+  router.navigate(['/dashboard']);
   return false;
 };

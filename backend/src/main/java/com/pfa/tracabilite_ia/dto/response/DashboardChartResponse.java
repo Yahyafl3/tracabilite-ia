@@ -25,10 +25,12 @@ public class DashboardChartResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class KpiData {
-        private String avgFirstReplyTime; // e.g. "30h 15min"
-        private String avgFullResolveTime;
+        private double approvalRate;
+        private long highRiskCount;
         private long newTickets;
         private long returnedTickets;
+        private Map<String, Object> domainMetrics;
+        private Map<String, Long> riskBreakdown;
     }
 
     @Data

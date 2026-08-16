@@ -11,6 +11,9 @@ export interface DashboardRecentDecision {
   agentLabel: string;
   statutValidation: 'APPROUVEE' | 'MODIFIEE' | 'REJETEE' | 'EN_ATTENTE' | 'BROUILLON';
   timestamp: string;
+  riskLevel?: string;
+  confidenceScore?: number;
+  reference?: string;
 }
 
 export interface DashboardResponse {
@@ -44,10 +47,12 @@ export interface DailyStats {
 }
 
 export interface KpiData {
-  avgFirstReplyTime: string;
-  avgFullResolveTime: string;
+  approvalRate: number;
+  highRiskCount: number;
   newTickets: number;
   returnedTickets: number;
+  domainMetrics?: Record<string, any>;
+  riskBreakdown?: Record<string, number>;
 }
 
 @Injectable({ providedIn: 'root' })
