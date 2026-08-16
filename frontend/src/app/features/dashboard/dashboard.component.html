@@ -1,10 +1,10 @@
-<div class="dashboard-page">
+<div class="dashboard-page reveal is-visible">
   <header class="dashboard-header">
     <div>
-      <p class="dashboard-eyebrow">Accueil / Tableau de bord</p>
-      <h1>Tableau de bord</h1>
+      <p class="dashboard-eyebrow">Accueil / Tableau de bord CRM</p>
+      <h1>Tableau de bord CRM</h1>
       <p class="dashboard-subtitle">
-        Vue d'ensemble des décisions, agents IA et intégrité de la chaîne de traçabilité.
+        Suivi des performances et de la résolution des décisions
       </p>
     </div>
     @if (generatedAt()) {
@@ -13,7 +13,7 @@
   </header>
 
   @if (loading()) {
-    <div class="dashboard-skeleton" aria-label="Chargement des statistiques…">
+    <div class="dashboard-skeleton" aria-label="Chargement du tableau de bord...">
       <p-skeleton height="6rem" styleClass="mb-3" />
       <p-skeleton height="6rem" styleClass="mb-3" />
       <p-skeleton height="18rem" />
@@ -22,170 +22,88 @@
     <p-card styleClass="dashboard-error-card">
       <p class="dashboard-error">{{ error() }}</p>
     </p-card>
-  } @else {
-    <section class="dashboard-kpi-grid" aria-label="Indicateurs clés">
-      @for (kpi of kpiCards(); track kpi.label) {
-        <p-card styleClass="dashboard-kpi-card">
-          <div class="dashboard-kpi">
-            <div class="dashboard-kpi__icon" [attr.data-severity]="kpi.severity">
-              <i [class]="kpi.icon" aria-hidden="true"></i>
-            </div>
-            <div class="dashboard-kpi__body">
-              <span class="dashboard-kpi__label">{{ kpi.label }}</span>
-              <strong class="dashboard-kpi__value">{{ kpi.value }}{{ kpi.unit }}</strong>
-              <span class="dashboard-kpi__hint">{{ kpi.hint }}</span>
-            </div>
-          </div>
-        </p-card>
-      }
-    </section>
-
-    <div class="dashboard-charts-row">
-      <p-card header="Répartition des décisions" styleClass="dashboard-panel">
-        <ng-template #subtitle>
-          <span>{{ totalDecisions() }} décisions au total</span>
-        </ng-template>
-
-        @if (donutSegments().length === 0) {
-          <p class="dashboard-empty">Aucune décision enregistrée.</p>
-        } @else {
-          <div class="donut-body">
-            <svg
-              width="180"
-              height="180"
-              viewBox="0 0 180 180"
-              role="img"
-              aria-label="Graphique en anneau — répartition des décisions"
-            >
-              @for (seg of donutSegments(); track seg.label) {
-                <path [attr.d]="seg.path" [attr.fill]="seg.color" class="donut-seg">
-                  <title>{{ seg.label }} : {{ seg.value }} ({{ seg.pct }}%)</title>
-                </path>
-              }
-              <text x="90" y="85" class="donut-center-value" text-anchor="middle">
-                {{ totalDecisions() }}
-              </text>
-              <text x="90" y="103" class="donut-center-label" text-anchor="middle">décisions</text>
-            </svg>
-
-            <div class="donut-legend">
-              @for (seg of donutSegments(); track seg.label) {
-                <div class="donut-legend__item">
-                  <span class="donut-legend__dot" [style.background]="seg.color"></span>
-                  <span class="donut-legend__label">{{ seg.label }}</span>
-                  <span class="donut-legend__count">{{ seg.value }}</span>
-                  <span class="donut-legend__pct">{{ seg.pct }}%</span>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      </p-card>
-
-      <p-card styleClass="dashboard-panel">
-        <ng-template #header>
-          <div class="dashboard-panel__header">
-            <span>Performance agents</span>
-            @if (canOpenComparaison()) {
-              <a routerLink="/comparaison" class="dashboard-link">Voir détails</a>
-            }
-          </div>
-        </ng-template>
-
-        @if (agentPerformance().length === 0) {
-          <p class="dashboard-empty">Aucune réponse agent enregistrée.</p>
-        } @else {
-          <div class="perf-list">
-            @for (agent of agentPerformance(); track agent.nom; let i = $index) {
-              <div class="perf-item">
-                <div class="perf-item__head">
-                  <div class="perf-avatar" [class]="perfAvatarClass(i)">{{ agentInitial(agent) }}</div>
-                  <div class="perf-item__info">
-                    <span class="perf-item__name">{{ agent.nom }}</span>
-                    <span class="perf-item__vendor">{{ agent.fournisseur }} · {{ agent.modele }}</span>
-                  </div>
-                  <p-tag
-                    [value]="(agent.scorePourcentage | number:'1.0-0') + ' %'"
-                    [severity]="agent.scorePourcentage >= 70 ? 'success' : agent.scorePourcentage >= 40 ? 'warn' : 'danger'"
-                  />
-                </div>
-                <p-progressbar [value]="agent.scorePourcentage" [showValue]="false" styleClass="perf-progress" />
-                <div class="perf-stats">
-                  <span><strong>{{ agent.totalDecisions }}</strong> décisions</span>
-                  <span><strong>{{ agentReussies(agent) }}</strong> réussies</span>
-                </div>
-                <div class="perf-pills">
-                  <p-tag severity="success" [value]="agent.approuvees + ' approuvées'" />
-                  <p-tag severity="danger" [value]="agent.rejetees + ' rejetées'" />
-                  <p-tag severity="secondary" [value]="agent.enAttente + ' en attente'" />
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </p-card>
-    </div>
-
-    <p-card styleClass="dashboard-panel dashboard-table-card">
-      <ng-template #header>
-        <div class="dashboard-panel__header">
-          <span>Décisions récentes</span>
-          <a routerLink="/decisions" class="dashboard-link">Voir tout</a>
-        </div>
-      </ng-template>
-
-      @if (recentDecisions().length === 0) {
-        <p class="dashboard-empty">Aucune décision récente.</p>
-      } @else {
-        <p-table [value]="recentDecisions()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '40rem' }">
-          <ng-template #header>
-            <tr>
-              <th>Source</th>
-              <th>Prompt</th>
-              <th>Modèle</th>
-              <th>Statut</th>
-              <th>Heure</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-d let-rowIndex="rowIndex">
-            <tr>
-              <td>
-                <div class="agent-cell">
-                  <div class="agent-avatar" [class]="agentAvatarClass(rowIndex)">
-                    {{ d.agentLabel.charAt(0) }}
-                  </div>
-                  <div class="agent-info">
-                    <span class="agent-name">{{ d.agentLabel }}</span>
-                    <span class="agent-meta">{{ d.modelName }}</span>
-                  </div>
-                </div>
-              </td>
-              <td class="td-prompt">{{ d.prompt }}</td>
-              <td><code class="model-tag">{{ d.modelName }}</code></td>
-              <td>
-                <p-tag [value]="statutLabel(d.statutValidation)" [severity]="statutSeverity(d.statutValidation)" />
-              </td>
-              <td class="td-time">
-                <span class="time-date">{{ formatDate(d.timestamp) }}</span>
-                <span class="time-hour">{{ formatTime(d.timestamp) }}</span>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
-
-      <div
-        class="integrity-footer"
-        [class.integrity-footer--ok]="hashChainIntact()"
-        [class.integrity-footer--warn]="!hashChainIntact()"
-      >
-        <i class="pi pi-verified" aria-hidden="true"></i>
-        @if (hashChainIntact()) {
-          Intégrité cryptographique vérifiée — chaîne SHA-256 intacte
-        } @else {
-          Alerte : incohérence détectée dans la chaîne SHA-256
-        }
-      </div>
+  } @else if (emptyData()) {
+    <p-card styleClass="dashboard-empty-card" [style]="{'text-align': 'center', 'padding': '40px'}">
+      <i class="pi pi-database" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 16px;"></i>
+      <h3 style="color: var(--text-primary); margin-bottom: 8px;">Aucune décision trouvée</h3>
+      <p style="color: var(--text-muted);">Il n'y a pas encore de données à analyser pour le moment.</p>
     </p-card>
+  } @else {
+    <div class="crm-dashboard-grid">
+      
+      <!-- Top Left: 2 large KPI cards -->
+      <div class="crm-kpi-large kpi-purple">
+        <span class="kpi-title">Temps Moyen de Réponse</span>
+        <div class="kpi-val">{{ kpiStats()?.avgFirstReplyTime || '0min' }}</div>
+      </div>
+      <div class="crm-kpi-large kpi-teal">
+        <span class="kpi-title">Temps de Résolution Complexe</span>
+        <div class="kpi-val">{{ kpiStats()?.avgFullResolveTime || '0min' }}</div>
+      </div>
+
+      <!-- Top Right: 2 small KPI cards -->
+      <div class="crm-kpi-small-col">
+        <div class="crm-kpi-small">
+          <div class="kpi-icon bg-pink"><i class="pi pi-comments"></i></div>
+          <span class="kpi-label">Messages</span>
+          <span class="kpi-badge badge-red">-20%</span>
+        </div>
+        <div class="crm-kpi-small">
+          <div class="kpi-icon bg-blue"><i class="pi pi-envelope"></i></div>
+          <span class="kpi-label">E-mails</span>
+          <span class="kpi-badge badge-green">+33%</span>
+        </div>
+      </div>
+
+      <!-- Right Column: Area Chart -->
+      <p-card styleClass="crm-card right-col-card crm-area-card">
+        <h3 class="crm-card-title">Temps de Réponse et Résolution</h3>
+        <div class="chart-container-area">
+          <p-chart type="line" [data]="areaChartData" [options]="areaChartOptions"></p-chart>
+        </div>
+        <div class="crm-card-footer mt-4">
+          <button class="btn btn-secondary btn-block">Voir le rapport complet <i class="pi pi-ellipsis-h ml-auto"></i></button>
+        </div>
+      </p-card>
+
+      <!-- Middle Left: Big Line Chart -->
+      <p-card styleClass="crm-card main-line-card">
+        <div class="crm-card-header-flex">
+          <h3 class="crm-card-title">Décisions Validées vs Décisions Créées</h3>
+        </div>
+        <div class="chart-container-line">
+          <p-chart type="line" [data]="lineChartData" [options]="lineChartOptions"></p-chart>
+        </div>
+      </p-card>
+
+      <!-- Bottom Left 1: Donut 1 -->
+      <p-card styleClass="crm-card bottom-card">
+        <h3 class="crm-card-title">Décisions par Type</h3>
+        <div class="chart-container-donut">
+          <p-chart type="doughnut" [data]="donutTypeData" [options]="donutTypeOptions"></p-chart>
+        </div>
+      </p-card>
+
+      <!-- Bottom Left 2: Donut 2 -->
+      <p-card styleClass="crm-card bottom-card relative">
+        <h3 class="crm-card-title">Nouvelles Décisions vs Décisions Retraitées</h3>
+        <div class="chart-container-donut">
+          <div class="donut-center-text">
+            <span>Retraitées</span>
+            <strong>{{ kpiStats()?.returnedTickets | number }}</strong>
+          </div>
+          <p-chart type="doughnut" [data]="donutNewRetData" [options]="donutNewRetOptions"></p-chart>
+        </div>
+      </p-card>
+
+      <!-- Bottom Right: Bar Chart -->
+      <p-card styleClass="crm-card right-col-card">
+        <h3 class="crm-card-title">Nombre de Décisions / Jour</h3>
+        <div class="chart-container-bar">
+          <p-chart type="bar" [data]="barChartData" [options]="barChartOptions"></p-chart>
+        </div>
+      </p-card>
+
+    </div>
   }
 </div>

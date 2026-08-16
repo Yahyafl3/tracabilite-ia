@@ -29,6 +29,27 @@ export interface DashboardResponse {
   agentPerformance: ComparaisonAgent[];
 }
 
+export interface TimelineData {
+  label: string;
+  created: number;
+  solved: number;
+}
+
+export interface TypeStats {
+  counts: Record<string, number>;
+}
+
+export interface DailyStats {
+  counts: Record<string, number>;
+}
+
+export interface KpiData {
+  avgFirstReplyTime: string;
+  avgFullResolveTime: string;
+  newTickets: number;
+  returnedTickets: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
@@ -36,5 +57,21 @@ export class DashboardService {
 
   getStats(): Observable<DashboardResponse> {
     return this.http.get<DashboardResponse>(this.baseUrl);
+  }
+
+  getTimelineStats(): Observable<TimelineData[]> {
+    return this.http.get<TimelineData[]>(`${this.baseUrl}/stats/timeline`);
+  }
+
+  getTypeStats(): Observable<TypeStats> {
+    return this.http.get<TypeStats>(`${this.baseUrl}/stats/by-type`);
+  }
+
+  getDailyStats(): Observable<DailyStats> {
+    return this.http.get<DailyStats>(`${this.baseUrl}/stats/daily`);
+  }
+
+  getKpiStats(): Observable<KpiData> {
+    return this.http.get<KpiData>(`${this.baseUrl}/stats/kpi`);
   }
 }
