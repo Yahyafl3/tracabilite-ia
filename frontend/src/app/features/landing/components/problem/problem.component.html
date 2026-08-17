@@ -1,23 +1,19 @@
 <section id="probleme" class="section">
   <div class="container">
     <div class="section-head" appReveal>
-      <span class="eyebrow">Problématique</span>
-      <h2 class="section-title">Pourquoi tracer les décisions assistées par IA&nbsp;?</h2>
-      <p class="section-subtitle">
-        Une prédiction seule ne suffit pas. Pour comprendre, contrôler et auditer une décision,
-        il faut conserver le contexte, les données, le modèle, les explications, les sources,
-        les recommandations IA et l'intervention humaine.
-      </p>
+      <span class="eyebrow">{{ 'landing.problem.eyebrow' | translate }}</span>
+      <h2 class="section-title">{{ 'landing.problem.title' | translate }}</h2>
+      <p class="section-subtitle">{{ 'landing.problem.subtitle' | translate }}</p>
     </div>
 
     <div class="problem-grid">
-      @for (item of problems; track item.title; let i = $index) {
+      @for (item of problems; track item.titleKey; let i = $index) {
         <article class="problem-card" appReveal [revealDelay]="i * 120">
           <span class="problem-card__icon">
             <app-icon [name]="item.icon" [size]="26" />
           </span>
-          <h3 class="problem-card__title">{{ item.title }}</h3>
-          <p class="problem-card__text">{{ item.description }}</p>
+          <h3 class="problem-card__title">{{ item.titleKey | translate }}</h3>
+          <p class="problem-card__text">{{ item.textKey | translate }}</p>
         </article>
       }
     </div>

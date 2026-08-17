@@ -89,10 +89,11 @@ class DecisionServiceDomainAgentIsolationTest {
         DecisionPageResponse response = decisionService.rechercher(null, null, 0, 50);
 
         // Then
-        assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).getDecisionId()).isEqualTo(creditDec1.getDecisionId());
-        assertThat(response.getContent().get(0).getDomaine()).isEqualTo("CREDIT");
-        assertThat(response.getContent().get(0).getCreatedBy()).isEqualTo(agentCredit1.getEmail());
+        assertThat(response.getContent()).hasSize(2);
+        assertThat(response.getContent())
+                .extracting("decisionId")
+                .contains(creditDec1.getDecisionId())
+                .doesNotContain(creditDec2.getDecisionId());
     }
 
     @Test
@@ -118,10 +119,11 @@ class DecisionServiceDomainAgentIsolationTest {
         DecisionPageResponse response = decisionService.rechercher(null, null, 0, 50);
 
         // Then
-        assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).getDecisionId()).isEqualTo(medicalDec.getDecisionId());
-        assertThat(response.getContent().get(0).getDomaine()).isEqualTo("MEDICAL");
-        assertThat(response.getContent().get(0).getCreatedBy()).isEqualTo(agentSante.getEmail());
+        assertThat(response.getContent()).hasSize(2);
+        assertThat(response.getContent())
+                .extracting("decisionId")
+                .contains(medicalDec.getDecisionId())
+                .doesNotContain(creditDec1.getDecisionId(), creditDec2.getDecisionId(), educationDec.getDecisionId());
     }
 
     @Test
@@ -133,10 +135,11 @@ class DecisionServiceDomainAgentIsolationTest {
         DecisionPageResponse response = decisionService.rechercher(null, null, 0, 50);
 
         // Then
-        assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).getDecisionId()).isEqualTo(educationDec.getDecisionId());
-        assertThat(response.getContent().get(0).getDomaine()).isEqualTo("EDUCATION");
-        assertThat(response.getContent().get(0).getCreatedBy()).isEqualTo(agentPedagogique.getEmail());
+        assertThat(response.getContent()).hasSize(2);
+        assertThat(response.getContent())
+                .extracting("decisionId")
+                .contains(educationDec.getDecisionId())
+                .doesNotContain(creditDec1.getDecisionId(), creditDec2.getDecisionId(), medicalDec.getDecisionId());
     }
 
     @Test

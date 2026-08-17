@@ -19,7 +19,7 @@
   class="back-to-top"
   [class.back-to-top--visible]="showBackToTop()"
   (click)="backToTop()"
-  aria-label="Revenir en haut"
+  [attr.aria-label]="'landing.backToTop' | translate"
 >
   <app-icon name="arrow-up" [size]="22" />
 </button>

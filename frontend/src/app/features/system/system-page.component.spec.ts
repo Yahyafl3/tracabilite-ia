@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { SystemPageComponent } from './system-page.component';
 import { ActivatedRoute } from '@angular/router';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('SystemPageComponent', () => {
   async function create(data: Record<string, string>): Promise<ComponentFixture<SystemPageComponent>> {
@@ -10,6 +11,7 @@ describe('SystemPageComponent', () => {
       imports: [SystemPageComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { data } },
@@ -24,8 +26,6 @@ describe('SystemPageComponent', () => {
   it('renders 403 access denied page', async () => {
     const fixture = await create({
       code: '403',
-      title: 'Accès refusé',
-      message: 'Permissions insuffisantes',
       severity: 'danger',
     });
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -37,8 +37,6 @@ describe('SystemPageComponent', () => {
   it('renders 404 not found page', async () => {
     const fixture = await create({
       code: '404',
-      title: 'Page introuvable',
-      message: 'Introuvable',
       severity: 'warn',
     });
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('404');
@@ -48,8 +46,6 @@ describe('SystemPageComponent', () => {
   it('navigates back via Location on Retour', async () => {
     const fixture = await create({
       code: '500',
-      title: 'Erreur serveur',
-      message: 'Erreur',
       severity: 'danger',
     });
     const goBackSpy = vi.spyOn(fixture.componentInstance, 'goBack');

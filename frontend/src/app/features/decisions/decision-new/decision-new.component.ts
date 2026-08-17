@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,15 +10,16 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { Divider } from 'primeng/divider';
 import { Checkbox } from 'primeng/checkbox';
 import { Tag } from 'primeng/tag';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   AgentResponseCardComponent,
   ConsensusCardComponent,
 } from '../../../shared/ui';
-import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels';
 import { DecisionService } from '../../../core/services/decision.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/auth.models';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
+import { decisionLabel, domainLabel } from '../../../core/utils/label.util';
 import { DecisionResponse } from '../../../core/models/decision.models';
 import {
   DECISION_DOMAINS,
@@ -28,14 +29,13 @@ import {
 import { CreditDecisionFormComponent } from '../forms/credit-decision-form.component';
 import { MedicalDecisionFormComponent } from '../forms/medical-decision-form.component';
 import { EducationDecisionFormComponent } from '../forms/education-decision-form.component';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 /** Map role → unique allowed domain (null = all domains). */
 const ROLE_DOMAIN_MAP: Partial<Record<string, DecisionDomain>> = {
   [UserRole.AGENT_CREDIT]:      'CREDIT',
   [UserRole.AGENT_SANTE]:       'MEDICAL',
   [UserRole.AGENT_PEDAGOGIQUE]: 'EDUCATION',
-  // Legacy
-  [UserRole.UTILISATEUR]:       'CREDIT',
 };
 
 @Component({
@@ -58,6 +58,7 @@ const ROLE_DOMAIN_MAP: Partial<Record<string, DecisionDomain>> = {
     CreditDecisionFormComponent,
     MedicalDecisionFormComponent,
     EducationDecisionFormComponent,
+    TranslatePipe,
   ],
   templateUrl: './decision-new.component.html',
   styleUrl: './decision-new.component.scss',
@@ -67,8 +68,16 @@ export class DecisionNewComponent implements OnInit {
   private readonly decisions = inject(DecisionService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly i18n = inject(TranslationService);
 
-  readonly multiAgentLabels = MULTI_AGENT_UI_LABELS;
+  readonly multiAgentLabels = computed(() => {
+    this.i18n.currentLang();
+    return {
+      consensus: this.i18n.t('shared.consensus'),
+      agentResponses: this.i18n.t('shared.agentResponses'),
+      synthesis: this.i18n.t('shared.synthesis'),
+    };
+  });
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly result = signal<DecisionResponse | null>(null);
@@ -81,12 +90,15 @@ export class DecisionNewComponent implements OnInit {
 
   /** Domains available to the current user based on role. */
   get allowedDomains(): { value: DecisionDomain; label: string; description: string }[] {
+    this.i18n.currentLang();
     const role = this.authService.currentUser?.role as string | undefined;
     const locked = role ? ROLE_DOMAIN_MAP[role] : undefined;
-    if (locked) {
-      return DECISION_DOMAINS.filter((d) => d.value === locked);
-    }
-    return DECISION_DOMAINS;
+    const source = locked ? DECISION_DOMAINS.filter((d) => d.value === locked) : DECISION_DOMAINS;
+    return source.map((d) => ({
+      ...d,
+      label: domainLabel(d.value),
+      description: this.i18n.t(`domainMeta.${d.value}.description`),
+    }));
   }
 
   /** True when the user is restricted to exactly one domain. */
@@ -116,7 +128,33 @@ export class DecisionNewComponent implements OnInit {
   }
 
   get domainDescription(): string {
-    return DECISION_DOMAINS.find((d) => d.value === this.selectedDomain)?.description ?? '';
+    this.i18n.currentLang();
+    return this.i18n.t(`domainMeta.${this.selectedDomain}.description`);
+  }
+
+  domainName(domain: string = this.selectedDomain): string {
+    this.i18n.currentLang();
+    return domainLabel(domain);
+  }
+
+  metaText(field: 'useCase' | 'riskLabel'): string {
+    this.i18n.currentLang();
+    return this.i18n.t(`domainMeta.${this.selectedDomain}.${field}`);
+  }
+
+  validatorRoleLabel(): string {
+    this.i18n.currentLang();
+    return this.i18n.t(`roles.${this.domainMeta.validatorRole}`);
+  }
+
+  mlLabel(value?: string | null): string {
+    this.i18n.currentLang();
+    return decisionLabel(value);
+  }
+
+  riskCodeLabel(value?: string | null): string {
+    this.i18n.currentLang();
+    return value ? this.i18n.t(`riskCode.${value}`) : this.i18n.t('common.dash');
   }
 
   onChildForm(event: { valid: boolean; value: Record<string, unknown> }): void {
@@ -133,7 +171,7 @@ export class DecisionNewComponent implements OnInit {
 
   submit(): void {
     if (!this.childValid()) {
-      this.error.set('Veuillez corriger les champs du formulaire avant de lancer l’analyse.');
+      this.error.set(this.i18n.t('decisions.new.formInvalid'));
       return;
     }
 
@@ -160,7 +198,7 @@ export class DecisionNewComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Erreur lors de l’analyse de la décision.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.new.analyzeError')));
         this.loading.set(false);
       },
     });
@@ -183,7 +221,7 @@ export class DecisionNewComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Soumission à validation impossible.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.new.submitError')));
         this.loading.set(false);
       },
     });

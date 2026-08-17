@@ -26,6 +26,8 @@ import { StatutDecisionEnum } from '../../core/models/decision.models';
 import { statutLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { CopyHashComponent } from '../../shared/ui';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 interface AuditTimelineEvent {
   status?: string;
@@ -58,6 +60,7 @@ interface AuditTimelineEvent {
     Message,
     CopyHashComponent,
     AuditStatisticsComponent,
+    TranslatePipe,
   ],
   templateUrl: './audit-page.component.html',
   styleUrl: './audit-page.component.scss',
@@ -67,12 +70,24 @@ export class AuditPageComponent {
   private readonly auditService = inject(AuditService);
   private readonly exportService = inject(ExportService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(TranslationService);
 
   readonly statuts = Object.values(StatutDecisionEnum);
-  readonly statutOptions = [
-    { label: 'Tous', value: '' },
-    ...this.statuts.map((statut) => ({ label: statutLabel(statut), value: statut })),
-  ];
+  readonly statutOptions = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('common.all'), value: '' },
+      ...this.statuts.map((statut) => ({ label: statutLabel(statut), value: statut })),
+    ];
+  });
+  readonly integrityOptions = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('audit.allIntegrity'), value: 'all' },
+      { label: this.i18n.t('audit.validOnly'), value: 'valid' },
+      { label: this.i18n.t('audit.invalidOnly'), value: 'invalid' },
+    ];
+  });
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -143,6 +158,7 @@ export class AuditPageComponent {
   });
 
   readonly kpiCards = computed(() => {
+    this.i18n.currentLang();
     const summary = this.integrity();
     if (!summary) {
       return [];
@@ -150,28 +166,28 @@ export class AuditPageComponent {
 
     return [
       {
-        label: 'Total décisions',
+        label: this.i18n.t('audit.kpiTotal'),
         value: String(summary.totalDecisions),
         severity: 'info' as const,
-        hint: 'Enregistrements audités',
+        hint: this.i18n.t('audit.hintAudited'),
       },
       {
-        label: 'Intégrité valide',
+        label: this.i18n.t('audit.kpiValid'),
         value: String(summary.validDecisions),
         severity: 'success' as const,
-        hint: 'Hash SHA-256 cohérent',
+        hint: this.i18n.t('audit.hintHash'),
       },
       {
-        label: 'Intégrité invalide',
+        label: this.i18n.t('audit.kpiInvalid'),
         value: String(summary.invalidDecisions),
         severity: (summary.invalidDecisions > 0 ? 'danger' : 'success') as 'danger' | 'success',
-        hint: summary.invalidDecisions > 0 ? 'Vérification requise' : 'Aucune anomalie',
+        hint: summary.invalidDecisions > 0 ? this.i18n.t('audit.hintCheck') : this.i18n.t('audit.hintNone'),
       },
       {
-        label: 'Chaîne intacte',
-        value: summary.chainIntact ? 'Oui' : 'Non',
+        label: this.i18n.t('audit.chainOk'),
+        value: summary.chainIntact ? this.i18n.t('common.yes') : this.i18n.t('common.no'),
         severity: (summary.chainIntact ? 'success' : 'danger') as 'success' | 'danger',
-        hint: 'Chaîne cryptographique',
+        hint: this.i18n.t('audit.hintChain'),
       },
     ];
   });
@@ -212,7 +228,7 @@ export class AuditPageComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger les données d\'audit.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('audit.loadError')));
         this.loading.set(false);
       },
     });
@@ -264,7 +280,7 @@ export class AuditPageComponent {
         this.detailLoading.set(false);
       },
       error: (err) => {
-        this.detailError.set(resolveHttpErrorMessage(err, 'Impossible de charger le détail d\'audit.'));
+        this.detailError.set(resolveHttpErrorMessage(err, this.i18n.t('audit.detailError')));
         this.detailLoading.set(false);
       },
     });
@@ -306,20 +322,21 @@ export class AuditPageComponent {
   }
 
   integrityLabel(valid: boolean): string {
-    return valid ? 'Valide' : 'Invalide';
+    this.i18n.currentLang();
+    return valid ? this.i18n.t('audit.valid') : this.i18n.t('audit.invalid');
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    return new Date(iso).toLocaleDateString(this.i18n.localeId(), { day: '2-digit', month: 'short' });
   }
 
   formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString(this.i18n.localeId(), { hour: '2-digit', minute: '2-digit' });
   }
 
   formatGeneratedAt(iso: string | null): string {
     if (!iso) return '';
-    return new Date(iso).toLocaleDateString('fr-FR', {
+    return new Date(iso).toLocaleDateString(this.i18n.localeId(), {
       day: '2-digit',
       month: 'short',
       year: 'numeric',

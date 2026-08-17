@@ -40,6 +40,7 @@ public class DecisionOrchestratorService {
     private final DecisionMapper decisionMapper;
     private final ObjectMapper objectMapper;
     private final DomainAgentConsultationService domainAgentConsultationService;
+    private final DecisionHashService decisionHashService;
 
     public DecisionOrchestratorService(
             DecisionRepository decisionRepository,
@@ -48,7 +49,8 @@ public class DecisionOrchestratorService {
             AuditLogService auditLogService,
             DecisionMapper decisionMapper,
             ObjectMapper objectMapper,
-            DomainAgentConsultationService domainAgentConsultationService
+            DomainAgentConsultationService domainAgentConsultationService,
+            DecisionHashService decisionHashService
     ) {
         this.decisionRepository = decisionRepository;
         this.mlDecisionService = mlDecisionService;
@@ -57,6 +59,7 @@ public class DecisionOrchestratorService {
         this.decisionMapper = decisionMapper;
         this.objectMapper = objectMapper;
         this.domainAgentConsultationService = domainAgentConsultationService;
+        this.decisionHashService = decisionHashService;
     }
 
     @Transactional
@@ -180,9 +183,12 @@ public class DecisionOrchestratorService {
         if (Boolean.TRUE.equals(includeAgents)) {
             domainAgentConsultationService.consultAgents(
                     saved, domain, saved.getFeaturesJson(), user);
-            saved.setCurrentHash(saved.calculerHash());
-            saved = decisionRepository.save(saved);
         }
+
+        // 3) Signature après persist : decisionId n'est généré qu'à ce moment, et le hacher
+        // avant produirait une empreinte que la relecture ne pourra jamais reproduire.
+        decisionHashService.refreshHashComponents(saved, saved.getReponsesAgents());
+        saved = decisionRepository.save(saved);
 
         // 3) Audit après sauvegarde cohérente (pas dans @PrePersist)
         auditLogService.record(saved.getDecisionId(), user, "ANALYSE",
@@ -362,13 +368,12 @@ public class DecisionOrchestratorService {
             }
             decision.setExplanationFactors(factors);
         }
-        decision.setCurrentHash(decision.calculerHash());
     }
 
     /**
      * Vérifie que l'utilisateur courant est autorisé à créer une décision pour ce domaine.
      * ADMINISTRATEUR : tous les domaines.
-     * AGENT_CREDIT / UTILISATEUR (legacy) : CREDIT uniquement.
+     * AGENT_CREDIT : CREDIT uniquement.
      * AGENT_SANTE : MEDICAL uniquement.
      * AGENT_PEDAGOGIQUE : EDUCATION uniquement.
      * Tout autre rôle (validateurs, auditeur) : interdit.
@@ -380,7 +385,7 @@ public class DecisionOrchestratorService {
         RoleEnum role = user.getRole();
         if (role == RoleEnum.ADMINISTRATEUR) return; // all domains
         boolean allowed = switch (domain) {
-            case CREDIT    -> role == RoleEnum.AGENT_CREDIT    || role == RoleEnum.UTILISATEUR;
+            case CREDIT    -> role == RoleEnum.AGENT_CREDIT;
             case MEDICAL   -> role == RoleEnum.AGENT_SANTE;
             case EDUCATION -> role == RoleEnum.AGENT_PEDAGOGIQUE;
         };

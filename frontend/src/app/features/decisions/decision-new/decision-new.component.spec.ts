@@ -4,6 +4,7 @@ import { of, Subject } from 'rxjs';
 import { DecisionNewComponent } from './decision-new.component';
 import { DecisionService } from '../../../core/services/decision.service';
 import { MULTI_AGENT_UI_LABELS } from '../../../shared/ui/multi-agent-ui.labels';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('DecisionNewComponent', () => {
   let fixture: ComponentFixture<DecisionNewComponent>;
@@ -15,6 +16,7 @@ describe('DecisionNewComponent', () => {
       imports: [DecisionNewComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: DecisionService,
           useValue: {
@@ -75,6 +77,6 @@ describe('DecisionNewComponent', () => {
   });
 
   it('keeps multi-agent generic labels', () => {
-    expect(fixture.componentInstance.multiAgentLabels).toEqual(MULTI_AGENT_UI_LABELS);
+    expect(fixture.componentInstance.multiAgentLabels()).toEqual(MULTI_AGENT_UI_LABELS);
   });
 });

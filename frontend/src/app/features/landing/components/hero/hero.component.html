@@ -3,36 +3,34 @@
     <div class="hero__content">
       <span class="eyebrow" appReveal>
         <app-icon name="sparkle" [size]="15" />
-        Traçabilité · Explicabilité · Audit
+        {{ 'landing.hero.eyebrow' | translate }}
       </span>
 
       <h1 class="hero__title" appReveal [revealDelay]="80">
-        Des décisions IA
-        <span class="text-gradient"> traçables, explicables et responsables</span>
+        {{ 'landing.hero.titleStart' | translate }}
+        <span class="text-gradient"> {{ 'landing.hero.titleAccent' | translate }}</span>
       </h1>
 
       <p class="hero__subtitle" appReveal [revealDelay]="160">
-        Traçabilité IA centralise la prédiction Machine Learning, les explications SHAP,
-        les recommandations multi-agents, les sources et la validation humaine dans un
-        dossier complet et auditable.
+        {{ 'landing.hero.subtitle' | translate }}
       </p>
 
       <div class="hero__actions" appReveal [revealDelay]="240">
         <a routerLink="/auth/login" class="btn btn-primary btn-lg">
-          Accéder à l'application
+          {{ 'landing.hero.openApp' | translate }}
           <app-icon name="arrow-right" [size]="18" />
         </a>
         <button type="button" class="btn btn-secondary btn-lg" (click)="goTo('fonctionnement')">
           <app-icon name="book" [size]="18" />
-          Découvrir le fonctionnement
+          {{ 'landing.hero.discover' | translate }}
         </button>
       </div>
 
       <ul class="hero__badges" appReveal [revealDelay]="320">
-        @for (badge of badges; track badge.label) {
+        @for (badge of badges; track badge.labelKey) {
           <li>
             <app-icon [name]="badge.icon" [size]="18" />
-            {{ badge.label }}
+            {{ badge.labelKey | translate }}
           </li>
         }
       </ul>
@@ -43,7 +41,7 @@
       <div class="hero__card">
         <img
           src="images/dashboard-preview.png"
-          alt="Aperçu du tableau de bord Traçabilité IA et du suivi des décisions"
+          [attr.alt]="'landing.hero.previewAlt' | translate"
           width="1200"
           height="800"
           fetchpriority="high"
@@ -52,11 +50,11 @@
 
       <div class="float-chip float-chip--tl" aria-hidden="true">
         <span class="float-chip__dot"></span>
-        Dossier auditable
+        {{ 'landing.hero.chipFile' | translate }}
       </div>
       <div class="float-chip float-chip--br" aria-hidden="true">
         <app-icon name="shield-check" [size]="18" />
-        Hash SHA-256
+        {{ 'landing.hero.chipHash' | translate }}
       </div>
     </div>
   </div>

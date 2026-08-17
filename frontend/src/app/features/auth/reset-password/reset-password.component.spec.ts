@@ -3,6 +3,7 @@ import { provideRouter, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { ResetPasswordComponent } from './reset-password.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('ResetPasswordComponent', () => {
   let fixture: ComponentFixture<ResetPasswordComponent>;
@@ -19,6 +20,7 @@ describe('ResetPasswordComponent', () => {
       imports: [ResetPasswordComponent],
       providers: [
         provideRouter([{ path: 'auth/login', children: [] }]),
+        ...provideI18nTesting(),
         { provide: AuthService, useValue: auth },
         {
           provide: ActivatedRoute,

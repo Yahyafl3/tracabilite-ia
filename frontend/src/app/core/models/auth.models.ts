@@ -61,8 +61,10 @@ export enum UserRole {
   RESPONSABLE_CREDIT = 'RESPONSABLE_CREDIT',
   PROFESSIONNEL_SANTE = 'PROFESSIONNEL_SANTE',
   RESPONSABLE_PEDAGOGIQUE = 'RESPONSABLE_PEDAGOGIQUE',
-  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
+  /** @deprecated Migré vers AGENT_CREDIT. Conservé pour lire les JWT émis avant la migration. */
   UTILISATEUR = 'UTILISATEUR',
+  /** @deprecated Migré vers RESPONSABLE_CREDIT. Conservé pour lire les JWT émis avant la migration. */
+  VALIDATEUR = 'VALIDATEUR',
 }
 
 export interface TokenPayload {

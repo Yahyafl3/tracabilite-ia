@@ -15,6 +15,8 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> {
     Optional<Utilisateur> findByEmail(String email);
 
+    List<Utilisateur> findByRole(RoleEnum role);
+
     Optional<Utilisateur> findByEmailIgnoreCase(String email);
 
     boolean existsByEmail(String email);

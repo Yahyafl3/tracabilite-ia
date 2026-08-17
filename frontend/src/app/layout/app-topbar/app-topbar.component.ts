@@ -1,20 +1,23 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslationService } from '../../core/i18n/translation.service';
 import { LayoutService } from '../layout.service';
 import { AppConfiguratorComponent } from '../app-configurator/app-configurator.component';
-import { roleLabel } from '../../core/utils/label.util';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, AppConfiguratorComponent],
+  imports: [CommonModule, RouterLink, TranslatePipe, AppConfiguratorComponent, LanguageSwitcherComponent],
   templateUrl: './app-topbar.component.html',
   styleUrl: './app-topbar.component.scss',
 })
 export class AppTopbarComponent {
   readonly layoutService = inject(LayoutService);
+  readonly i18n = inject(TranslationService);
   private readonly authService = inject(AuthService);
 
   get currentUser() {
@@ -34,10 +37,16 @@ export class AppTopbarComponent {
     return (u as { nom?: string }).nom ?? u.email ?? '';
   }
 
-  get userRoleLabel(): string {
+  readonly userRoleLabel = computed(() => {
     const role = this.currentUser?.role;
-    return role ? roleLabel(String(role)) : '';
-  }
+    if (!role) {
+      return '';
+    }
+    this.i18n.currentLang();
+    const key = `roles.${role}`;
+    const label = this.i18n.t(key);
+    return label === key ? String(role) : label;
+  });
 
   logout(): void {
     this.authService.logout();

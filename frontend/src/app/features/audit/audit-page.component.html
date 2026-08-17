@@ -1,10 +1,10 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Accueil / Audit</p>
-      <h1>Audit &amp; traçabilité</h1>
+      <p class="page-eyebrow">{{ 'audit.eyebrow' | translate }}</p>
+      <h1>{{ 'audit.title' | translate }}</h1>
       <p class="page-subtitle">
-        Consultation des événements récents, vérifications d'intégrité SHA-256 et accès au détail des décisions.
+        {{ 'audit.subtitle' | translate }}
       </p>
     </div>
     <div class="page-header-actions">
@@ -13,22 +13,22 @@
       }
       <div class="export-buttons">
         <p-button
-          label="Export CSV"
+          [label]="'common.exportCsv' | translate"
           icon="pi pi-file"
           [outlined]="true"
           (onClick)="exportCSV()"
           [disabled]="filteredItems().length === 0"
           severity="secondary"
-          ariaLabel="Exporter en CSV"
+          [ariaLabel]="'audit.exportCsvAria' | translate"
         />
         <p-button
-          label="Export PDF"
+          [label]="'common.exportPdf' | translate"
           icon="pi pi-file-pdf"
           [outlined]="true"
           (onClick)="exportPDF()"
           [disabled]="filteredItems().length === 0"
           severity="secondary"
-          ariaLabel="Exporter en PDF"
+          [ariaLabel]="'audit.exportPdfAria' | translate"
         />
       </div>
     </div>
@@ -36,7 +36,7 @@
 
   @if (loading()) {
     <p-card>
-      <div aria-label="Chargement des données d'audit">
+      <div [attr.aria-label]="'audit.loadingAria' | translate">
         <p-skeleton height="4rem" styleClass="mb-2" />
         <p-skeleton height="3rem" styleClass="mb-2" />
         <p-skeleton height="10rem" />
@@ -47,7 +47,7 @@
       <p-message severity="error" [text]="error()!" styleClass="w-full" />
     </p-card>
   } @else {
-    <section class="kpi-row" aria-label="Résumé d'intégrité">
+    <section class="kpi-row" [attr.aria-label]="'audit.integrityAria' | translate">
       @for (kpi of kpiCards(); track kpi.label) {
         <p-card styleClass="kpi-card">
           <p class="kpi-label">{{ kpi.label }}</p>
@@ -61,93 +61,89 @@
     <app-audit-statistics [items]="recentItems()" />
 
     <p-card>
-      <ng-template #title>Événements récents</ng-template>
+      <ng-template #title>{{ 'audit.recent' | translate }}</ng-template>
       <ng-template #subtitle>
-        {{ filteredItems().length }} / {{ recentItems().length }} affichés
+        {{ 'audit.displayed' | translate:{ filtered: filteredItems().length, total: recentItems().length } }}
       </ng-template>
 
       <form class="toolbar" [formGroup]="filters" (ngSubmit)="applyFilters()">
         <div class="field">
-          <label for="audit-search">UUID décision</label>
+          <label for="audit-search">{{ 'audit.uuid' | translate }}</label>
           <input
             pInputText
             id="audit-search"
             formControlName="search"
-            placeholder="Rechercher par UUID…"
+            [placeholder]="'audit.uuidPlaceholder' | translate"
             class="w-full"
             autocomplete="off"
-            aria-label="Rechercher par UUID de décision"
+            [attr.aria-label]="'audit.uuidSearchAria' | translate"
           />
         </div>
 
         <div class="field">
-          <label for="audit-prompt">Recherche dans le prompt</label>
+          <label for="audit-prompt">{{ 'audit.prompt' | translate }}</label>
           <input
             pInputText
             id="audit-prompt"
             formControlName="promptSearch"
-            placeholder="Mots-clés dans le prompt…"
+            [placeholder]="'audit.promptPlaceholder' | translate"
             class="w-full"
             autocomplete="off"
-            aria-label="Rechercher dans le contenu du prompt"
+            [attr.aria-label]="'audit.promptSearchAria' | translate"
           />
         </div>
 
         <div class="field">
-          <label for="audit-statut">Statut</label>
+          <label for="audit-statut">{{ 'common.status' | translate }}</label>
           <p-select
             inputId="audit-statut"
             formControlName="statut"
-            [options]="statutOptions"
+            [options]="statutOptions()"
             optionLabel="label"
             optionValue="value"
             styleClass="w-full"
-            ariaLabel="Filtrer par statut"
+            [ariaLabel]="'common.filterByStatus' | translate"
           />
         </div>
 
         <div class="field">
-          <label for="audit-integrity">Intégrité</label>
+          <label for="audit-integrity">{{ 'audit.integrity' | translate }}</label>
           <p-select
             inputId="audit-integrity"
             formControlName="integrityFilter"
-            [options]="[
-              { label: 'Toutes', value: 'all' },
-              { label: 'Valide uniquement', value: 'valid' },
-              { label: 'Invalide uniquement', value: 'invalid' }
-            ]"
+            [options]="integrityOptions()"
             optionLabel="label"
             optionValue="value"
             styleClass="w-full"
-            ariaLabel="Filtrer par intégrité"
+            [ariaLabel]="'common.filterByIntegrity' | translate"
           />
         </div>
 
         <div class="field">
-          <label for="audit-period">Période</label>
+          <label for="audit-period">{{ 'common.period' | translate }}</label>
           <p-datepicker
             inputId="audit-period"
             formControlName="period"
             selectionMode="range"
             [showIcon]="true"
             dateFormat="dd/mm/yy"
-            placeholder="Plage de dates"
+            [placeholder]="'comparaison.periodPlaceholder' | translate"
             styleClass="w-full"
-            ariaLabel="Filtrer par période"
+            [ariaLabel]="'common.filterByPeriod' | translate"
           />
         </div>
 
         <div class="field field--actions">
           <p-button
             type="submit"
-            label="Filtrer"
+            [label]="'common.filter' | translate"
             icon="pi pi-filter"
             [outlined]="true"
           />
           @if (hasActiveFilters) {
             <p-button
               type="button"
-              label="Réinitialiser"
+              [label]="'common.reset' | translate"
               icon="pi pi-filter-slash"
               [text]="true"
               severity="secondary"
@@ -160,14 +156,14 @@
       @if (recentItems().length === 0) {
         <div class="empty-state" role="status">
           <i class="pi pi-shield empty-state__icon" aria-hidden="true"></i>
-          <h2>Aucun événement</h2>
-          <p>Aucun événement d'audit enregistré pour le moment.</p>
+          <h2>{{ 'audit.emptyTitle' | translate }}</h2>
+          <p>{{ 'audit.emptyText' | translate }}</p>
         </div>
       } @else if (filteredItems().length === 0) {
         <div class="empty-state" role="status">
           <i class="pi pi-filter empty-state__icon" aria-hidden="true"></i>
-          <h2>Aucun résultat</h2>
-          <p>Aucun événement ne correspond à vos critères de filtre.</p>
+          <h2>{{ 'audit.emptyFilterTitle' | translate }}</h2>
+          <p>{{ 'audit.emptyFilterText' | translate }}</p>
         </div>
       } @else {
         <div class="table-scroll">
@@ -178,16 +174,16 @@
             [rows]="10"
             [rowsPerPageOptions]="[10, 20, 50]"
             [tableStyle]="{ 'min-width': '48rem' }"
-            ariaLabel="Événements d'audit récents"
+            [ariaLabel]="'audit.tableAria' | translate"
           >
             <ng-template #header>
               <tr>
-                <th>Date</th>
-                <th>UUID</th>
-                <th>Prompt</th>
-                <th>Statut</th>
-                <th>Intégrité</th>
-                <th>Actions</th>
+                <th>{{ 'common.date' | translate }}</th>
+                <th>{{ 'common.uuid' | translate }}</th>
+                <th>{{ 'common.prompt' | translate }}</th>
+                <th>{{ 'common.status' | translate }}</th>
+                <th>{{ 'audit.integrity' | translate }}</th>
+                <th>{{ 'common.actions' | translate }}</th>
               </tr>
             </ng-template>
             <ng-template #body let-row>
@@ -224,7 +220,7 @@
                 </td>
                 <td class="td-actions">
                   <p-button
-                    label="Détail"
+                    [label]="'common.detail' | translate"
                     icon="pi pi-eye"
                     size="small"
                     [outlined]="true"
@@ -232,7 +228,7 @@
                     [attr.aria-label]="'Voir le détail audit de ' + row.decisionId"
                   />
                   <p-button
-                    label="Décision"
+                    [label]="'common.decision' | translate"
                     icon="pi pi-external-link"
                     size="small"
                     [text]="true"
@@ -261,7 +257,7 @@
   }
 
   <p-dialog
-    header="Détail de l'événement d'audit"
+    [header]="'audit.detailTitle' | translate"
     [modal]="true"
     [visible]="detailVisible()"
     (visibleChange)="!$event && closeDetail()"
@@ -276,7 +272,7 @@
     } @else if (detail(); as audit) {
       <div class="detail-grid">
         <div>
-          <span class="label">UUID décision</span>
+          <span class="label">{{ 'audit.uuid' | translate }}</span>
           <div class="copy-row">
             <code class="mono">{{ audit.decisionId }}</code>
             <p-button
@@ -290,22 +286,22 @@
           </div>
         </div>
         <div>
-          <span class="label">Statut</span>
+          <span class="label">{{ 'common.status' | translate }}</span>
           <p-tag [value]="statutLabel(audit.statutValidation)" [severity]="statutSeverity(audit.statutValidation)" />
         </div>
         <div>
-          <span class="label">Intégrité</span>
+          <span class="label">{{ 'audit.integrity' | translate }}</span>
           <p-tag
             [value]="integrityLabel(audit.integrityValid)"
             [severity]="integritySeverity(audit.integrityValid)"
           />
         </div>
         <div>
-          <span class="label">Validateur</span>
+          <span class="label">{{ 'decisions.detail.validator' | translate }}</span>
           <span>{{ audit.validatorEmail || '—' }}</span>
         </div>
         <div>
-          <span class="label">Hash courant</span>
+          <span class="label">{{ 'audit.currentHash' | translate }}</span>
           @if (audit.currentHash) {
             <app-copy-hash [hash]="audit.currentHash" label="Hash" />
           } @else {
@@ -313,7 +309,7 @@
           }
         </div>
         <div>
-          <span class="label">Hash précédent</span>
+          <span class="label">{{ 'audit.previousHash' | translate }}</span>
           @if (audit.previousHash) {
             <app-copy-hash [hash]="audit.previousHash" label="Hash précédent" />
           } @else {
@@ -322,9 +318,9 @@
         </div>
       </div>
 
-      <h3 class="detail-title">Chronologie</h3>
+      <h3 class="detail-title">{{ 'audit.timeline' | translate }}</h3>
       @if (timelineEvents().length === 0) {
-        <p class="muted">Aucun événement d'historique pour cette décision.</p>
+        <p class="muted">{{ 'audit.noHistory' | translate }}</p>
       } @else {
         <p-timeline [value]="timelineEvents()" align="left">
           <ng-template #content let-event>
@@ -364,10 +360,10 @@
     }
 
     <ng-template #footer>
-      <p-button label="Fermer" [text]="true" (onClick)="closeDetail()" />
+      <p-button [label]="'common.close' | translate" [text]="true" (onClick)="closeDetail()" />
       @if (detail(); as audit) {
         <p-button
-          label="Ouvrir la décision"
+          [label]="'audit.openDecision' | translate"
           icon="pi pi-external-link"
           (onClick)="openDecision(audit.decisionId)"
         />

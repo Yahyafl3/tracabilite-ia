@@ -1,0 +1,110 @@
+<div class="page">
+  <p-confirmdialog />
+
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">{{ 'admin.backup.eyebrow' | translate }}</p>
+      <h1>{{ 'admin.backup.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'admin.backup.subtitle' | translate }}</p>
+    </div>
+    <div class="page-actions">
+      <p-button
+        [label]="'common.refresh' | translate"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="load()"
+        [ariaLabel]="'admin.backup.refreshAria' | translate"
+      />
+      <p-button
+        [label]="'admin.backup.create' | translate"
+        icon="pi pi-database"
+        [loading]="creating()"
+        (onClick)="create()"
+        [ariaLabel]="'admin.backup.createAria' | translate"
+      />
+    </div>
+  </header>
+
+  @if (success()) {
+    <p-message severity="success" [text]="success()!" styleClass="w-full" />
+  }
+  @if (error()) {
+    <p-message severity="error" [text]="error()!" styleClass="w-full" />
+  }
+
+  @if (loading() && jobs().length === 0) {
+    <p-card>
+      <p-skeleton height="4rem" styleClass="mb-3" />
+      <p-skeleton height="12rem" />
+    </p-card>
+  } @else {
+    <p-card>
+      <ng-template #title>{{ 'admin.backup.history' | translate }}</ng-template>
+      <ng-template #subtitle>
+        {{ 'admin.backup.count' | translate:{ count: jobs().length } }}
+      </ng-template>
+
+      <p-table [value]="jobs()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '56rem' }">
+        <ng-template #header>
+          <tr>
+            <th>{{ 'common.date' | translate }}</th>
+            <th>{{ 'admin.backup.author' | translate }}</th>
+            <th>{{ 'admin.backup.contents' | translate }}</th>
+            <th>{{ 'admin.backup.size' | translate }}</th>
+            <th>{{ 'admin.backup.hash' | translate }}</th>
+            <th>{{ 'common.status' | translate }}</th>
+            <th>{{ 'common.actions' | translate }}</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-job>
+          <tr>
+            <td>{{ formatDate(job.createdAt) }}</td>
+            <td>{{ job.createdByEmail || ('common.dash' | translate) }}</td>
+            <td>
+              {{ 'admin.backup.contentsValue' | translate:{ decisions: job.decisionCount, users: job.userCount } }}
+            </td>
+            <td>{{ formatSize(job.sizeBytes) }}</td>
+            <td>
+              <app-copy-hash [hash]="job.packSha256" [label]="'admin.backup.hash' | translate" />
+            </td>
+            <td>
+              <p-tag [severity]="statusSeverity(job.status)" [value]="statusLabel(job.status)" />
+            </td>
+            <td class="actions">
+              <p-button
+                icon="pi pi-shield"
+                [text]="true"
+                [loading]="busyId() === job.id"
+                (onClick)="verify(job)"
+                [ariaLabel]="'admin.backup.verifyAria' | translate"
+              />
+              <p-button
+                icon="pi pi-download"
+                [text]="true"
+                [disabled]="!job.filePresent"
+                [loading]="busyId() === job.id"
+                (onClick)="download(job)"
+                [ariaLabel]="'admin.backup.downloadAria' | translate"
+              />
+              <p-button
+                icon="pi pi-replay"
+                [text]="true"
+                severity="danger"
+                [disabled]="!job.filePresent"
+                [loading]="busyId() === job.id"
+                (onClick)="confirmRestore(job)"
+                [ariaLabel]="'admin.backup.restoreAria' | translate"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="7">{{ 'admin.backup.empty' | translate }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  }
+</div>

@@ -1,22 +1,25 @@
 <div class="system-page">
+  <div class="system-lang">
+    <app-language-switcher />
+  </div>
   <p-card styleClass="system-card">
     <p-tag [value]="code" [severity]="severity" styleClass="system-code" />
-    <h1>{{ title }}</h1>
-    <p>{{ message }}</p>
+    <h1>{{ title() }}</h1>
+    <p>{{ message() }}</p>
 
     <div class="system-actions">
       <p-button
-        label="Retour"
+        [label]="'errors.back' | translate"
         icon="pi pi-arrow-left"
         [outlined]="true"
         (onClick)="goBack()"
-        ariaLabel="Retour à la page précédente"
+        [ariaLabel]="'errors.backAria' | translate"
       />
       <p-button
-        label="Tableau de bord"
+        [label]="'nav.dashboard' | translate"
         icon="pi pi-home"
         routerLink="/dashboard"
-        ariaLabel="Retour au tableau de bord"
+        [ariaLabel]="'errors.dashboardAria' | translate"
       />
     </div>
   </p-card>

@@ -51,7 +51,7 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'decisions',
+        redirectTo: 'dashboard',
       },
       {
         path: 'dashboard',
@@ -113,7 +113,6 @@ export const routes: Routes = [
         canActivate: [
           roleGuard([
             UserRole.ADMINISTRATEUR,
-            UserRole.UTILISATEUR,
             UserRole.AUDITEUR,
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
@@ -132,7 +131,6 @@ export const routes: Routes = [
         path: 'decisions/new',
         canActivate: [roleGuard([
           UserRole.ADMINISTRATEUR,
-          UserRole.UTILISATEUR,
           UserRole.AGENT_CREDIT,
           UserRole.AGENT_SANTE,
           UserRole.AGENT_PEDAGOGIQUE,
@@ -147,7 +145,6 @@ export const routes: Routes = [
         canActivate: [
           roleGuard([
             UserRole.ADMINISTRATEUR,
-            UserRole.UTILISATEUR,
             UserRole.AUDITEUR,
             UserRole.RESPONSABLE_CREDIT,
             UserRole.PROFESSIONNEL_SANTE,
@@ -211,6 +208,14 @@ export const routes: Routes = [
             (m) => m.SupportAdminComponent,
           ),
       },
+      {
+        path: 'admin/backup',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
+        loadComponent: () =>
+          import('./features/admin/backup/backup-admin.component').then(
+            (m) => m.BackupAdminComponent,
+          ),
+      },
     ],
   },
   {
@@ -219,8 +224,6 @@ export const routes: Routes = [
       import('./features/system/system-page.component').then((m) => m.SystemPageComponent),
     data: {
       code: '403',
-      title: 'Accès refusé',
-      message: 'Vous n’avez pas les permissions nécessaires pour accéder à cette ressource.',
       severity: 'danger',
     },
   },
@@ -230,8 +233,6 @@ export const routes: Routes = [
       import('./features/system/system-page.component').then((m) => m.SystemPageComponent),
     data: {
       code: '404',
-      title: 'Page introuvable',
-      message: 'La page demandée n’existe pas ou a été déplacée.',
       severity: 'warn',
     },
   },
@@ -241,8 +242,6 @@ export const routes: Routes = [
       import('./features/system/system-page.component').then((m) => m.SystemPageComponent),
     data: {
       code: '500',
-      title: 'Erreur serveur',
-      message: 'Une erreur inattendue est survenue. Réessayez plus tard ou contactez un administrateur.',
       severity: 'danger',
     },
   },

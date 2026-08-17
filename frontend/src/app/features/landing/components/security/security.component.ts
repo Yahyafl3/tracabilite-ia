@@ -1,41 +1,20 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconComponent } from '../../../../shared/icon.component';
 import { RevealDirective } from '../../../../shared/reveal.directive';
-
-interface Badge {
-  icon: string;
-  title: string;
-  description: string;
-}
 
 @Component({
   selector: 'app-security',
   standalone: true,
-  imports: [IconComponent, RevealDirective],
+  imports: [IconComponent, RevealDirective, TranslatePipe],
   templateUrl: './security.component.html',
   styleUrl: './security.component.scss',
 })
 export class SecurityComponent {
-  readonly badges: Badge[] = [
-    {
-      icon: 'key',
-      title: 'Authentification JWT',
-      description: 'Accès protégé à l’application et aux API.',
-    },
-    {
-      icon: 'users',
-      title: 'Gestion des rôles',
-      description: 'Agent de crédit, validateur, auditeur et administrateur.',
-    },
-    {
-      icon: 'history',
-      title: 'Historique des événements',
-      description: 'Chaque étape du dossier est horodatée et consultable.',
-    },
-    {
-      icon: 'lock',
-      title: 'Chaînage SHA-256',
-      description: 'Empreintes d’intégrité pour détecter les modifications.',
-    },
+  readonly badges = [
+    { icon: 'key', titleKey: 'landing.security.jwt.title', textKey: 'landing.security.jwt.text' },
+    { icon: 'users', titleKey: 'landing.security.roles.title', textKey: 'landing.security.roles.text' },
+    { icon: 'history', titleKey: 'landing.security.history.title', textKey: 'landing.security.history.text' },
+    { icon: 'lock', titleKey: 'landing.security.hash.title', textKey: 'landing.security.hash.text' },
   ];
 }

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { SupportAdminComponent } from './support-admin.component';
 import { SupportMessage, SupportService } from '../../../core/services/support.service';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('SupportAdminComponent', () => {
   let fixture: ComponentFixture<SupportAdminComponent>;
@@ -43,7 +44,7 @@ describe('SupportAdminComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [SupportAdminComponent],
-      providers: [{ provide: SupportService, useValue: support }],
+      providers: [...provideI18nTesting(), { provide: SupportService, useValue: support }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SupportAdminComponent);
@@ -55,7 +56,7 @@ describe('SupportAdminComponent', () => {
     expect(text).toContain('Support');
     expect(text).toContain('Jane Doe');
     expect(text).toContain('Problème de connexion');
-    expect(text).toContain('NEW');
+    expect(text).toContain('Nouveau');
     expect(support.getMessages).toHaveBeenCalled();
   });
 

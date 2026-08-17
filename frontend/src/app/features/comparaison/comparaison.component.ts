@@ -12,6 +12,8 @@ import { Message } from 'primeng/message';
 import { Button } from 'primeng/button';
 import { ComparaisonAgent, ComparaisonService } from '../../core/services/comparaison.service';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 type SortField =
   | 'rang'
@@ -40,12 +42,14 @@ type SortDir = 'asc' | 'desc';
     Skeleton,
     Message,
     Button,
+    TranslatePipe,
   ],
   templateUrl: './comparaison.component.html',
   styleUrl: './comparaison.component.scss',
 })
 export class ComparaisonComponent {
   private readonly comparaisonService = inject(ComparaisonService);
+  private readonly i18n = inject(TranslationService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -59,13 +63,15 @@ export class ComparaisonComponent {
   readonly periodRange = signal<Date[] | null>(null);
 
   readonly providerOptions = computed(() => {
+    this.i18n.currentLang();
     const values = [...new Set(this.agentsData().map((a) => a.fournisseur).filter(Boolean))];
-    return [{ label: 'Tous les providers', value: null }, ...values.map((v) => ({ label: v, value: v }))];
+    return [{ label: this.i18n.t('comparaison.allProviders'), value: null }, ...values.map((v) => ({ label: v, value: v }))];
   });
 
   readonly modelOptions = computed(() => {
+    this.i18n.currentLang();
     const values = [...new Set(this.agentsData().map((a) => a.modele).filter(Boolean))];
-    return [{ label: 'Tous les modèles', value: null }, ...values.map((v) => ({ label: v, value: v }))];
+    return [{ label: this.i18n.t('comparaison.allModels'), value: null }, ...values.map((v) => ({ label: v, value: v }))];
   });
 
   readonly filteredAgentsData = computed(() => {
@@ -125,7 +131,7 @@ export class ComparaisonComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger la comparaison agents.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('comparaison.loadError')));
         this.loading.set(false);
       },
     });

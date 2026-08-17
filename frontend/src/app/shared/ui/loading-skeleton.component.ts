@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-loading-skeleton',
@@ -7,7 +8,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="ui-skeleton" aria-busy="true" [attr.aria-label]="label ?? 'Chargement en cours'">
+    <div class="ui-skeleton" aria-busy="true" [attr.aria-label]="resolvedLabel">
       @if (label) {
         <p class="ui-skeleton__label">{{ label }}</p>
       }
@@ -18,8 +19,14 @@ import { CommonModule } from '@angular/common';
   `,
 })
 export class LoadingSkeletonComponent {
+  private readonly i18n = inject(TranslationService);
   @Input() lines = 3;
   @Input() label?: string;
+
+  get resolvedLabel(): string {
+    this.i18n.currentLang();
+    return this.label ?? this.i18n.t('shared.loadingAria');
+  }
 
   get lineArray(): number[] {
     return Array.from({ length: this.lines }, (_, i) => i);

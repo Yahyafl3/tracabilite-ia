@@ -1,44 +1,22 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconComponent } from '../../../../shared/icon.component';
 import { RevealDirective } from '../../../../shared/reveal.directive';
-
-interface TechGroup {
-  title: string;
-  items: string[];
-}
 
 @Component({
   selector: 'app-technologies',
   standalone: true,
-  imports: [IconComponent, RevealDirective],
+  imports: [IconComponent, RevealDirective, TranslatePipe],
   templateUrl: './technologies.component.html',
   styleUrl: './technologies.component.scss',
 })
 export class TechnologiesComponent {
-  readonly groups: TechGroup[] = [
-    {
-      title: 'Frontend',
-      items: ['Angular 21', 'PrimeNG', 'Sakai / Aura'],
-    },
-    {
-      title: 'Backend',
-      items: ['Spring Boot 3.4', 'Java 17'],
-    },
-    {
-      title: 'Données',
-      items: ['PostgreSQL'],
-    },
-    {
-      title: 'Machine Learning',
-      items: ['Python', 'Flask', 'Scikit-learn', 'SHAP'],
-    },
-    {
-      title: 'IA générative',
-      items: ['Groq', 'OpenRouter (compatibilité historique)'],
-    },
-    {
-      title: 'Sécurité & déploiement',
-      items: ['JWT', 'Docker Compose', 'SHA-256'],
-    },
+  readonly groups = [
+    { titleKey: 'landing.tech.frontend', items: ['Angular 21', 'PrimeNG', 'Sakai / Aura'] },
+    { titleKey: 'landing.tech.backend', items: ['Spring Boot 3.4', 'Java 17'] },
+    { titleKey: 'landing.tech.data', items: ['PostgreSQL'] },
+    { titleKey: 'landing.tech.ml', items: ['Python', 'Flask', 'Scikit-learn', 'SHAP'] },
+    { titleKey: 'landing.tech.genai', items: ['Groq', 'OpenRouter (compatibilité historique)'] },
+    { titleKey: 'landing.tech.security', items: ['JWT', 'Docker Compose', 'SHA-256'] },
   ];
 }

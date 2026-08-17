@@ -11,6 +11,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { UserRole } from '../../../core/models/auth.models';
 import { StatutDecisionEnum } from '../../../core/models/decision.models';
 import type { DecisionResponse } from '../../../core/models/decision.models';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('DecisionDetailComponent', () => {
   let fixture: ComponentFixture<DecisionDetailComponent>;
@@ -70,6 +71,7 @@ describe('DecisionDetailComponent', () => {
       imports: [DecisionDetailComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -97,9 +99,9 @@ describe('DecisionDetailComponent', () => {
           useValue: {
             currentUser: {
               id: 'v1',
-              nom: 'Validateur',
-              email: 'validateur@test.fr',
-              role: UserRole.VALIDATEUR,
+              nom: 'Responsable crédit',
+              email: 'credit@test.fr',
+              role: UserRole.RESPONSABLE_CREDIT,
             },
           },
         },
@@ -127,20 +129,22 @@ describe('DecisionDetailComponent', () => {
 
   it('defines eight detail tabs with PrimeNG labels', () => {
     expect(fixture.componentInstance.tabs).toHaveLength(8);
-    expect(fixture.componentInstance.tabs.map((tab) => tab.label)).toEqual([
-      'Résumé',
-      'ML',
-      'SHAP',
-      'Agents IA',
-      'Validation humaine',
-      'Historique',
-      'Sources',
-      'Intégrité',
+    expect(fixture.componentInstance.tabs.map((tab) => tab.labelKey)).toEqual([
+      'decisions.detail.tabs.resume',
+      'decisions.detail.tabs.prediction',
+      'decisions.detail.tabs.shap',
+      'decisions.detail.tabs.agents',
+      'decisions.detail.tabs.validation',
+      'decisions.detail.tabs.history',
+      'decisions.detail.tabs.sources',
+      'decisions.detail.tabs.integrity',
     ]);
   });
 
   it('labels agents tab as Agents IA (generic, not OpenRouter)', () => {
-    expect(fixture.componentInstance.tabs.find((tab) => tab.id === 'agents')?.label).toBe('Agents IA');
+    expect(fixture.componentInstance.tabs.find((tab) => tab.id === 'agents')?.labelKey).toBe(
+      'decisions.detail.tabs.agents',
+    );
   });
 
   it('renders agents tab with success and error agents', () => {
@@ -194,7 +198,7 @@ describe('DecisionDetailComponent', () => {
       (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
     ) as HTMLButtonElement[];
     const actionButtons = buttons.filter((btn) =>
-      /Approuver|Rejeter|revue|modification/i.test(btn.textContent ?? ''),
+      /Valider la décision/i.test(btn.textContent ?? ''),
     );
     expect(actionButtons.length).toBeGreaterThan(0);
     expect(actionButtons.every((btn) => btn.disabled)).toBe(true);
@@ -216,6 +220,17 @@ describe('DecisionDetailComponent', () => {
     fixture.componentInstance.setTab('validation');
     fixture.detectChanges();
 
+    expect(fixture.componentInstance.canValidate()).toBe(false);
+  });
+
+  it('does not let an administrator arbitrate a pending dossier', () => {
+    const auth = TestBed.inject(AuthService) as { currentUser: { role: UserRole } };
+    auth.currentUser.role = UserRole.ADMINISTRATEUR;
+    fixture.componentInstance.decision.set({
+      ...mockDecision,
+      statutValidation: StatutDecisionEnum.EN_ATTENTE_VALIDATION,
+    });
+    fixture.detectChanges();
     expect(fixture.componentInstance.canValidate()).toBe(false);
   });
 });

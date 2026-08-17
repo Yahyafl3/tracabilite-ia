@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 export type ConfidenceScale = 'ratio' | 'percent';
 
 @Component({
   selector: 'app-confidence-display',
   standalone: true,
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @switch (displayState) {
@@ -12,15 +15,16 @@ export type ConfidenceScale = 'ratio' | 'percent';
         <span class="ui-confidence">{{ formattedPercent }}</span>
       }
       @case ('empty') {
-        <span class="ui-confidence ui-confidence--empty">Non fournie</span>
+        <span class="ui-confidence ui-confidence--empty">{{ 'agents.confidenceMissing' | translate }}</span>
       }
       @case ('invalid') {
-        <span class="ui-confidence ui-confidence--invalid">Valeur invalide</span>
+        <span class="ui-confidence ui-confidence--invalid">{{ 'agents.confidenceInvalid' | translate }}</span>
       }
     }
   `,
 })
 export class ConfidenceDisplayComponent {
+  private readonly i18n = inject(TranslationService);
   /**
    * - ratio: valeur backend dans [0, 1] (confiance déclarée agent) → affichée × 100
    * - percent: valeur déjà en pourcent (confiance ML typiquement 0–100)
@@ -29,6 +33,7 @@ export class ConfidenceDisplayComponent {
   @Input() confidence: number | null | undefined;
 
   get displayState(): 'value' | 'empty' | 'invalid' {
+    this.i18n.currentLang();
     if (this.confidence == null || Number.isNaN(this.confidence)) {
       return 'empty';
     }
@@ -49,7 +54,7 @@ export class ConfidenceDisplayComponent {
   get formattedPercent(): string {
     const value = this.confidence ?? 0;
     const percent = this.scale === 'ratio' ? value * 100 : value;
-    const formatted = percent.toLocaleString('fr-FR', {
+    const formatted = percent.toLocaleString(this.i18n.localeId(), {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     });

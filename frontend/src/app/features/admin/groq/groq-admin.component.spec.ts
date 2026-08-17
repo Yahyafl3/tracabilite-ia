@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { GroqAdminComponent } from './groq-admin.component';
 import { GroqAdminService } from '../../../core/services/groq-admin.service';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('GroqAdminComponent', () => {
   let fixture: ComponentFixture<GroqAdminComponent>;
@@ -10,6 +11,7 @@ describe('GroqAdminComponent', () => {
     await TestBed.configureTestingModule({
       imports: [GroqAdminComponent],
       providers: [
+        ...provideI18nTesting(),
         {
           provide: GroqAdminService,
           useValue: {
@@ -21,8 +23,8 @@ describe('GroqAdminComponent', () => {
                 models: [
                   {
                     agent: 'AGENT_1',
-                    displayName: 'Llama 3.3 70B Versatile',
-                    modelId: 'llama-3.3-70b-versatile',
+                    displayName: 'Groq Compound Mini',
+                    modelId: 'groq/compound-mini',
                     available: true,
                   },
                 ],
@@ -41,6 +43,6 @@ describe('GroqAdminComponent', () => {
     expect(text).toContain('Clé API configurée');
     expect(text).not.toContain('gsk_');
     expect(text).toContain('GROQ');
-    expect(text).toContain('llama-3.3-70b-versatile');
+    expect(text).toContain('groq/compound-mini');
   });
 });

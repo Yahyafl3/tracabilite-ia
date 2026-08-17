@@ -7,8 +7,11 @@ import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
+import { TranslationService } from '../../../core/i18n/translation.service';
+import { LanguageSwitcherComponent } from '../../../layout/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +25,8 @@ import { LoginCredentials, UserRole } from '../../../core/models/auth.models';
     Button,
     Message,
     ProgressSpinner,
+    TranslatePipe,
+    LanguageSwitcherComponent,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -31,6 +36,7 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly i18n = inject(TranslationService);
 
   loginForm: FormGroup;
   isLoading = signal(false);
@@ -39,7 +45,7 @@ export class LoginComponent {
   readonly emailReadonly = signal(true);
   /** UI-only: hide broken video and keep CSS gradient fallback. */
   readonly videoFailed = signal(false);
-  returnUrl = '/decisions';
+  returnUrl = '/dashboard';
 
   constructor() {
     this.loginForm = this.fb.nonNullable.group({
@@ -47,7 +53,7 @@ export class LoginComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/decisions';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
   onVideoError(): void {
@@ -76,10 +82,8 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (response) => {
         const role = response.user?.role;
-        
-        // Redirect to role-specific dashboard
-        let dashboardUrl = '/dashboard/admin'; // Default for ADMINISTRATEUR
-        
+        let dashboardUrl = '/dashboard/admin';
+
         switch (role) {
           case UserRole.ADMINISTRATEUR:
             dashboardUrl = '/dashboard/admin';
@@ -106,12 +110,10 @@ export class LoginComponent {
             dashboardUrl = '/dashboard/auditeur';
             break;
           default:
-            // Legacy roles or unknown - fallback to decisions list
             dashboardUrl = '/decisions';
             break;
         }
-        
-        // Allow returnUrl to override dashboard redirect if specified
+
         const target = this.route.snapshot.queryParams['returnUrl'] || dashboardUrl;
         void this.router.navigate([target]);
       },
@@ -138,14 +140,14 @@ export class LoginComponent {
     const field = this.loginForm.get(fieldName);
 
     if (field?.hasError('required')) {
-      return 'Ce champ est requis';
+      return this.i18n.t('login.required');
     }
     if (field?.hasError('email')) {
-      return 'Adresse email invalide';
+      return this.i18n.t('login.invalidEmail');
     }
     if (field?.hasError('minlength')) {
       const minLength = field.errors?.['minlength'].requiredLength;
-      return `Minimum ${minLength} caractères`;
+      return this.i18n.t('login.minLength', { min: minLength });
     }
     return '';
   }

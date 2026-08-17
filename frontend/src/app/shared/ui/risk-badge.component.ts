@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { riskChipClass } from '../../core/utils/chip-class.util';
 import { riskLabel } from '../../core/utils/label.util';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-risk-badge',
@@ -10,11 +11,12 @@ import { riskLabel } from '../../core/utils/label.util';
     @if (riskLevel) {
       <span class="status-chip" [class]="chipClass">{{ label }}</span>
     } @else {
-      <span class="status-chip chip--pending">—</span>
+      <span class="status-chip chip--pending">{{ dash }}</span>
     }
   `,
 })
 export class RiskBadgeComponent {
+  private readonly i18n = inject(TranslationService);
   @Input() riskLevel?: string | null;
 
   get chipClass(): string {
@@ -22,6 +24,12 @@ export class RiskBadgeComponent {
   }
 
   get label(): string {
+    this.i18n.currentLang();
     return riskLabel(this.riskLevel);
+  }
+
+  get dash(): string {
+    this.i18n.currentLang();
+    return this.i18n.t('common.dash');
   }
 }

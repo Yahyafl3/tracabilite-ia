@@ -1,6 +1,13 @@
 import { StatutDecisionEnum } from '../models/decision.models';
 import { UserRole } from '../models/auth.models';
 import type { DecisionHistoryAction } from '../services/decision-trace.service';
+import { i18nLabel } from '../i18n/label-translator';
+
+export { bindLabelTranslator, i18nLabel } from '../i18n/label-translator';
+
+function tr(key: string, fallback: string, params?: Record<string, unknown>): string {
+  return i18nLabel(key, fallback, params);
+}
 
 const STATUT_LABELS: Record<StatutDecisionEnum, string> = {
   [StatutDecisionEnum.BROUILLON]: 'Brouillon',
@@ -18,11 +25,12 @@ const STATUT_LABELS: Record<StatutDecisionEnum, string> = {
 
 const RISK_LABELS: Record<string, string> = {
   HIGH: 'Élevé',
-  MEDIUM: 'Modéré',
+  MEDIUM: 'Moyen',
   LOW: 'Faible',
   ELEVE: 'Élevé',
   MOYEN: 'Moyen',
-  MODERE: 'Modéré',
+  MODERE: 'Moyen',
+  MODÉRÉ: 'Moyen',
   FAIBLE: 'Faible',
 };
 
@@ -48,29 +56,46 @@ const HISTORY_ACTION_LABELS: Record<string, string> = {
 
 /** Libellé métier lisible pour un statut de validation. */
 export function statutLabel(statut: StatutDecisionEnum | string): string {
-  return STATUT_LABELS[statut as StatutDecisionEnum] ?? statut;
+  const fallback = STATUT_LABELS[statut as StatutDecisionEnum] ?? String(statut);
+  return tr(`status.${statut}`, fallback);
 }
 
 /** Libellé métier pour un niveau de risque. */
 export function riskLabel(risk?: string | null): string {
-  if (!risk) return '—';
-  return RISK_LABELS[risk] ?? risk;
+  if (!risk) return tr('common.dash', '—');
+  return tr(`riskCode.${risk}`, RISK_LABELS[risk] ?? risk);
 }
 
 /** Libellé métier pour une action d'historique de traçabilité. */
 export function historyActionLabel(action: DecisionHistoryAction | string): string {
-  return HISTORY_ACTION_LABELS[action] ?? action.replaceAll('_', ' ').toLowerCase();
+  const fallback = HISTORY_ACTION_LABELS[action] ?? action.replaceAll('_', ' ').toLowerCase();
+  return tr(`history.${action}`, fallback);
 }
 
 /** Libellé court pour une décision ML (APPROUVER / REJETER). */
 export function decisionLabel(decision?: string | null): string {
-  if (decision === 'APPROUVER') return 'Approuver';
-  if (decision === 'REJETER') return 'Rejeter';
-  return decision ?? '—';
+  if (!decision) return tr('common.dash', '—');
+  if (decision === 'APPROUVER' || decision === 'REJETER' || decision === 'REVIEW') {
+    return tr(`ml.${decision}`, decision === 'APPROUVER' ? 'Approuver' : decision === 'REJETER' ? 'Rejeter' : 'À revoir');
+  }
+  const human = tr(`humanDecision.${decision}`, '');
+  return human || decision;
+}
+
+/** Libellé métier pour un domaine (CREDIT / MEDICAL / EDUCATION). */
+export function domainLabel(domain?: string | null): string {
+  if (!domain) return tr('common.dash', '—');
+  return tr(`domainCode.${domain}`, domain);
 }
 
 /** Libellé métier pour un rôle utilisateur. */
 export function roleLabel(role: UserRole | string): string {
+  const mapped =
+    role === UserRole.UTILISATEUR
+      ? UserRole.AGENT_CREDIT
+      : role === UserRole.VALIDATEUR
+        ? UserRole.RESPONSABLE_CREDIT
+        : String(role);
   const map: Record<string, string> = {
     [UserRole.ADMINISTRATEUR]: 'Administrateur',
     [UserRole.AUDITEUR]: 'Auditeur',
@@ -80,10 +105,10 @@ export function roleLabel(role: UserRole | string): string {
     [UserRole.RESPONSABLE_CREDIT]: 'Responsable Crédit',
     [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de Santé',
     [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable Pédagogique',
-    // Legacy
     [UserRole.UTILISATEUR]: 'Agent de crédit (legacy)',
+    [UserRole.VALIDATEUR]: 'Responsable Crédit',
   };
-  return map[String(role)] ?? String(role);
+  return tr(`roles.${mapped}`, map[String(role)] ?? String(role));
 }
 
 /** Classe CSS pour les chips de rôle. */

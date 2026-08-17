@@ -9,6 +9,7 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { provideAppI18n } from './core/i18n/provide-i18n';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
       withFetch()
     ),
     provideAnimationsAsync(),
+    ...provideAppI18n(),
     providePrimeNG({
       theme: {
         preset: Aura,

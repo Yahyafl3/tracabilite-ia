@@ -7,20 +7,22 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconComponent } from '../../../../shared/icon.component';
 import { LogoComponent } from '../../../../shared/logo.component';
 import { ScrollService } from '../../../../shared/scroll.service';
 import { ThemeService } from '../../../../shared/theme.service';
+import { LanguageSwitcherComponent } from '../../../../layout/language-switcher/language-switcher.component';
 
 interface NavLink {
-  label: string;
+  labelKey: string;
   target: string;
 }
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [IconComponent, LogoComponent, RouterLink],
+  imports: [IconComponent, LogoComponent, RouterLink, TranslatePipe, LanguageSwitcherComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
 })
@@ -34,12 +36,12 @@ export class NavbarComponent {
   readonly menuOpen = signal(false);
 
   readonly links: NavLink[] = [
-    { label: 'Accueil', target: 'accueil' },
-    { label: 'Fonctionnalités', target: 'fonctionnalites' },
-    { label: 'Fonctionnement', target: 'fonctionnement' },
-    { label: 'Technologies', target: 'technologies' },
-    { label: 'Sécurité', target: 'securite' },
-    { label: 'Cas d\'usage', target: 'cas-usage' },
+    { labelKey: 'landing.nav.home', target: 'accueil' },
+    { labelKey: 'landing.nav.features', target: 'fonctionnalites' },
+    { labelKey: 'landing.nav.howItWorks', target: 'fonctionnement' },
+    { labelKey: 'landing.nav.technologies', target: 'technologies' },
+    { labelKey: 'landing.nav.security', target: 'securite' },
+    { labelKey: 'landing.nav.useCases', target: 'cas-usage' },
   ];
 
   @HostListener('window:scroll')

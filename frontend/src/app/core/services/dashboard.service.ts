@@ -11,8 +11,11 @@ export interface DashboardRecentDecision {
   prompt: string;
   modelName: string;
   agentLabel: string;
-  statutValidation: 'APPROUVEE' | 'MODIFIEE' | 'REJETEE' | 'EN_ATTENTE' | 'BROUILLON';
+  statutValidation: 'VALIDEE' | 'MODIFIEE' | 'REJETEE' | 'EN_ATTENTE_VALIDATION' | 'BROUILLON';
   timestamp: string;
+  riskLevel?: string;
+  confidenceScore?: number;
+  reference?: string;
 }
 
 export interface DashboardResponse {
@@ -100,6 +103,34 @@ export interface DashboardStatsDTO {
   recentValidations?: ValidationActionDTO[];
 }
 
+export interface TimelineData {
+  label: string;
+  created: number;
+  solved: number;
+}
+
+export interface TypeStats {
+  counts: Record<string, number>;
+}
+
+export interface DailyStats {
+  counts: Record<string, number>;
+}
+
+export interface KpiData {
+  approvalRate: number;
+  highRiskCount: number;
+  pendingValidation: number;
+  integrityVerified: number;
+  integrityTotal: number;
+  aiAgreement: number;
+  aiDisagreement: number;
+  aiNotArbitrated: number;
+  domainMetrics?: Record<string, any>;
+  riskBreakdown?: Record<string, number>;
+  sparklines?: Record<string, number[]>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
@@ -151,5 +182,21 @@ export class DashboardService {
 
     console.error('Dashboard service error:', error);
     return throwError(() => new Error(errorMessage));
+  }
+
+  getTimelineStats(): Observable<TimelineData[]> {
+    return this.http.get<TimelineData[]>(`${this.baseUrl}/stats/timeline`);
+  }
+
+  getTypeStats(): Observable<TypeStats> {
+    return this.http.get<TypeStats>(`${this.baseUrl}/stats/by-type`);
+  }
+
+  getDailyStats(): Observable<DailyStats> {
+    return this.http.get<DailyStats>(`${this.baseUrl}/stats/daily`);
+  }
+
+  getKpiStats(): Observable<KpiData> {
+    return this.http.get<KpiData>(`${this.baseUrl}/stats/kpi`);
   }
 }

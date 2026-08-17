@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ComparaisonComponent } from './comparaison.component';
 import { ComparaisonService } from '../../core/services/comparaison.service';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('ComparaisonComponent', () => {
   let fixture: ComponentFixture<ComparaisonComponent>;
@@ -10,6 +11,7 @@ describe('ComparaisonComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ComparaisonComponent],
       providers: [
+        ...provideI18nTesting(),
         {
           provide: ComparaisonService,
           useValue: {
@@ -89,6 +91,7 @@ describe('ComparaisonComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ComparaisonComponent],
       providers: [
+        ...provideI18nTesting(),
         {
           provide: ComparaisonService,
           useValue: {

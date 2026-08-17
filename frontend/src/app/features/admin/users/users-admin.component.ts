@@ -14,6 +14,7 @@ import { Message } from 'primeng/message';
 import { Skeleton } from 'primeng/skeleton';
 import { ConfirmationService } from 'primeng/api';
 import { Password } from 'primeng/password';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   CreateManagedUserRequest,
@@ -25,6 +26,7 @@ import {
 import { UserRole } from '../../../core/models/auth.models';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { roleLabel } from '../../../core/utils/label.util';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 type FormMode = 'create' | 'edit';
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -47,6 +49,7 @@ type StatusFilter = 'all' | 'active' | 'inactive';
     Message,
     Skeleton,
     Password,
+    TranslatePipe,
   ],
   providers: [ConfirmationService],
   templateUrl: './users-admin.component.html',
@@ -57,18 +60,25 @@ export class UsersAdminComponent {
   private readonly authService = inject(AuthService);
   private readonly confirmation = inject(ConfirmationService);
   private readonly fb = inject(FormBuilder);
+  private readonly i18n = inject(TranslationService);
 
   readonly roles = MANAGED_USER_ROLES;
-  readonly roleOptions = this.roles.map((role) => ({ label: roleLabel(role), value: role }));
-  readonly roleFilterOptions = [
-    { label: 'Tous les rôles', value: null as UserRole | null },
-    ...this.roleOptions,
-  ];
-  readonly statusFilterOptions = [
-    { label: 'Tous les statuts', value: 'all' as StatusFilter },
-    { label: 'Actifs', value: 'active' as StatusFilter },
-    { label: 'Désactivés', value: 'inactive' as StatusFilter },
-  ];
+  readonly roleOptions = computed(() => {
+    this.i18n.currentLang();
+    return this.roles.map((role) => ({ label: roleLabel(role), value: role }));
+  });
+  readonly roleFilterOptions = computed(() => [
+    { label: this.i18n.t('admin.users.allRoles'), value: null as UserRole | null },
+    ...this.roleOptions(),
+  ]);
+  readonly statusFilterOptions = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('admin.users.allStatuses'), value: 'all' as StatusFilter },
+      { label: this.i18n.t('common.active'), value: 'active' as StatusFilter },
+      { label: this.i18n.t('common.inactive'), value: 'inactive' as StatusFilter },
+    ];
+  });
 
   readonly users = signal<ManagedUser[]>([]);
   readonly loading = signal(true);
@@ -122,7 +132,7 @@ export class UsersAdminComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger les utilisateurs.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.users.loadError')));
         this.loading.set(false);
       },
     });
@@ -182,7 +192,7 @@ export class UsersAdminComponent {
         role: value.role,
       };
       this.userAdminService.create(request).subscribe({
-        next: () => this.onSaveSuccess('Utilisateur créé avec succès.'),
+        next: () => this.onSaveSuccess(this.i18n.t('admin.users.createdSuccess')),
         error: (err) => this.onSaveError(err),
       });
       return;
@@ -201,24 +211,23 @@ export class UsersAdminComponent {
     }
 
     this.userAdminService.update(id, request).subscribe({
-      next: () => this.onSaveSuccess('Utilisateur mis à jour avec succès.'),
+      next: () => this.onSaveSuccess(this.i18n.t('admin.users.updatedSuccess')),
       error: (err) => this.onSaveError(err),
     });
   }
 
   confirmDeactivate(user: ManagedUser): void {
     if (user.id === this.authService.currentUser?.id) {
-      this.error.set('Impossible de désactiver votre propre compte.');
+      this.error.set(this.i18n.t('admin.users.cannotDeactivateSelf'));
       return;
     }
 
     this.confirmation.confirm({
-      header: 'Désactiver l’utilisateur',
-      message:
-        'Voulez-vous désactiver cet utilisateur ?\nSes décisions et son historique seront conservés.',
+      header: this.i18n.t('admin.users.deactivateTitle'),
+      message: this.i18n.t('admin.users.deactivateMessage'),
       icon: 'pi pi-ban',
-      acceptLabel: 'Désactiver',
-      rejectLabel: 'Annuler',
+      acceptLabel: this.i18n.t('admin.users.deactivate'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
       accept: () => this.deactivateUser(user),
@@ -230,11 +239,11 @@ export class UsersAdminComponent {
     this.success.set(null);
     this.userAdminService.deactivate(user.id).subscribe({
       next: () => {
-        this.success.set('Utilisateur désactivé. Historique conservé.');
+        this.success.set(this.i18n.t('admin.users.deactivatedKept'));
         this.loadUsers();
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Désactivation impossible.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.users.deactivateError')));
       },
     });
   }
@@ -244,11 +253,11 @@ export class UsersAdminComponent {
     this.success.set(null);
     this.userAdminService.reactivate(user.id).subscribe({
       next: () => {
-        this.success.set('Utilisateur réactivé.');
+        this.success.set(this.i18n.t('admin.users.reactivated'));
         this.loadUsers();
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Réactivation impossible.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.users.reactivateError')));
       },
     });
   }
@@ -258,6 +267,27 @@ export class UsersAdminComponent {
   }
 
   roleLabel = roleLabel;
+
+  get locale(): string {
+    return this.i18n.localeId();
+  }
+
+  formatDate(value: string | null | undefined): string {
+    if (!value) return this.i18n.t('common.dash');
+    return new Date(value).toLocaleDateString(this.i18n.localeId(), {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  formatTime(value: string | null | undefined): string {
+    if (!value) return '';
+    return new Date(value).toLocaleTimeString(this.i18n.localeId(), {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   roleSeverity(role: UserRole | string): 'danger' | 'warn' | 'info' | 'success' | 'secondary' {
     if (role === UserRole.ADMINISTRATEUR) return 'danger';
@@ -270,8 +300,7 @@ export class UsersAdminComponent {
     if (
       role === UserRole.AGENT_CREDIT ||
       role === UserRole.AGENT_SANTE ||
-      role === UserRole.AGENT_PEDAGOGIQUE ||
-      role === UserRole.UTILISATEUR
+      role === UserRole.AGENT_PEDAGOGIQUE
     ) return 'success';
     return 'secondary';
   }
@@ -293,6 +322,6 @@ export class UsersAdminComponent {
 
   private onSaveError(err: unknown): void {
     this.saving.set(false);
-    this.error.set(resolveHttpErrorMessage(err, 'Enregistrement impossible.'));
+    this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.users.saveError')));
   }
 }

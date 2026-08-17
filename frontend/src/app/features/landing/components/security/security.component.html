@@ -1,20 +1,13 @@
 <section id="securite" class="section section--dark">
   <div class="container security__grid">
     <div class="security__intro" appReveal>
-      <span class="eyebrow eyebrow--light">Sécurité &amp; intégrité</span>
-      <h2 class="section-title security__title">
-        Des décisions vérifiables et auditables
-      </h2>
-      <p class="security__subtitle">
-        Chaque dossier conserve les événements importants et les empreintes
-        d'intégrité afin de détecter les modifications et de faciliter l'audit.
-        Conçu pour faciliter les démarches de transparence, d'audit et de
-        gouvernance de l'IA.
-      </p>
+      <span class="eyebrow eyebrow--light">{{ 'landing.security.eyebrow' | translate }}</span>
+      <h2 class="section-title security__title">{{ 'landing.security.title' | translate }}</h2>
+      <p class="security__subtitle">{{ 'landing.security.subtitle' | translate }}</p>
 
       <img
         src="images/about-illustration.png"
-        alt="Illustration de la protection et de l'intégrité des dossiers de décision"
+        [attr.alt]="'landing.security.imageAlt' | translate"
         class="security__image"
         width="640"
         height="480"
@@ -23,14 +16,14 @@
     </div>
 
     <div class="security__badges">
-      @for (badge of badges; track badge.title; let i = $index) {
+      @for (badge of badges; track badge.titleKey; let i = $index) {
         <article class="sec-badge" appReveal [revealDelay]="(i % 2) * 90">
           <span class="sec-badge__icon">
             <app-icon [name]="badge.icon" [size]="24" />
           </span>
           <div>
-            <h3 class="sec-badge__title">{{ badge.title }}</h3>
-            <p class="sec-badge__text">{{ badge.description }}</p>
+            <h3 class="sec-badge__title">{{ badge.titleKey | translate }}</h3>
+            <p class="sec-badge__text">{{ badge.textKey | translate }}</p>
           </div>
         </article>
       }

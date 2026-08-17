@@ -11,6 +11,7 @@ services:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     networks:
       - tracabilite-internal
     healthcheck:
@@ -65,7 +66,7 @@ services:
       OPENROUTER_AGENT_DELAY_MS: ${OPENROUTER_AGENT_DELAY_MS:-3000}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_BASE_URL: ${GROQ_BASE_URL:-https://api.groq.com/openai/v1}
-      GROQ_MODEL_1: ${GROQ_MODEL_1:-llama-3.3-70b-versatile}
+      GROQ_MODEL_1: ${GROQ_MODEL_1:-groq/compound-mini}
       GROQ_MODEL_2: ${GROQ_MODEL_2:-openai/gpt-oss-120b}
       GROQ_MODEL_3: ${GROQ_MODEL_3:-openai/gpt-oss-20b}
       GROQ_CONNECT_TIMEOUT_MS: ${GROQ_CONNECT_TIMEOUT_MS:-10000}
@@ -81,6 +82,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-}
       SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      APP_BACKUP_DIR: /app/data/backups
     depends_on:
       postgres:
         condition: service_healthy

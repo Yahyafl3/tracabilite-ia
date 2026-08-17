@@ -327,7 +327,6 @@ public class DecisionServiceImpl implements DecisionService {
                 enforcedDomain = DecisionDomain.EDUCATION;
                 enforcedCreatedBy = user.getEmail();
             }
-
         }
 
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));

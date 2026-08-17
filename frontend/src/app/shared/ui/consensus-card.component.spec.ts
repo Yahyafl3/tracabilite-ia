@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConsensusCardComponent } from './consensus-card.component';
 import type { ConsensusResponse } from '../../core/models/openrouter.models';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('ConsensusCardComponent', () => {
   let fixture: ComponentFixture<ConsensusCardComponent>;
@@ -8,6 +9,7 @@ describe('ConsensusCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConsensusCardComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConsensusCardComponent);

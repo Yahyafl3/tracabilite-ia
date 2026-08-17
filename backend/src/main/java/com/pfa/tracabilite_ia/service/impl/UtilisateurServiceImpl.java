@@ -145,7 +145,9 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private void assertManagedRole(RoleEnum role) {
         if (role == null || !MANAGED_ROLES.contains(role)) {
             throw new IllegalArgumentException(
-                    "Role non autorise. Roles geres : UTILISATEUR, AUDITEUR, ADMINISTRATEUR, agents et responsables de domaine.");
+                    "Role non autorise. Roles geres : AGENT_CREDIT, AGENT_SANTE, AGENT_PEDAGOGIQUE, "
+                            + "RESPONSABLE_CREDIT, PROFESSIONNEL_SANTE, RESPONSABLE_PEDAGOGIQUE, "
+                            + "AUDITEUR, ADMINISTRATEUR.");
         }
     }
 }

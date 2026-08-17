@@ -1,35 +1,35 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Accueil / Décisions</p>
-      <h1>Décisions</h1>
-      <p class="page-subtitle">Liste paginée — filtres par domaine, statut, risque et validateur.</p>
+      <p class="page-eyebrow">{{ 'decisions.list.eyebrow' | translate }}</p>
+      <h1>{{ 'decisions.list.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'decisions.list.subtitle' | translate }}</p>
     </div>
     <div class="header-actions">
       @if (canExport()) {
         <p-button
-          label="Exporter CSV"
+          [label]="'common.exportCsv' | translate"
           icon="pi pi-download"
           [outlined]="true"
           [loading]="exporting()"
           (onClick)="export('csv')"
-          ariaLabel="Exporter les décisions en CSV"
+          [ariaLabel]="'decisions.list.exportCsvAria' | translate"
         />
         <p-button
-          label="Exporter Excel"
+          [label]="'common.exportExcel' | translate"
           icon="pi pi-file-excel"
           [outlined]="true"
           [loading]="exporting()"
           (onClick)="export('xlsx')"
-          ariaLabel="Exporter les décisions en Excel"
+          [ariaLabel]="'decisions.list.exportExcelAria' | translate"
         />
       }
       @if (canCreate()) {
         <p-button
-          label="Nouvelle décision"
+          [label]="'decisions.list.new' | translate"
           icon="pi pi-plus"
           (onClick)="goToNew()"
-          ariaLabel="Créer une nouvelle décision"
+          [ariaLabel]="'decisions.list.newAria' | translate"
         />
       }
     </div>
@@ -38,48 +38,48 @@
   <p-card>
     <ng-template #header>
       <div class="card-title-row">
-        <span>Toutes les décisions</span>
-        <span class="muted">{{ totalElements() }} au total</span>
+        <span>{{ 'decisions.list.all' | translate }}</span>
+        <span class="muted">{{ 'decisions.list.total' | translate:{ count: totalElements() } }}</span>
       </div>
     </ng-template>
 
     <form class="toolbar toolbar--grid" [formGroup]="filters" (ngSubmit)="applyFilters()">
       <div class="field">
-        <label for="search">Recherche</label>
-        <input pInputText id="search" formControlName="search" placeholder="Référence, prompt…" class="w-full" />
+        <label for="search">{{ 'decisions.list.search' | translate }}</label>
+        <input pInputText id="search" formControlName="search" [placeholder]="'decisions.list.searchPlaceholder' | translate" class="w-full" />
       </div>
       <div class="field">
-        <label for="domaine">Domaine</label>
+        <label for="domaine">{{ 'common.domain' | translate }}</label>
         <p-select inputId="domaine" formControlName="domaine" [options]="domaineOptions()"
           optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="statut">Statut</label>
-        <p-select inputId="statut" formControlName="statut" [options]="statutOptions"
+        <label for="statut">{{ 'common.status' | translate }}</label>
+        <p-select inputId="statut" formControlName="statut" [options]="statutOptions()"
           optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="riskLevel">Niveau de risque</label>
-        <p-select inputId="riskLevel" formControlName="riskLevel" [options]="riskOptions"
+        <label for="riskLevel">{{ 'decisions.list.riskLevel' | translate }}</label>
+        <p-select inputId="riskLevel" formControlName="riskLevel" [options]="riskOptions()"
           optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="decisionFinale">Décision finale</label>
-        <input pInputText id="decisionFinale" formControlName="decisionFinale" placeholder="ACCEPTEE…" class="w-full" />
+        <label for="decisionFinale">{{ 'decisions.list.finalDecision' | translate }}</label>
+        <input pInputText id="decisionFinale" formControlName="decisionFinale" [placeholder]="'decisions.list.finalPlaceholder' | translate" class="w-full" />
       </div>
       <div class="field">
-        <label for="validateur">Validateur</label>
-        <input pInputText id="validateur" formControlName="validateur" placeholder="email ou rôle" class="w-full" />
+        <label for="validateur">{{ 'decisions.list.validator' | translate }}</label>
+        <input pInputText id="validateur" formControlName="validateur" [placeholder]="'decisions.list.validatorPlaceholder' | translate" class="w-full" />
       </div>
       <div class="field">
-        <label for="fromDate">Du</label>
+        <label for="fromDate">{{ 'common.from' | translate }}</label>
         <input pInputText type="date" id="fromDate" formControlName="fromDate" class="w-full" />
       </div>
       <div class="field">
-        <label for="toDate">Au</label>
+        <label for="toDate">{{ 'common.to' | translate }}</label>
         <input pInputText type="date" id="toDate" formControlName="toDate" class="w-full" />
       </div>
-      <p-button type="submit" label="Filtrer" icon="pi pi-filter" [outlined]="true" />
+      <p-button type="submit" [label]="'common.filter' | translate" icon="pi pi-filter" [outlined]="true" />
     </form>
 
     @if (loading()) {
@@ -93,8 +93,8 @@
     } @else if (decisions().length === 0) {
       <div class="empty-state" role="status">
         <i class="pi pi-inbox empty-state__icon" aria-hidden="true"></i>
-        <h2>Aucune décision trouvée</h2>
-        <p>Aucune décision ne correspond à vos critères.</p>
+        <h2>{{ 'decisions.list.emptyTitle' | translate }}</h2>
+        <p>{{ 'decisions.list.emptyText' | translate }}</p>
       </div>
     } @else {
       <div class="table-scroll">
@@ -106,17 +106,17 @@
         >
           <ng-template #header>
             <tr>
-              <th pSortableColumn="timestamp">Création <p-sortIcon field="timestamp" /></th>
-              <th>Référence</th>
-              <th>Domaine</th>
-              <th>Recommandation IA</th>
-              <th>Confiance</th>
-              <th>Risque</th>
-              <th>Décision finale</th>
-              <th>Validateur</th>
-              <th>Validation</th>
-              <th pSortableColumn="statutValidation">Statut <p-sortIcon field="statutValidation" /></th>
-              <th>Actions</th>
+              <th pSortableColumn="timestamp">{{ 'decisions.list.created' | translate }} <p-sortIcon field="timestamp" /></th>
+              <th>{{ 'common.reference' | translate }}</th>
+              <th>{{ 'common.domain' | translate }}</th>
+              <th>{{ 'decisions.list.aiRecommendation' | translate }}</th>
+              <th>{{ 'common.confidence' | translate }}</th>
+              <th>{{ 'common.risk' | translate }}</th>
+              <th>{{ 'decisions.list.finalDecision' | translate }}</th>
+              <th>{{ 'decisions.list.validator' | translate }}</th>
+              <th>{{ 'decisions.list.validation' | translate }}</th>
+              <th pSortableColumn="statutValidation">{{ 'common.status' | translate }} <p-sortIcon field="statutValidation" /></th>
+              <th>{{ 'common.actions' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template #body let-row>
@@ -129,25 +129,25 @@
               </td>
               <td><code class="ref-code">{{ reference(row) }}</code></td>
               <td>
-                <p-tag [value]="domainBadge(row)" [severity]="domainSeverity(domainBadge(row))" />
+                <p-tag [value]="domainLabel(domainBadge(row))" [severity]="domainSeverity(domainBadge(row))" />
               </td>
               <td>
                 <p-tag
-                  [value]="mlDecisionLabel(row) || 'N/A'"
+                  [value]="decisionLabel(mlDecisionLabel(row)) || ('common.na' | translate)"
                   [severity]="mlSeverity(mlDecisionLabel(row))"
                 />
               </td>
               <td>
-                <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="percent" />
+                <app-confidence-display [confidence]="mlConfidenceValue(row)" scale="ratio" />
               </td>
               <td>
                 <app-risk-badge [riskLevel]="riskLevel(row)" />
               </td>
-              <td>{{ humanFinal(row) || '—' }}</td>
+              <td>{{ humanFinal(row) ? decisionLabel(humanFinal(row)) : ('common.dash' | translate) }}</td>
               <td>
                 <div class="td-time">
-                  <span>{{ row.validatorEmail || '—' }}</span>
-                  <span class="muted">{{ row.validateurRole || '' }}</span>
+                  <span>{{ row.validatorEmail || ('common.dash' | translate) }}</span>
+                  <span class="muted">{{ row.validateurRole ? roleLabel(row.validateurRole) : '' }}</span>
                 </div>
               </td>
               <td>{{ formatDate(row.validatedAt) }}</td>
@@ -173,7 +173,7 @@
       <p-menu #rowMenu [popup]="true" [model]="rowMenuItems()" />
 
       <div class="pagination-row">
-        <span class="muted">{{ rangeStart() }}–{{ rangeEnd() }} sur {{ totalElements() }}</span>
+        <span class="muted">{{ 'decisions.list.range' | translate:{ start: rangeStart(), end: rangeEnd(), total: totalElements() } }}</span>
         <p-paginator
           [rows]="size()"
           [first]="page() * size()"

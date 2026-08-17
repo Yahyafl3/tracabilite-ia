@@ -1,16 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ScrollService } from '../../../../shared/scroll.service';
 
 interface FooterColumn {
-  title: string;
-  links: { label: string; target?: string; route?: string }[];
+  titleKey: string;
+  links: { labelKey: string; target?: string; route?: string }[];
 }
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss',
 })
@@ -21,27 +22,27 @@ export class FooterComponent {
 
   readonly columns: FooterColumn[] = [
     {
-      title: 'Produit',
+      titleKey: 'landing.footer.product',
       links: [
-        { label: 'Fonctionnalités', target: 'fonctionnalites' },
-        { label: 'Fonctionnement', target: 'fonctionnement' },
-        { label: 'Sécurité', target: 'securite' },
-        { label: 'Cas d\'usage', target: 'cas-usage' },
+        { labelKey: 'landing.nav.features', target: 'fonctionnalites' },
+        { labelKey: 'landing.nav.howItWorks', target: 'fonctionnement' },
+        { labelKey: 'landing.nav.security', target: 'securite' },
+        { labelKey: 'landing.nav.useCases', target: 'cas-usage' },
       ],
     },
     {
-      title: 'Application',
+      titleKey: 'landing.footer.application',
       links: [
-        { label: 'Se connecter', route: '/auth/login' },
-        { label: 'Tableau de bord', route: '/dashboard' },
+        { labelKey: 'landing.nav.login', route: '/auth/login' },
+        { labelKey: 'nav.dashboard', route: '/dashboard' },
       ],
     },
     {
-      title: 'Projet',
+      titleKey: 'landing.footer.project',
       links: [
-        { label: 'Technologies', target: 'technologies' },
-        { label: 'Architecture', target: 'technologies' },
-        { label: 'À propos du projet', target: 'probleme' },
+        { labelKey: 'landing.nav.technologies', target: 'technologies' },
+        { labelKey: 'landing.footer.architecture', target: 'technologies' },
+        { labelKey: 'landing.footer.about', target: 'probleme' },
       ],
     },
   ];

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 import { ModelIdentityComponent } from './model-identity.component';
 
 describe('ModelIdentityComponent', () => {
@@ -7,6 +8,7 @@ describe('ModelIdentityComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ModelIdentityComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ModelIdentityComponent);

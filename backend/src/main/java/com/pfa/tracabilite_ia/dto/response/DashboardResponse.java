@@ -41,5 +41,8 @@ public class DashboardResponse {
         private String agentLabel;
         private StatutDecisionEnum statutValidation;
         private LocalDateTime timestamp;
+        private String riskLevel;
+        private Double confidenceScore;
+        private String reference;
     }
 }

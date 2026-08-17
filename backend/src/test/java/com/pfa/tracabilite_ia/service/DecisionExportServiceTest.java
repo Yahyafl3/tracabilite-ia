@@ -57,6 +57,7 @@ class DecisionExportServiceTest {
         byte[] csv = exportService.exportCsv(null, null, null, null, null, auditor);
         String text = new String(csv, java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(text.contains("[MASQUE_MEDICAL]"));
+        assertTrue(text.contains("sep=,"));
         assertFalse(text.contains("Detail clinique sensible") || text.contains("Détail clinique sensible"));
         assertTrue(text.contains("Accepte avec garanties"));
         verify(auditLogService).record(eq(null), eq(auditor), eq("EXPORT"), any(), any(), any(), any());
@@ -70,6 +71,7 @@ class DecisionExportServiceTest {
         byte[] xml = exportService.exportExcelXml(null, null, null, null, null, admin);
         String text = new String(xml);
         assertTrue(text.contains("Workbook"));
+        assertTrue(text.contains("xmlns:ss="));
         assertTrue(text.contains("decisionId"));
     }
 }

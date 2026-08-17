@@ -2,28 +2,29 @@
   <div class="support-shell">
     <p-card styleClass="support-card">
       <div class="support-card__header">
-        <a routerLink="/" class="support-brand" aria-label="Traçabilité IA — accueil">
+        <a routerLink="/" class="support-brand" [attr.aria-label]="('app.name' | translate) + ' — ' + ('landing.nav.home' | translate)">
           <span class="support-brand__icon"><i class="pi pi-shield" aria-hidden="true"></i></span>
           <span>
-            <strong>Traçabilité IA</strong>
-            <small>Support</small>
+            <strong>{{ 'app.name' | translate }}</strong>
+            <small>{{ 'nav.support' | translate }}</small>
           </span>
         </a>
         <div class="support-nav">
+          <app-language-switcher />
           <a routerLink="/auth/login" class="support-nav__link">
             <i class="pi pi-sign-in" aria-hidden="true"></i>
-            Revenir à la connexion
+            {{ 'support.backLogin' | translate }}
           </a>
           <a routerLink="/" class="support-nav__link">
             <i class="pi pi-home" aria-hidden="true"></i>
-            Revenir à l’accueil
+            {{ 'support.backHome' | translate }}
           </a>
         </div>
       </div>
 
       <div class="support-intro">
-        <h1>Contactez le support</h1>
-        <p>Décrivez votre besoin. Notre équipe vous répondra dès que possible.</p>
+        <h1>{{ 'support.title' | translate }}</h1>
+        <p>{{ 'support.subtitle' | translate }}</p>
       </div>
 
       <div aria-live="polite">
@@ -37,7 +38,7 @@
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="support-form" novalidate>
         <div class="form-field" [class.form-field--error]="hasError('name')">
-          <label for="support-name">Nom complet</label>
+          <label for="support-name">{{ 'support.name' | translate }}</label>
           <input
             pInputText
             id="support-name"
@@ -53,7 +54,7 @@
         </div>
 
         <div class="form-field" [class.form-field--error]="hasError('email')">
-          <label for="support-email">Adresse email</label>
+          <label for="support-email">{{ 'login.email' | translate }}</label>
           <input
             pInputText
             id="support-email"
@@ -69,7 +70,7 @@
         </div>
 
         <div class="form-field" [class.form-field--error]="hasError('subject')">
-          <label for="support-subject">Sujet</label>
+          <label for="support-subject">{{ 'support.subject' | translate }}</label>
           <input
             pInputText
             id="support-subject"
@@ -84,7 +85,7 @@
         </div>
 
         <div class="form-field" [class.form-field--error]="hasError('message')">
-          <label for="support-message">Message</label>
+          <label for="support-message">{{ 'support.message' | translate }}</label>
           <textarea
             pTextarea
             id="support-message"
@@ -101,18 +102,18 @@
 
         <p-button
           type="submit"
-          label="Envoyer la demande"
+          [label]="'support.submit' | translate"
           icon="pi pi-send"
           styleClass="support-submit"
           [disabled]="isLoading()"
           [loading]="isLoading()"
-          ariaLabel="Envoyer la demande de support"
+          [ariaLabel]="'support.submitAria' | translate"
         />
 
         @if (isLoading()) {
           <div class="support-loading" aria-live="polite">
             <p-progressSpinner strokeWidth="4" [style]="{ width: '2rem', height: '2rem' }" />
-            <span>Envoi en cours…</span>
+            <span>{{ 'support.loading' | translate }}</span>
           </div>
         }
       </form>

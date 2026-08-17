@@ -7,6 +7,7 @@ import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.enumeration.StatutReponseAgentEnum;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
 import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
+import com.pfa.tracabilite_ia.repository.UtilisateurRepository;
 import com.pfa.tracabilite_ia.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class DecisionIsolationTest {
     private AuthService authService;
 
     @Mock
-    private com.pfa.tracabilite_ia.repository.UtilisateurRepository utilisateurRepository;
+    private UtilisateurRepository utilisateurRepository;
 
     private DecisionScopeService scopeService;
 

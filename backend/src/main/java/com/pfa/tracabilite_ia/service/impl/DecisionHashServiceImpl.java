@@ -45,31 +45,13 @@ public class DecisionHashServiceImpl implements DecisionHashService {
         return HashUtils.sha256(joined);
     }
 
+    /**
+     * Délègue à l'entité : dupliquer la composition du payload ici ferait diverger
+     * silencieusement la signature de la vérification au moindre champ ajouté.
+     */
     @Override
     public String computeCanonicalHash(Decision decision) {
-        // Doit rester aligné avec Decision.calculerHash()
-        String payload = String.join("|",
-                safe(decision.getDecisionId()),
-                decision.getDomaine() != null ? decision.getDomaine().name() : "",
-                safe(decision.getDecisionId()),
-                safe(decision.getPrompt()),
-                safe(decision.getContexte()),
-                safe(decision.getBusinessDataHash()),
-                safe(decision.getSourcesHash()),
-                safe(decision.getSuggestedDecision()),
-                safe(decision.getConfidenceScore()),
-                safe(decision.getModelName()),
-                safe(decision.getModelVersion()),
-                safe(decision.getDatasetVersion()),
-                safe(decision.getAgentResponsesHash()),
-                safe(decision.getConsensusJson()),
-                safe(decision.getHumanDecision()),
-                safe(decision.getValidatorEmail()),
-                safe(decision.getValidateurRole()),
-                safe(decision.getValidatedAt()),
-                safe(decision.getStatutValidation()),
-                safe(decision.getPreviousHash()));
-        return HashUtils.sha256(payload);
+        return decision.calculerHash();
     }
 
     @Override

@@ -1,57 +1,59 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-credit-decision-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputNumber, Select, Textarea],
+  imports: [CommonModule, ReactiveFormsModule, InputNumber, Select, Textarea, TranslatePipe],
   template: `
     <form [formGroup]="form" class="form-grid" (ngSubmit)="onSubmit()">
       <div class="field">
-        <label for="age">Âge</label>
+        <label for="age">{{ 'forms.age' | translate }}</label>
         <p-inputNumber inputId="age" formControlName="age" [min]="18" [max]="100" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="dureeMois">Durée (mois)</label>
+        <label for="dureeMois">{{ 'forms.credit.duration' | translate }}</label>
         <p-inputNumber inputId="dureeMois" formControlName="dureeMois" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="typeContrat">Type de contrat</label>
+        <label for="typeContrat">{{ 'forms.credit.contractType' | translate }}</label>
         <p-select inputId="typeContrat" formControlName="typeContrat"
-          [options]="typesContrat" optionLabel="label" optionValue="value" styleClass="w-full" />
+          [options]="typesContrat()" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="statutLogement">Statut logement</label>
+        <label for="statutLogement">{{ 'forms.credit.housing' | translate }}</label>
         <p-select inputId="statutLogement" formControlName="statutLogement"
-          [options]="statutsLogement" optionLabel="label" optionValue="value" styleClass="w-full" />
+          [options]="statutsLogement()" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="incidentPaiementBam">Incidents paiement BAM</label>
+        <label for="incidentPaiementBam">{{ 'forms.credit.bamIncidents' | translate }}</label>
         <p-inputNumber inputId="incidentPaiementBam" formControlName="incidentPaiementBam" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="montantDemandeMad">Montant demandé (MAD)</label>
+        <label for="montantDemandeMad">{{ 'forms.credit.amount' | translate }}</label>
         <p-inputNumber inputId="montantDemandeMad" formControlName="montantDemandeMad" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="nouvelleEcheanceMad">Nouvelle échéance (MAD)</label>
+        <label for="nouvelleEcheanceMad">{{ 'forms.credit.installment' | translate }}</label>
         <p-inputNumber inputId="nouvelleEcheanceMad" formControlName="nouvelleEcheanceMad" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="revenuMensuelMad">Revenu mensuel (MAD)</label>
+        <label for="revenuMensuelMad">{{ 'forms.credit.income' | translate }}</label>
         <p-inputNumber inputId="revenuMensuelMad" formControlName="revenuMensuelMad" [min]="1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="tauxEndettement">Taux d'endettement (0–1)</label>
+        <label for="tauxEndettement">{{ 'forms.credit.debtRatio' | translate }}</label>
         <p-inputNumber inputId="tauxEndettement" formControlName="tauxEndettement"
           [min]="0" [max]="1" [minFractionDigits]="2" [maxFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field field--full">
-        <label for="description">Description</label>
+        <label for="description">{{ 'forms.description' | translate }}</label>
         <textarea pTextarea id="description" formControlName="description" rows="3" class="w-full"></textarea>
       </div>
     </form>
@@ -83,18 +85,25 @@ export class CreditDecisionFormComponent {
   @Output() readonly formReady = new EventEmitter<{ valid: boolean; value: Record<string, unknown> }>();
 
   private readonly fb = inject(FormBuilder);
+  private readonly i18n = inject(TranslationService);
 
-  readonly typesContrat = [
-    { label: 'CDI', value: 'CDI' },
-    { label: 'CDD', value: 'CDD' },
-    { label: 'Fonctionnaire', value: 'FONCTIONNAIRE' },
-    { label: 'Informel', value: 'INFORMEL' },
-  ];
-  readonly statutsLogement = [
-    { label: 'Propriétaire', value: 'PROPRIETAIRE' },
-    { label: 'Locataire', value: 'LOCATAIRE' },
-    { label: 'Logement de fonction', value: 'LOGEMENT_DE_FONCTION' },
-  ];
+  readonly typesContrat = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('forms.credit.cdi'), value: 'CDI' },
+      { label: this.i18n.t('forms.credit.cdd'), value: 'CDD' },
+      { label: this.i18n.t('forms.credit.civilServant'), value: 'FONCTIONNAIRE' },
+      { label: this.i18n.t('forms.credit.informal'), value: 'INFORMEL' },
+    ];
+  });
+  readonly statutsLogement = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('forms.credit.owner'), value: 'PROPRIETAIRE' },
+      { label: this.i18n.t('forms.credit.tenant'), value: 'LOCATAIRE' },
+      { label: this.i18n.t('forms.credit.companyHousing'), value: 'LOGEMENT_DE_FONCTION' },
+    ];
+  });
 
   readonly form = this.fb.group({
     age: [35, [Validators.required, Validators.min(18), Validators.max(100)]],

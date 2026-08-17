@@ -38,7 +38,8 @@ class DecisionOrchestratorValidationTest {
         orchestrator = new DecisionOrchestratorService(
                 decisionRepository,
                 mlDecisionService, authService, auditLogService, decisionMapper, new ObjectMapper(),
-                (decision, domain, featuresJson, user) -> false
+                (decision, domain, featuresJson, user) -> false,
+                new com.pfa.tracabilite_ia.service.impl.DecisionHashServiceImpl()
         );
     }
 

@@ -1,23 +1,21 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Accueil / Validation</p>
-      <h1>Validation humaine</h1>
-      <p class="page-subtitle">
-        Décisions finales selon le domaine (Crédit, Médical, Éducation). L’IA reste consultative.
-      </p>
+      <p class="page-eyebrow">{{ 'validation.eyebrow' | translate }}</p>
+      <h1>{{ 'validation.title' | translate }}</h1>
+      <p class="page-subtitle">{{ 'validation.subtitle' | translate }}</p>
     </div>
     <p-button
       icon="pi pi-refresh"
       [outlined]="true"
       (onClick)="loadPending()"
       [loading]="loading()"
-      ariaLabel="Actualiser la file"
+      [ariaLabel]="'validation.refreshAria' | translate"
     />
   </header>
 
   @if (!loading() && !error()) {
-    <section class="kpi-row" aria-label="Statistiques de validation">
+    <section class="kpi-row" [attr.aria-label]="'validation.kpisAria' | translate">
       @for (kpi of kpis(); track kpi.label) {
         <div class="kpi-card" [ngClass]="kpiColorClass(kpi.color)">
           <div class="kpi-card__icon"><i [class]="kpi.icon" aria-hidden="true"></i></div>
@@ -33,8 +31,8 @@
   <p-card>
     <ng-template #title>
       <div class="card-title-row">
-        <span>File de validation</span>
-        <p-tag severity="warn" [value]="totalElements() + ' en attente'" icon="pi pi-clock" />
+        <span>{{ 'validation.queue' | translate }}</span>
+        <p-tag severity="warn" [value]="'validation.pendingCount' | translate:{ count: totalElements() }" icon="pi pi-clock" />
       </div>
     </ng-template>
 
@@ -46,20 +44,20 @@
       <p-message severity="error" [text]="error()!" styleClass="w-full" />
     } @else if (decisions().length === 0) {
       <div class="empty-state" role="status">
-        <h2>File vide</h2>
-        <p>Aucune décision en attente de validation.</p>
+        <h2>{{ 'validation.emptyTitle' | translate }}</h2>
+        <p>{{ 'validation.emptyText' | translate }}</p>
       </div>
     } @else {
       <div class="table-scroll">
         <p-table [value]="decisions()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '52rem' }">
           <ng-template #header>
             <tr>
-              <th>Référence</th>
-              <th>Domaine</th>
-              <th>Recommandation IA</th>
-              <th>Confiance</th>
-              <th>Risque</th>
-              <th>Actions</th>
+              <th>{{ 'common.reference' | translate }}</th>
+              <th>{{ 'common.domain' | translate }}</th>
+              <th>{{ 'validation.aiRecommendation' | translate }}</th>
+              <th>{{ 'common.confidence' | translate }}</th>
+              <th>{{ 'common.risk' | translate }}</th>
+              <th>{{ 'common.actions' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template #body let-row>
@@ -70,16 +68,16 @@
                 </button>
               </td>
               <td>
-                <p-tag [value]="domainBadge(row)" [severity]="domainSeverity(domainBadge(row))" />
+                <p-tag [value]="domainLabel(domainBadge(row))" [severity]="domainSeverity(domainBadge(row))" />
               </td>
               <td>
                 <p-tag
-                  [value]="mlDecision(row) || row.suggestedDecision || 'N/A'"
+                  [value]="decisionLabel(mlDecision(row) || row.suggestedDecision) || ('common.na' | translate)"
                   [severity]="mlSeverity(row.suggestedDecision)"
                 />
               </td>
               <td>
-                <app-confidence-display [confidence]="mlConfidence(row)" scale="percent" />
+                <app-confidence-display [confidence]="mlConfidence(row)" scale="ratio" />
               </td>
               <td>
                 <p-tag [value]="riskLabel(row.riskLevel)" [severity]="riskSeverity(row.riskLevel)" />
@@ -94,7 +92,7 @@
                   />
                 } @else {
                   <p-button
-                    label="Voir le dossier"
+                    [label]="'validation.viewDossier' | translate"
                     icon="pi pi-eye"
                     size="small"
                     [outlined]="true"
@@ -110,9 +108,8 @@
     }
   </p-card>
 
-  <!-- Detail -->
   <p-dialog
-    header="Détail du dossier"
+    [header]="'validation.detailTitle' | translate"
     [visible]="detailVisible()"
     (visibleChange)="detailVisible.set($event)"
     [modal]="true"
@@ -122,23 +119,22 @@
       @if (row.domaine === 'MEDICAL') {
         <p-message
           severity="warn"
-          text="Cette estimation ne constitue pas un diagnostic médical et doit être revue par un professionnel de santé."
+          [text]="'validation.medicalWarning' | translate"
           styleClass="w-full mb-3"
         />
       }
-      <p><strong>Référence :</strong> {{ reference(row) }}</p>
-      <p><strong>Domaine :</strong> {{ domainBadge(row) }}</p>
-      <p><strong>IA :</strong> {{ row.suggestedDecision }}</p>
-      <p><strong>Confiance :</strong> {{ row.confidenceScore }}</p>
-      <p><strong>Modèle :</strong> {{ row.modelVersion }}</p>
+      <p><strong>{{ 'common.reference' | translate }} :</strong> {{ reference(row) }}</p>
+      <p><strong>{{ 'common.domain' | translate }} :</strong> {{ domainLabel(domainBadge(row)) }}</p>
+      <p><strong>{{ 'validation.aiRecommendation' | translate }} :</strong> {{ decisionLabel(row.suggestedDecision) }}</p>
+      <p><strong>{{ 'common.confidence' | translate }} :</strong> {{ row.confidenceScore }}</p>
+      <p><strong>{{ 'common.model' | translate }} :</strong> {{ row.modelVersion }}</p>
       <p-divider />
-      <p-button label="Ouvrir le dossier" icon="pi pi-external-link" (onClick)="goToDossier(row)" />
+      <p-button [label]="'validation.openDossier' | translate" icon="pi pi-external-link" (onClick)="goToDossier(row)" />
     }
   </p-dialog>
 
-  <!-- Validate -->
   <p-dialog
-    header="Décision humaine finale"
+    [header]="'validation.humanTitle' | translate"
     [visible]="actionDialogVisible()"
     (visibleChange)="!$event && closeAction()"
     [modal]="true"
@@ -150,28 +146,28 @@
 
     <form [formGroup]="actionForm" (ngSubmit)="submitAction()" class="action-form">
       <div class="field">
-        <label for="decisionFinale">Décision finale</label>
+        <label for="decisionFinale">{{ 'validation.finalDecision' | translate }}</label>
         <p-select
           inputId="decisionFinale"
           formControlName="decisionFinale"
           [options]="decisionOptions()"
           optionLabel="label"
           optionValue="value"
-          placeholder="Choisir…"
+          [placeholder]="'common.choose' | translate"
           styleClass="w-full"
         />
         @if (hasError('decisionFinale')) {
-          <small class="error">Décision finale obligatoire</small>
+          <small class="error">{{ 'validation.finalRequired' | translate }}</small>
         }
       </div>
 
       <div class="field checkbox-row">
         <p-checkbox formControlName="accordAvecIa" [binary]="true" inputId="accordAvecIa" />
-        <label for="accordAvecIa">Accord avec la recommandation IA</label>
+        <label for="accordAvecIa">{{ 'validation.agreeAi' | translate }}</label>
       </div>
 
       <div class="field">
-        <label for="justificationHumaine">Justification humaine</label>
+        <label for="justificationHumaine">{{ 'validation.justification' | translate }}</label>
         <textarea
           pTextarea
           id="justificationHumaine"
@@ -180,12 +176,12 @@
           class="w-full"
           [placeholder]="
             actionForm.get('accordAvecIa')?.value
-              ? 'Justification (min. 10 caractères)'
-              : 'Justification détaillée en cas de désaccord (min. 30 caractères)'
+              ? ('validation.justificationMin' | translate)
+              : ('validation.justificationDisagree' | translate)
           "
         ></textarea>
         @if (hasError('justificationHumaine')) {
-          <small class="error">Justification insuffisante</small>
+          <small class="error">{{ 'validation.justificationError' | translate }}</small>
         }
       </div>
 
@@ -194,10 +190,10 @@
       }
 
       <div class="dialog-actions">
-        <p-button type="button" label="Annuler" [text]="true" (onClick)="closeAction()" />
+        <p-button type="button" [label]="'common.cancel' | translate" [text]="true" (onClick)="closeAction()" />
         <p-button
           type="submit"
-          label="Enregistrer la décision"
+          [label]="'validation.save' | translate"
           icon="pi pi-check"
           [loading]="submitting()"
         />

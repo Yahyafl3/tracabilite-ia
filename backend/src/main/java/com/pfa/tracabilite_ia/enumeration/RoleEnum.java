@@ -7,7 +7,7 @@ package com.pfa.tracabilite_ia.enumeration;
  * créateurs de décisions par domaine. Ils ne valident pas.
  * {@link #RESPONSABLE_CREDIT}, {@link #PROFESSIONNEL_SANTE},
  * {@link #RESPONSABLE_PEDAGOGIQUE} sont les validateurs spécialisés par domaine.
- * {@link #UTILISATEUR} est un rôle LEGACY conservé pour compatibilité ; 
+ * {@link #UTILISATEUR} est un rôle LEGACY conservé pour compatibilité ;
  * il n'est plus proposé à la création de nouveaux comptes.
  * {@link #ADMINISTRATEUR} gère les comptes et a une visibilité globale.
  */

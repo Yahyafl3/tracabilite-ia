@@ -12,6 +12,7 @@ import com.pfa.tracabilite_ia.enumeration.DecisionDomain;
 import com.pfa.tracabilite_ia.enumeration.RoleEnum;
 import com.pfa.tracabilite_ia.mapper.DecisionMapper;
 import com.pfa.tracabilite_ia.repository.DecisionRepository;
+import com.pfa.tracabilite_ia.service.impl.DecisionHashServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +40,7 @@ class DecisionOrchestratorPersistenceOrderTest {
 
     DecisionOrchestratorService orchestrator;
     Utilisateur agent;
+    final DecisionHashServiceImpl hashService = new DecisionHashServiceImpl();
 
     @BeforeEach
     void setUp() {
@@ -49,12 +51,13 @@ class DecisionOrchestratorPersistenceOrderTest {
                 auditLogService,
                 decisionMapper,
                 new ObjectMapper(),
-                domainAgentConsultationService
+                domainAgentConsultationService,
+                hashService
         );
         agent = new Utilisateur();
         agent.setId(UUID.randomUUID());
-        agent.setEmail("user@tracabilite.ia");
-        agent.setRole(RoleEnum.UTILISATEUR);
+        agent.setEmail("admin@tracabilite.ia");
+        agent.setRole(RoleEnum.ADMINISTRATEUR);
         when(authService.getCurrentUser()).thenReturn(agent);
         when(decisionMapper.toResponse(any(Decision.class))).thenAnswer(inv -> {
             Decision d = inv.getArgument(0);
@@ -93,8 +96,31 @@ class DecisionOrchestratorPersistenceOrderTest {
         orchestrator.createAndAnalyzeEducation(sampleEducation(false));
 
         verify(domainAgentConsultationService, never()).consultAgents(any(), any(), any(), any());
-        verify(decisionRepository, times(1)).save(any(Decision.class));
+        // 2 saves : le graphe, puis la signature qui exige un decisionId déjà généré.
+        verify(decisionRepository, times(2)).save(any(Decision.class));
         verify(auditLogService).record(any(UUID.class), eq(agent), eq("ANALYSE"), any(), any(), any(), any());
+    }
+
+    @Test
+    void createCredit_withoutAgents_producesVerifiableHash() {
+        when(mlDecisionService.predictCredit(any())).thenReturn(samplePrediction("CREDIT"));
+        AtomicReference<Decision> captured = new AtomicReference<>();
+        when(decisionRepository.save(any(Decision.class))).thenAnswer(inv -> {
+            Decision d = inv.getArgument(0);
+            if (d.getDecisionId() == null) {
+                d.setDecisionId(UUID.randomUUID());
+            }
+            captured.set(d);
+            return d;
+        });
+
+        orchestrator.createAndAnalyzeCredit(sampleCredit(false));
+
+        Decision d = captured.get();
+        assertNotNull(d.getCurrentHash());
+        assertNotNull(d.getBusinessDataHash(), "les données du dossier doivent entrer dans la signature");
+        assertTrue(hashService.verifyDecisionIntegrity(d),
+                "une décision créée sans agents doit être vérifiable dès sa création");
     }
 
     @Test

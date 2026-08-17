@@ -1,3 +1,5 @@
+import { i18nLabel } from '../i18n/label-translator';
+
 export interface AgentResponse {
   reponseAgentId?: string;
   agentKey: string;
@@ -69,7 +71,10 @@ export function agentFallbackMessage(agent: AgentResponse): string | null {
     return null;
   }
   return agent.fallbackMessage
-    ?? 'Modèle principal indisponible — réponse produite par le modèle de secours';
+    ?? i18nLabel(
+      'agents.fallback',
+      'Modèle principal indisponible — réponse produite par le modèle de secours',
+    );
 }
 
 export function agentDeclaredConfidence(agent: AgentResponse): number | null | undefined {
@@ -81,14 +86,14 @@ export function agentDeclaredConfidence(agent: AgentResponse): number | null | u
 
 export function formatDeclaredConfidence(confidence?: number | null): string {
   if (confidence == null) {
-    return 'Non fournie';
+    return i18nLabel('agents.confidenceMissing', 'Non fournie');
   }
   if (confidence < 0 || confidence > 1) {
     console.warn('[formatDeclaredConfidence] Valeur hors [0,1]:', confidence);
-    return 'Valeur invalide';
+    return i18nLabel('agents.confidenceInvalid', 'Valeur invalide');
   }
   const percent = confidence * 100;
-  const formatted = percent.toLocaleString('fr-FR', {
+  const formatted = percent.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
@@ -101,7 +106,7 @@ export function agentByKey(agents: AgentResponse[] | undefined, agentKey: string
 
 export function agentStatusLabel(agent?: AgentResponse): string {
   if (!agent) {
-    return 'Non consulté';
+    return i18nLabel('agents.notConsulted', 'Non consulté');
   }
   return agent.displayStatus ?? agent.statut;
 }
@@ -111,19 +116,25 @@ export function successfulAgentCount(consensus: ConsensusResponse): number {
 }
 
 export function formatConsensusDisplay(consensus: ConsensusResponse): ConsensusDisplay {
-  const agentsLabel = `${successfulAgentCount(consensus)}/${consensus.agentsConsultes} agents`;
+  const agentsLabel = i18nLabel('agents.count', `${successfulAgentCount(consensus)}/${consensus.agentsConsultes} agents`, {
+    ok: successfulAgentCount(consensus),
+    total: consensus.agentsConsultes,
+  });
 
   if (consensus.consensusAvailable === false) {
     if (consensus.decisionConsensus === 'INSUFFICIENT_RESPONSES' || successfulAgentCount(consensus) <= 1) {
       return {
-        message: 'Consensus indisponible — nombre insuffisant de réponses réussies',
+        message: i18nLabel(
+          'agents.consensusUnavailable',
+          'Consensus indisponible — nombre insuffisant de réponses réussies',
+        ),
         showDecisionBadge: false,
         agentsLabel,
       };
     }
 
     return {
-      message: 'Pas de consensus entre les agents',
+      message: i18nLabel('agents.noConsensus', 'Pas de consensus entre les agents'),
       showDecisionBadge: false,
       agentsLabel,
     };

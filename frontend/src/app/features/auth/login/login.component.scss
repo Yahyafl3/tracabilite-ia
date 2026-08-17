@@ -197,6 +197,13 @@
   background: #fafbfc;
 }
 
+.login-main__lang {
+  position: absolute;
+  top: 1.25rem;
+  inset-inline-end: 1.25rem;
+  z-index: 3;
+}
+
 .login-main__content {
   width: 100%;
   max-width: 420px;
@@ -216,6 +223,10 @@
 
 .login-back:hover {
   color: #4f46e5;
+}
+
+:host-context([dir="rtl"]) .login-back .pi-arrow-left {
+  transform: scaleX(-1);
 }
 
 .login-header {
@@ -262,7 +273,7 @@
 
 .input-icon {
   position: absolute;
-  left: 1rem;
+  inset-inline-start: 1rem;
   z-index: 2;
   color: #94a3b8;
   font-size: 0.9375rem;
@@ -270,7 +281,7 @@
 }
 
 :host ::ng-deep .input-with-icon {
-  padding-left: 2.75rem !important;
+  padding-inline-start: 2.75rem !important;
 }
 
 :host ::ng-deep .form-field .p-inputtext,

@@ -1,8 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuditPageComponent } from './audit-page.component';
+import { AuditStatisticsComponent } from './components/audit-statistics.component';
 import { AuditService } from '../../core/services/audit.service';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 import { StatutDecisionEnum } from '../../core/models/decision.models';
 
 describe('AuditPageComponent', () => {
@@ -58,6 +61,7 @@ describe('AuditPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AuditPageComponent],
       providers: [
+        ...provideI18nTesting(),
         provideRouter([]),
         {
           provide: AuditService,
@@ -109,6 +113,18 @@ describe('AuditPageComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Aucun résultat');
   });
 
+  it('counts canonical backend statuses in the audit chart', () => {
+    const chart = fixture.debugElement.query(By.directive(AuditStatisticsComponent)).componentInstance as AuditStatisticsComponent;
+    chart.items = [
+      { decisionId: 'a', prompt: 'valid', statutValidation: StatutDecisionEnum.VALIDEE, integrityValid: true, timestamp: '2026-07-18T11:00:00.000Z' },
+      { decisionId: 'b', prompt: 'pending', statutValidation: StatutDecisionEnum.EN_ATTENTE_VALIDATION, integrityValid: true, timestamp: '2026-07-18T11:00:00.000Z' },
+      { decisionId: 'c', prompt: 'rejected', statutValidation: StatutDecisionEnum.REJETEE, integrityValid: false, timestamp: '2026-07-18T11:00:00.000Z' },
+      { decisionId: 'd', prompt: 'modified', statutValidation: StatutDecisionEnum.MODIFIEE, integrityValid: true, timestamp: '2026-07-18T11:00:00.000Z' },
+    ];
+
+    expect(chart.statusChartData().datasets[0].data).toEqual([1, 1, 1, 1]);
+  });
+
   it('shows loading then populated states', async () => {
     expect(fixture.componentInstance.loading()).toBe(false);
     expect(fixture.componentInstance.recentItems().length).toBe(1);
@@ -117,6 +133,7 @@ describe('AuditPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AuditPageComponent],
       providers: [
+        ...provideI18nTesting(),
         provideRouter([]),
         {
           provide: AuditService,

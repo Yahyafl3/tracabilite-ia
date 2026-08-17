@@ -127,4 +127,24 @@ public class DashboardController {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    @GetMapping("/stats/timeline")
+    public java.util.List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> getTimelineStats() {
+        return dashboardService.getTimelineStats();
+    }
+
+    @GetMapping("/stats/by-type")
+    public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TypeStats getTypeStats() {
+        return dashboardService.getTypeStats();
+    }
+
+    @GetMapping("/stats/daily")
+    public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.DailyStats getDailyStats() {
+        return dashboardService.getDailyStats();
+    }
+
+    @GetMapping("/stats/kpi")
+    public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.KpiData getKpiStats() {
+        return dashboardService.getKpiStats();
+    }
 }
