@@ -24,6 +24,7 @@ ml-service/.pytest_cache/
 # Local dumps / backups
 backend/scripts/backups/
 backups/
+data/backups/
 docs/_e2e_raw_results.json
 
 # OS / IDE

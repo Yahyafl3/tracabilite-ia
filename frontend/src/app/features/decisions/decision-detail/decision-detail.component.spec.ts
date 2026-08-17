@@ -222,4 +222,15 @@ describe('DecisionDetailComponent', () => {
 
     expect(fixture.componentInstance.canValidate()).toBe(false);
   });
+
+  it('does not let an administrator arbitrate a pending dossier', () => {
+    const auth = TestBed.inject(AuthService) as { currentUser: { role: UserRole } };
+    auth.currentUser.role = UserRole.ADMINISTRATEUR;
+    fixture.componentInstance.decision.set({
+      ...mockDecision,
+      statutValidation: StatutDecisionEnum.EN_ATTENTE_VALIDATION,
+    });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.canValidate()).toBe(false);
+  });
 });

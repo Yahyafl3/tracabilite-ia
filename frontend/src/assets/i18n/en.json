@@ -30,7 +30,8 @@
     "audit": "Audit & traceability",
     "users": "Users",
     "groqAgents": "Groq agents",
-    "support": "Support"
+    "support": "Support",
+    "backupRestore": "Backup"
   },
   "roles": {
     "ADMINISTRATEUR": "Administrator",
@@ -1380,6 +1381,47 @@
       "statusClosed": "Closed",
       "detailError": "Unable to load details.",
       "statusError": "Unable to update the status."
+    },
+    "backup": {
+      "eyebrow": "Home / Administration / Backup",
+      "title": "Backup and restore",
+      "subtitle": "Create a timestamped pack of files and accounts (without passwords), verify the SHA-256 integrity, then restore without overwriting existing passwords.",
+      "create": "Create backup",
+      "createAria": "Create a new backup",
+      "refreshAria": "Refresh backup history",
+      "history": "Backup history",
+      "count": "{{count}} backup(s)",
+      "author": "Author",
+      "contents": "Contents",
+      "contentsValue": "{{decisions}} decision(s), {{users}} account(s)",
+      "size": "Size",
+      "hash": "SHA-256",
+      "empty": "No backup yet.",
+      "created": "Backup created. Keep the SHA-256 hash for the audit trail.",
+      "createError": "Unable to create the backup.",
+      "loadError": "Unable to load backups.",
+      "verify": "Verify integrity",
+      "verifyAria": "Verify SHA-256 integrity",
+      "verifyOk": "Integrity valid — the file has not been modified.",
+      "verifyFail": "Integrity compromised — the file no longer matches the recorded hash.",
+      "verifyError": "Unable to verify integrity.",
+      "downloadAria": "Download the backup pack",
+      "downloadError": "Unable to download the backup.",
+      "restore": "Restore",
+      "restoreAria": "Restore this backup",
+      "restoreTitle": "Restore backup",
+      "restoreMessage": "Missing files will be re-imported. Existing accounts and their passwords will not be changed. Missing accounts will be recreated disabled, without the original password.",
+      "restored": "Restore complete: {{decisions}} decision(s) added, {{skipped}} already present, {{users}} account(s) created (disabled).",
+      "restoreError": "Unable to restore.",
+      "bytes": "{{count}} B",
+      "kilobytes": "{{count}} KB",
+      "status": {
+        "CREATED": "Created",
+        "VERIFIED_OK": "Intact",
+        "VERIFIED_TAMPERED": "Tampered",
+        "MISSING_FILE": "File missing",
+        "RESTORED": "Restored"
+      }
     }
   }
 }

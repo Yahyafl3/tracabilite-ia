@@ -44,6 +44,7 @@ describe('AppMenuComponent', () => {
     expect(labels).toContain('nav.users');
     expect(labels).toContain('nav.groqAgents');
     expect(labels).toContain('nav.support');
+    expect(labels).toContain('nav.backupRestore');
     expect(labels).toContain('nav.aiComparison');
     expect(labels).not.toContain('Consensus OpenRouter');
   });
@@ -59,6 +60,7 @@ describe('AppMenuComponent', () => {
     expect(labels).not.toContain('nav.users');
     expect(labels).not.toContain('nav.groqAgents');
     expect(labels).not.toContain('nav.support');
+    expect(labels).not.toContain('nav.backupRestore');
   });
 
   it('shows only Agent de crédit menus for AGENT_CREDIT role', async () => {
@@ -72,6 +74,7 @@ describe('AppMenuComponent', () => {
     expect(labels).not.toContain('nav.users');
     expect(labels).not.toContain('nav.groqAgents');
     expect(labels).not.toContain('nav.support');
+    expect(labels).not.toContain('nav.backupRestore');
     expect(labels).not.toContain('nav.validationQueue');
     expect(labels).not.toContain('nav.aiComparison');
     expect(labels).not.toContain('nav.audit');

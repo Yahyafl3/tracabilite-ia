@@ -30,7 +30,8 @@
     "audit": "Audit & traçabilité",
     "users": "Utilisateurs",
     "groqAgents": "Agents Groq",
-    "support": "Support"
+    "support": "Support",
+    "backupRestore": "Sauvegarde"
   },
   "roles": {
     "ADMINISTRATEUR": "Administrateur",
@@ -1380,6 +1381,47 @@
       "statusClosed": "Fermé",
       "detailError": "Impossible de charger le détail.",
       "statusError": "Impossible de mettre à jour le statut."
+    },
+    "backup": {
+      "eyebrow": "Accueil / Administration / Sauvegarde",
+      "title": "Sauvegarde et restauration",
+      "subtitle": "Créez un pack horodaté des dossiers et des comptes (sans mots de passe), vérifiez l'intégrité SHA-256, puis restaurez sans écraser les mots de passe existants.",
+      "create": "Créer une sauvegarde",
+      "createAria": "Créer une nouvelle sauvegarde",
+      "refreshAria": "Actualiser l'historique des sauvegardes",
+      "history": "Historique des sauvegardes",
+      "count": "{{count}} sauvegarde(s)",
+      "author": "Auteur",
+      "contents": "Contenu",
+      "contentsValue": "{{decisions}} décision(s), {{users}} compte(s)",
+      "size": "Taille",
+      "hash": "SHA-256",
+      "empty": "Aucune sauvegarde pour le moment.",
+      "created": "Sauvegarde créée. Conservez le hash SHA-256 pour l'audit.",
+      "createError": "Impossible de créer la sauvegarde.",
+      "loadError": "Impossible de charger les sauvegardes.",
+      "verify": "Vérifier l'intégrité",
+      "verifyAria": "Vérifier l'intégrité SHA-256",
+      "verifyOk": "Intégrité valide — le fichier n'a pas été modifié.",
+      "verifyFail": "Intégrité compromise — le fichier ne correspond plus au hash enregistré.",
+      "verifyError": "Impossible de vérifier l'intégrité.",
+      "downloadAria": "Télécharger le pack de sauvegarde",
+      "downloadError": "Impossible de télécharger la sauvegarde.",
+      "restore": "Restaurer",
+      "restoreAria": "Restaurer cette sauvegarde",
+      "restoreTitle": "Restaurer la sauvegarde",
+      "restoreMessage": "Les dossiers absents seront réimportés. Les comptes existants et leurs mots de passe ne seront pas modifiés. Les comptes manquants seront recréés désactivés, sans le mot de passe d'origine.",
+      "restored": "Restauration terminée : {{decisions}} décision(s) ajoutée(s), {{skipped}} déjà présente(s), {{users}} compte(s) créé(s) (désactivés).",
+      "restoreError": "Restauration impossible.",
+      "bytes": "{{count}} o",
+      "kilobytes": "{{count}} Ko",
+      "status": {
+        "CREATED": "Créée",
+        "VERIFIED_OK": "Intègre",
+        "VERIFIED_TAMPERED": "Altérée",
+        "MISSING_FILE": "Fichier manquant",
+        "RESTORED": "Restaurée"
+      }
     }
   }
 }

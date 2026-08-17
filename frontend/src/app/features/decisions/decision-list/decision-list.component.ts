@@ -16,6 +16,7 @@ import type { MenuItem } from 'primeng/api';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ConfidenceDisplayComponent, RiskBadgeComponent } from '../../../shared/ui';
 import { DecisionService } from '../../../core/services/decision.service';
+import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   DecisionResponse,
@@ -55,6 +56,7 @@ import { TranslationService } from '../../../core/i18n/translation.service';
   styleUrl: './decision-list.component.scss',
 })
 export class DecisionListComponent {
+  private readonly exportService = inject(ExportService);
   @ViewChild('rowMenu') rowMenu!: Menu;
 
   private readonly fb = inject(FormBuilder);
@@ -211,6 +213,7 @@ export class DecisionListComponent {
     if (!this.canExport()) return;
     this.exporting.set(true);
     const filters = this.filters.getRawValue();
+    const filename = format === 'xlsx' ? 'decisions-export.xls' : 'decisions-export.csv';
     this.decisionService
       .exportDecisions({
         format,
@@ -222,13 +225,13 @@ export class DecisionListComponent {
       })
       .subscribe({
         next: (blob) => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = format === 'xlsx' ? 'decisions-export.xls' : 'decisions-export.csv';
-          a.click();
-          URL.revokeObjectURL(url);
-          this.exporting.set(false);
+          void this.exportService
+            .assertDownloadableExport(blob)
+            .then((file) => this.exportService.downloadBlob(file, filename))
+            .catch((err) => {
+              this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.list.exportError')));
+            })
+            .finally(() => this.exporting.set(false));
         },
         error: (err) => {
           this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.list.exportError')));

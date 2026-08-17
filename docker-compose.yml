@@ -82,6 +82,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-}
       SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      APP_BACKUP_DIR: /app/data/backups
     depends_on:
       postgres:
         condition: service_healthy

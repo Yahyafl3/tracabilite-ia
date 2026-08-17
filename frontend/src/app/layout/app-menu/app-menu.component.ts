@@ -80,6 +80,7 @@ export class AppMenuComponent {
           { label: 'nav.users', icon: 'pi pi-users', routerLink: '/admin/users' },
           { label: 'nav.groqAgents', icon: 'pi pi-server', routerLink: '/admin/groq' },
           { label: 'nav.support', icon: 'pi pi-envelope', routerLink: '/admin/support' },
+          { label: 'nav.backupRestore', icon: 'pi pi-database', routerLink: '/admin/backup' },
         ],
       });
     }

@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DecisionListComponent } from './decision-list.component';
 import { DecisionService } from '../../../core/services/decision.service';
+import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StatutDecisionEnum } from '../../../core/models/decision.models';
 import { UserRole } from '../../../core/models/auth.models';
@@ -60,6 +61,13 @@ describe('DecisionListComponent', () => {
           },
         },
         {
+          provide: ExportService,
+          useValue: {
+            downloadBlob: () => undefined,
+            assertDownloadableExport: (blob: Blob) => Promise.resolve(blob),
+          },
+        },
+        {
           provide: AuthService,
           useValue: {
             get currentUser() {
@@ -96,5 +104,11 @@ describe('DecisionListComponent', () => {
   it('cache le bouton export pour AGENT_CREDIT', async () => {
     const fixture = await setup(UserRole.AGENT_CREDIT);
     expect(fixture.componentInstance.canExport()).toBe(false);
+  });
+
+  it('montre le bouton export pour ADMINISTRATEUR', async () => {
+    const fixture = await setup(UserRole.ADMINISTRATEUR);
+    expect(fixture.componentInstance.canExport()).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Exporter');
   });
 });

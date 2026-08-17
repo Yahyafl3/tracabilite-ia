@@ -50,6 +50,7 @@ public class DecisionExportService {
 
         StringBuilder sb = new StringBuilder();
         sb.append('\ufeff'); // UTF-8 BOM for Excel
+        sb.append("sep=,\n"); // Excel FR/AR uses ';' by default — declare comma separator
         sb.append(String.join(",", headers())).append('\n');
         for (Decision d : decisions) {
             sb.append(String.join(",", row(d))).append('\n');
@@ -82,7 +83,10 @@ public class DecisionExportService {
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         xml.append("<?mso-application progid=\"Excel.Sheet\"?>\n");
         xml.append("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" ");
-        xml.append("xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">\n");
+        xml.append("xmlns:o=\"urn:schemas-microsoft-com:office:office\" ");
+        xml.append("xmlns:x=\"urn:schemas-microsoft-com:office:excel\" ");
+        xml.append("xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\" ");
+        xml.append("xmlns:html=\"http://www.w3.org/TR/REC-html40\">\n");
         xml.append("<Worksheet ss:Name=\"Decisions\"><Table>\n");
 
         xml.append("<Row>");

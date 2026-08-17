@@ -3,11 +3,14 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ValidationQueueComponent } from './validation-queue.component';
 import { DecisionService } from '../../core/services/decision.service';
+import { AuthService } from '../../core/services/auth.service';
 import { StatutDecisionEnum } from '../../core/models/decision.models';
+import { UserRole } from '../../core/models/auth.models';
 import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('ValidationQueueComponent', () => {
   let fixture: ComponentFixture<ValidationQueueComponent>;
+  let currentRole: UserRole = UserRole.RESPONSABLE_CREDIT;
 
   const pending = [
     {
@@ -41,6 +44,7 @@ describe('ValidationQueueComponent', () => {
   ];
 
   beforeEach(async () => {
+    currentRole = UserRole.RESPONSABLE_CREDIT;
     await TestBed.configureTestingModule({
       imports: [ValidationQueueComponent],
       providers: [
@@ -51,6 +55,14 @@ describe('ValidationQueueComponent', () => {
           useValue: {
             pendingValidation: () => of(pending),
             validateDomain: () => of(pending[0]),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            get currentUser() {
+              return { id: '1', email: 'u@test.com', nom: 'U', role: currentRole };
+            },
           },
         },
       ],
@@ -90,5 +102,21 @@ describe('ValidationQueueComponent', () => {
     });
     fixture.detectChanges();
     expect(fixture.componentInstance.actionForm.invalid).toBe(true);
+  });
+
+  it('permet au responsable crédit d’examiner uniquement le domaine CREDIT', () => {
+    const component = fixture.componentInstance;
+    expect(component.canExamine(component.decisions()[0])).toBe(true);
+    expect(component.canExamine(component.decisions()[1])).toBe(false);
+  });
+
+  it('interdit à l’administrateur d’arbitrer depuis la file', () => {
+    currentRole = UserRole.ADMINISTRATEUR;
+    const adminFixture = TestBed.createComponent(ValidationQueueComponent);
+    adminFixture.detectChanges();
+    const component = adminFixture.componentInstance;
+    expect(component.canExamine(component.decisions()[0])).toBe(false);
+    expect(component.canExamine(component.decisions()[1])).toBe(false);
+    expect((adminFixture.nativeElement as HTMLElement).textContent).toContain('Voir le dossier');
   });
 });

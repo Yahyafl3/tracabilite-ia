@@ -95,6 +95,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         if ("GET".equalsIgnoreCase(method) && path.contains("/api/decisions/export")) {
             return new LimitSpec("export", exportCapacity);
         }
+        if (path.contains("/api/admin/backup") && ("POST".equalsIgnoreCase(method) || path.contains("/file"))) {
+            return new LimitSpec("export", exportCapacity);
+        }
         return null;
     }
 

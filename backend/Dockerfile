@@ -36,7 +36,8 @@ RUN apk add --no-cache curl \
  && addgroup -S app && adduser -S app -G app
 
 COPY --from=build /app/target/*.jar app.jar
-RUN chown -R app:app /app
+RUN mkdir -p /app/data/backups \
+ && chown -R app:app /app
 
 USER app
 

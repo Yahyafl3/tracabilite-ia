@@ -240,16 +240,10 @@ export class DecisionDetailComponent {
     const role = this.authService.currentUser?.role;
     const domain = resolveDomain(item?.domaine);
     const expected = DOMAIN_META[domain].validatorRole as UserRole;
-    const allowed =
-      role === expected ||
-      role === UserRole.ADMINISTRATEUR ||
-      role === UserRole.RESPONSABLE_CREDIT ||
-      role === UserRole.PROFESSIONNEL_SANTE ||
-      role === UserRole.RESPONSABLE_PEDAGOGIQUE;
     const pending =
       item?.statutValidation === StatutDecisionEnum.EN_ATTENTE ||
       item?.statutValidation === StatutDecisionEnum.EN_ATTENTE_VALIDATION;
-    return !!allowed && !!pending;
+    return role === expected && pending;
   });
 
   readonly isPendingValidation = computed(() => {

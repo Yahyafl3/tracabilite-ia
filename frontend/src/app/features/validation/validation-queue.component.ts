@@ -75,14 +75,15 @@ export class ValidationQueueComponent {
   });
 
   /**
-   * Returns true when the current user may examine this specific row:
-   * - status must be EN_ATTENTE_VALIDATION
-   * - role must match the decision's domain
+   * True when the current user is a domain validator allowed to arbitrate this row.
+   * ADMINISTRATEUR / AUDITEUR supervise the queue (view only) — they are not métier validators.
    */
   canExamine(row: DecisionResponse): boolean {
-    if (row.statutValidation !== 'EN_ATTENTE_VALIDATION') return false;
+    const pending =
+      row.statutValidation === 'EN_ATTENTE_VALIDATION' || row.statutValidation === 'EN_ATTENTE';
+    if (!pending) return false;
     const d = this.allowedDomain();
-    if (d === null) return true; // admin/auditor
+    if (d === null) return false;
     const rowDomain = (row.domaine || 'CREDIT') as DecisionDomain;
     return rowDomain === d;
   }

@@ -158,6 +158,14 @@ export const routes: Routes = [
             (m) => m.SupportAdminComponent,
           ),
       },
+      {
+        path: 'admin/backup',
+        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
+        loadComponent: () =>
+          import('./features/admin/backup/backup-admin.component').then(
+            (m) => m.BackupAdminComponent,
+          ),
+      },
     ],
   },
   {
