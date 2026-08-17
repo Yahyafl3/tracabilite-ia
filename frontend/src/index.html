@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
   <meta charset="utf-8">
   <title>Traçabilité IA — Système de Traçabilité des Décisions d'Intelligence Artificielle</title>
@@ -16,9 +16,9 @@
   <meta name="theme-color" content="#321fdb">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
-    // Applique le thème avant le rendu pour éviter tout flash (FOUC)
+    // Applique le thème et la langue avant le rendu pour éviter tout flash (FOUC)
     (function () {
       try {
         var t = localStorage.getItem('theme');
@@ -27,6 +27,14 @@
         }
         document.documentElement.setAttribute('data-theme', t);
         document.documentElement.classList.toggle('app-dark', t === 'dark');
+
+        var lang = localStorage.getItem('tracabilite.lang') || 'fr';
+        if (lang !== 'fr' && lang !== 'en' && lang !== 'ar') {
+          lang = 'fr';
+        }
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.classList.toggle('app-rtl', lang === 'ar');
       } catch (e) {}
     })();
   </script>

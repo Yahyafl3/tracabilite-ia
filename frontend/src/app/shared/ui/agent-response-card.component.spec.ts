@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 import { AgentResponseCardComponent } from './agent-response-card.component';
 import type { AgentResponse } from '../../core/models/openrouter.models';
 
@@ -17,6 +18,7 @@ describe('AgentResponseCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AgentResponseCardComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgentResponseCardComponent);

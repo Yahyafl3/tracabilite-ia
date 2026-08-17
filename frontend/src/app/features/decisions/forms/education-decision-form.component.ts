@@ -1,81 +1,82 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
 import { Message } from 'primeng/message';
-import { DOMAIN_META } from '../../../core/config/domains/domain.config';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-education-decision-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputNumber, Select, Textarea, Message],
+  imports: [CommonModule, ReactiveFormsModule, InputNumber, Select, Textarea, Message, TranslatePipe],
   template: `
-    <p-message severity="info" [text]="disclaimer" styleClass="mb-3 w-full" />
+    <p-message severity="info" [text]="disclaimer()" styleClass="mb-3 w-full" />
     <form [formGroup]="form" class="form-grid">
       <div class="field">
-        <label for="ageInscription">Âge à l'inscription</label>
+        <label for="ageInscription">{{ 'forms.education.ageAtEnrollment' | translate }}</label>
         <p-inputNumber inputId="ageInscription" formControlName="ageInscription"
           [min]="15" [max]="80" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="noteAdmission">Note d'admission</label>
+        <label for="noteAdmission">{{ 'forms.education.admissionGrade' | translate }}</label>
         <p-inputNumber inputId="noteAdmission" formControlName="noteAdmission"
           [min]="0" [max]="200" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="noteQualificationPrecedente">Note qualification précédente</label>
+        <label for="noteQualificationPrecedente">{{ 'forms.education.previousQualification' | translate }}</label>
         <p-inputNumber inputId="noteQualificationPrecedente" formControlName="noteQualificationPrecedente"
           [min]="0" [max]="200" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="unitesValideesS1">Unités validées S1</label>
+        <label for="unitesValideesS1">{{ 'forms.education.unitsS1' | translate }}</label>
         <p-inputNumber inputId="unitesValideesS1" formControlName="unitesValideesS1" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="moyenneS1">Moyenne S1 (/20)</label>
+        <label for="moyenneS1">{{ 'forms.education.avgS1' | translate }}</label>
         <p-inputNumber inputId="moyenneS1" formControlName="moyenneS1"
           [min]="0" [max]="20" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="unitesValideesS2">Unités validées S2</label>
+        <label for="unitesValideesS2">{{ 'forms.education.unitsS2' | translate }}</label>
         <p-inputNumber inputId="unitesValideesS2" formControlName="unitesValideesS2" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="moyenneS2">Moyenne S2 (/20)</label>
+        <label for="moyenneS2">{{ 'forms.education.avgS2' | translate }}</label>
         <p-inputNumber inputId="moyenneS2" formControlName="moyenneS2"
           [min]="0" [max]="20" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="tauxChomage">Taux de chômage (%)</label>
+        <label for="tauxChomage">{{ 'forms.education.unemployment' | translate }}</label>
         <p-inputNumber inputId="tauxChomage" formControlName="tauxChomage"
           [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="tauxInflation">Taux d'inflation (%)</label>
+        <label for="tauxInflation">{{ 'forms.education.inflation' | translate }}</label>
         <p-inputNumber inputId="tauxInflation" formControlName="tauxInflation"
           [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="pib">PIB (%)</label>
+        <label for="pib">{{ 'forms.education.gdp' | translate }}</label>
         <p-inputNumber inputId="pib" formControlName="pib"
           [min]="-50" [max]="50" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="sexe">Sexe</label>
+        <label for="sexe">{{ 'forms.education.sex' | translate }}</label>
         <p-select inputId="sexe" formControlName="sexe"
-          [options]="sexes" optionLabel="label" optionValue="value" styleClass="w-full" />
+          [options]="sexes()" optionLabel="label" optionValue="value" styleClass="w-full" />
       </div>
-      @for (f of boolFields; track f.key) {
+      @for (f of boolFields(); track f.key) {
         <div class="field">
           <label [for]="f.key">{{ f.label }}</label>
           <p-select [inputId]="f.key" [formControlName]="f.key"
-            [options]="ouiNon" optionLabel="label" optionValue="value" styleClass="w-full" />
+            [options]="ouiNon()" optionLabel="label" optionValue="value" styleClass="w-full" />
         </div>
       }
       <div class="field field--full">
-        <label for="description">Description</label>
+        <label for="description">{{ 'forms.description' | translate }}</label>
         <textarea pTextarea id="description" formControlName="description" rows="3" class="w-full"></textarea>
       </div>
     </form>
@@ -107,23 +108,37 @@ export class EducationDecisionFormComponent {
   @Output() readonly formReady = new EventEmitter<{ valid: boolean; value: Record<string, unknown> }>();
 
   private readonly fb = inject(FormBuilder);
-  readonly disclaimer = DOMAIN_META.EDUCATION.disclaimer!;
+  private readonly i18n = inject(TranslationService);
 
-  readonly sexes = [
-    { label: 'Homme', value: 'HOMME' },
-    { label: 'Femme', value: 'FEMME' },
-  ];
-  readonly ouiNon = [
-    { label: 'Oui', value: 'OUI' },
-    { label: 'Non', value: 'NON' },
-  ];
-  readonly boolFields = [
-    { key: 'boursier', label: 'Boursier' },
-    { key: 'fraisAJour', label: 'Frais à jour' },
-    { key: 'debiteur', label: 'Débiteur' },
-    { key: 'deplace', label: 'Déplacé' },
-    { key: 'international', label: 'International' },
-  ] as const;
+  readonly disclaimer = computed(() => {
+    this.i18n.currentLang();
+    return this.i18n.t('domainMeta.EDUCATION.disclaimer');
+  });
+
+  readonly sexes = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('forms.education.male'), value: 'HOMME' },
+      { label: this.i18n.t('forms.education.female'), value: 'FEMME' },
+    ];
+  });
+  readonly ouiNon = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('forms.yesNo.yes'), value: 'OUI' },
+      { label: this.i18n.t('forms.yesNo.no'), value: 'NON' },
+    ];
+  });
+  readonly boolFields = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { key: 'boursier', label: this.i18n.t('forms.education.scholarship') },
+      { key: 'fraisAJour', label: this.i18n.t('forms.education.feesUpToDate') },
+      { key: 'debiteur', label: this.i18n.t('forms.education.debtor') },
+      { key: 'deplace', label: this.i18n.t('forms.education.displaced') },
+      { key: 'international', label: this.i18n.t('forms.education.international') },
+    ] as const;
+  });
 
   readonly form = this.fb.group({
     ageInscription: [18, [Validators.required, Validators.min(15), Validators.max(80)]],

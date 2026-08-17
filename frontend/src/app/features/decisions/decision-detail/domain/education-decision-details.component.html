@@ -1,23 +1,23 @@
-<section class="domain-details" aria-label="Données éducation">
-  <p-message severity="info" [text]="warning" styleClass="w-full mb-3" />
-  <h2 class="domain-details__title">Dossier pédagogique</h2>
+<section class="domain-details" [attr.aria-label]="'decisions.detail.educationAria' | translate">
+  <p-message severity="info" [text]="warning()" styleClass="w-full mb-3" />
+  <h2 class="domain-details__title">{{ 'decisions.detail.educationDossier' | translate }}</h2>
   <dl class="domain-details__grid">
-    <div><dt>Âge à l'inscription</dt><dd>{{ data.ageInscription != null ? data.ageInscription + ' ans' : '—' }}</dd></div>
-    <div><dt>Note d'admission</dt><dd>{{ text(data.noteAdmission) }}</dd></div>
-    <div><dt>Note qualification précédente</dt><dd>{{ text(data.noteQualificationPrecedente) }}</dd></div>
-    <div><dt>Unités validées S1</dt><dd>{{ text(data.unitesValideesS1) }}</dd></div>
-    <div><dt>Moyenne S1</dt><dd>{{ data.moyenneS1 != null ? data.moyenneS1 + ' /20' : '—' }}</dd></div>
-    <div><dt>Unités validées S2</dt><dd>{{ text(data.unitesValideesS2) }}</dd></div>
-    <div><dt>Moyenne S2</dt><dd>{{ data.moyenneS2 != null ? data.moyenneS2 + ' /20' : '—' }}</dd></div>
-    <div><dt>Taux de chômage</dt><dd>{{ data.tauxChomage != null ? data.tauxChomage + ' %' : '—' }}</dd></div>
-    <div><dt>Taux d'inflation</dt><dd>{{ data.tauxInflation != null ? data.tauxInflation + ' %' : '—' }}</dd></div>
-    <div><dt>PIB</dt><dd>{{ data.pib != null ? data.pib + ' %' : '—' }}</dd></div>
-    <div><dt>Sexe</dt><dd>{{ text(data.sexe) }}</dd></div>
-    <div><dt>Boursier</dt><dd>{{ text(data.boursier) }}</dd></div>
-    <div><dt>Frais à jour</dt><dd>{{ text(data.fraisAJour) }}</dd></div>
-    <div><dt>Débiteur</dt><dd>{{ text(data.debiteur) }}</dd></div>
-    <div><dt>Déplacé</dt><dd>{{ text(data.deplace) }}</dd></div>
-    <div><dt>International</dt><dd>{{ text(data.international) }}</dd></div>
-    <div class="domain-details__full"><dt>Description</dt><dd>{{ text(decision.description) }}</dd></div>
+    <div><dt>{{ 'forms.education.ageAtEnrollment' | translate }}</dt><dd>{{ data.ageInscription != null ? ('common.years' | translate:{ count: data.ageInscription }) : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.admissionGrade' | translate }}</dt><dd>{{ text(data.noteAdmission) }}</dd></div>
+    <div><dt>{{ 'forms.education.previousQualification' | translate }}</dt><dd>{{ text(data.noteQualificationPrecedente) }}</dd></div>
+    <div><dt>{{ 'forms.education.unitsS1' | translate }}</dt><dd>{{ text(data.unitesValideesS1) }}</dd></div>
+    <div><dt>{{ 'forms.education.avgS1' | translate }}</dt><dd>{{ data.moyenneS1 != null ? data.moyenneS1 + ' /20' : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.unitsS2' | translate }}</dt><dd>{{ text(data.unitesValideesS2) }}</dd></div>
+    <div><dt>{{ 'forms.education.avgS2' | translate }}</dt><dd>{{ data.moyenneS2 != null ? data.moyenneS2 + ' /20' : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.unemployment' | translate }}</dt><dd>{{ data.tauxChomage != null ? data.tauxChomage + ' %' : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.inflation' | translate }}</dt><dd>{{ data.tauxInflation != null ? data.tauxInflation + ' %' : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.gdp' | translate }}</dt><dd>{{ data.pib != null ? data.pib + ' %' : ('common.dash' | translate) }}</dd></div>
+    <div><dt>{{ 'forms.education.sex' | translate }}</dt><dd>{{ text(data.sexe) }}</dd></div>
+    <div><dt>{{ 'forms.education.scholarship' | translate }}</dt><dd>{{ text(data.boursier) }}</dd></div>
+    <div><dt>{{ 'forms.education.feesUpToDate' | translate }}</dt><dd>{{ text(data.fraisAJour) }}</dd></div>
+    <div><dt>{{ 'forms.education.debtor' | translate }}</dt><dd>{{ text(data.debiteur) }}</dd></div>
+    <div><dt>{{ 'forms.education.displaced' | translate }}</dt><dd>{{ text(data.deplace) }}</dd></div>
+    <div><dt>{{ 'forms.education.international' | translate }}</dt><dd>{{ text(data.international) }}</dd></div>
+    <div class="domain-details__full"><dt>{{ 'forms.description' | translate }}</dt><dd>{{ text(decision.description) }}</dd></div>
   </dl>
 </section>

@@ -7,9 +7,12 @@ package com.pfa.tracabilite_ia.enumeration;
  * créateurs de décisions par domaine. Ils ne valident pas.
  * {@link #RESPONSABLE_CREDIT}, {@link #PROFESSIONNEL_SANTE},
  * {@link #RESPONSABLE_PEDAGOGIQUE} sont les validateurs spécialisés par domaine.
- * {@link #UTILISATEUR} et {@link #VALIDATEUR} sont des rôles LEGACY conservés pour
- * compatibilité ; ils ne sont plus proposés à la création de nouveaux comptes.
  * {@link #ADMINISTRATEUR} gère les comptes et a une visibilité globale.
+ * <p>
+ * {@link #UTILISATEUR} et {@link #VALIDATEUR} sont retirés du modèle de permissions :
+ * les comptes concernés sont migrés au démarrage vers {@link #AGENT_CREDIT} et
+ * {@link #RESPONSABLE_CREDIT}. Les constantes ne subsistent que le temps que les JWT
+ * déjà émis expirent, afin qu'ils restent désérialisables.
  */
 public enum RoleEnum {
     ADMINISTRATEUR,
@@ -23,8 +26,10 @@ public enum RoleEnum {
     RESPONSABLE_CREDIT,
     PROFESSIONNEL_SANTE,
     RESPONSABLE_PEDAGOGIQUE,
-    /** Legacy — compatibilité. Ne plus proposer à la création. */
+    /** @deprecated migré vers {@link #AGENT_CREDIT}. Ne confère plus aucune permission. */
+    @Deprecated(forRemoval = true)
     UTILISATEUR,
-    /** Legacy — compatibilité. Ne plus proposer à la création. */
+    /** @deprecated migré vers {@link #RESPONSABLE_CREDIT}. Ne confère plus aucune permission. */
+    @Deprecated(forRemoval = true)
     VALIDATEUR
 }

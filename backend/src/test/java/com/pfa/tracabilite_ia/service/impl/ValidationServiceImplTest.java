@@ -70,8 +70,8 @@ class ValidationServiceImplTest {
         );
         validateur = new Utilisateur();
         validateur.setId(UUID.randomUUID());
-        validateur.setEmail("validateur@tracabilite.ia");
-        validateur.setRole(RoleEnum.VALIDATEUR);
+        validateur.setEmail("credit@tracabilite.ia");
+        validateur.setRole(RoleEnum.RESPONSABLE_CREDIT);
         when(authService.getCurrentUser()).thenReturn(validateur);
     }
 

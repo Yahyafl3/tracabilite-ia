@@ -4,6 +4,7 @@ import { MedicalDecisionDetailsComponent } from './medical-decision-details.comp
 import { EducationDecisionDetailsComponent } from './education-decision-details.component';
 import type { DecisionResponse } from '../../../../core/models/decision.models';
 import { StatutDecisionEnum } from '../../../../core/models/decision.models';
+import { provideI18nTesting } from '../../../../core/i18n/provide-i18n';
 
 function base(domaine: string): DecisionResponse {
   return {
@@ -23,6 +24,7 @@ describe('Domain decision detail components', () => {
   it('CREDIT shows MAD fields and hides medical/education markers', async () => {
     await TestBed.configureTestingModule({
       imports: [CreditDecisionDetailsComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
     const fixture = TestBed.createComponent(CreditDecisionDetailsComponent);
     const d = base('CREDIT');
@@ -45,6 +47,7 @@ describe('Domain decision detail components', () => {
   it('MEDICAL shows IMC/glycemia warning and hides credit fields', async () => {
     await TestBed.configureTestingModule({
       imports: [MedicalDecisionDetailsComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
     const fixture = TestBed.createComponent(MedicalDecisionDetailsComponent);
     const d = base('MEDICAL');
@@ -64,6 +67,7 @@ describe('Domain decision detail components', () => {
   it('EDUCATION shows moyennes/warning and hides credit/medical', async () => {
     await TestBed.configureTestingModule({
       imports: [EducationDecisionDetailsComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
     const fixture = TestBed.createComponent(EducationDecisionDetailsComponent);
     const d = base('EDUCATION');

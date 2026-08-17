@@ -2,11 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { AuthService } from '../../../core/services/auth.service';
+import { TranslationService } from '../../../core/i18n/translation.service';
+import { LanguageSwitcherComponent } from '../../../layout/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-reset-password',
@@ -15,10 +18,12 @@ import { AuthService } from '../../../core/services/auth.service';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
+    TranslatePipe,
     Password,
     Button,
     Message,
     ProgressSpinner,
+    LanguageSwitcherComponent,
   ],
   templateUrl: './reset-password.component.html',
   styleUrl: '../login/login.component.scss',
@@ -28,6 +33,7 @@ export class ResetPasswordComponent {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly i18n = inject(TranslationService);
 
   readonly isLoading = signal(false);
   readonly successMessage = signal<string | null>(null);
@@ -44,7 +50,7 @@ export class ResetPasswordComponent {
   constructor() {
     if (!this.token) {
       this.tokenMissing.set(true);
-      this.errorMessage.set('Lien de réinitialisation invalide ou incomplet.');
+      this.errorMessage.set(this.i18n.t('resetPassword.invalidLink'));
     }
   }
 
@@ -63,7 +69,7 @@ export class ResetPasswordComponent {
 
     const { newPassword, confirmPassword } = this.form.getRawValue();
     if (newPassword !== confirmPassword) {
-      this.errorMessage.set('Les mots de passe ne correspondent pas.');
+      this.errorMessage.set(this.i18n.t('resetPassword.mismatch'));
       return;
     }
 
@@ -77,15 +83,13 @@ export class ResetPasswordComponent {
       .subscribe({
         next: (res) => {
           this.isLoading.set(false);
-          this.successMessage.set(
-            res.message || 'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.',
-          );
+          this.successMessage.set(res.message || this.i18n.t('resetPassword.success'));
           this.form.reset();
           setTimeout(() => void this.router.navigate(['/auth/login']), 1800);
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.errorMessage.set(err?.message || 'Lien invalide ou expiré.');
+          this.errorMessage.set(err?.message || this.i18n.t('resetPassword.expired'));
         },
       });
   }

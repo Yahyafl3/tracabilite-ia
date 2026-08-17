@@ -1,7 +1,7 @@
 <div class="page">
   <a routerLink="/decisions" class="back-link">
     <i class="pi pi-arrow-left" aria-hidden="true"></i>
-    Retour à la liste
+    {{ 'decisions.detail.back' | translate }}
   </a>
 
   @if (loading()) {
@@ -15,12 +15,12 @@
   } @else if (decision(); as item) {
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Accueil / Décisions / {{ reference(item) }}</p>
+      <p class="page-eyebrow">{{ 'decisions.detail.eyebrow' | translate:{ ref: reference(item) } }}</p>
       <h1>{{ item.dossierReference || item.prompt }}</h1>
       <p class="page-subtitle">{{ item.contexte }}</p>
     </div>
     <div class="page-header__tags">
-      <p-tag [value]="item.domaine || 'CREDIT'" severity="info" />
+      <p-tag [value]="domainLabel(item.domaine || 'CREDIT')" severity="info" />
       <p-tag [value]="statutLabel(item.statutValidation)"
         [severity]="item.statutValidation === 'VALIDEE' || item.statutValidation === 'APPROUVEE' ? 'success' : item.statutValidation === 'REJETEE' ? 'danger' : 'secondary'" />
     </div>
@@ -31,39 +31,39 @@
   }
 
   <p-card styleClass="meta-card">
-    <dl class="metadata-grid" aria-label="Métadonnées de la décision">
+    <dl class="metadata-grid" [attr.aria-label]="'decisions.detail.tabs.resume' | translate">
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Référence</dt>
+        <dt class="metadata-grid__label">{{ 'common.reference' | translate }}</dt>
         <dd class="metadata-grid__value"><code>{{ reference(item) }}</code></dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Domaine</dt>
-        <dd class="metadata-grid__value">{{ item.domaine || 'CREDIT' }}</dd>
+        <dt class="metadata-grid__label">{{ 'common.domain' | translate }}</dt>
+        <dd class="metadata-grid__value">{{ domainLabel(item.domaine || 'CREDIT') }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Date / heure</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.datetime' | translate }}</dt>
         <dd class="metadata-grid__value">
           {{ formatDate(item.timestamp) }} · {{ formatTime(item.timestamp) }}
         </dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Statut</dt>
+        <dt class="metadata-grid__label">{{ 'common.status' | translate }}</dt>
         <dd class="metadata-grid__value">{{ statutLabel(item.statutValidation) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Créateur</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.createdBy' | translate }}</dt>
         <dd class="metadata-grid__value">{{ creatorLabel(item) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Validateur</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.validator' | translate }}</dt>
         <dd class="metadata-grid__value">{{ validatorLabel(item) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Rôle validateur</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.validatorRole' | translate }}</dt>
         <dd class="metadata-grid__value">{{ displayOrDash(item.validateurRole) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Date de validation</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.validatedAt' | translate }}</dt>
         <dd class="metadata-grid__value">
           @if (item.validatedAt) {
           {{ formatDate(item.validatedAt) }} · {{ formatTime(item.validatedAt) }}
@@ -73,15 +73,15 @@
         </dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Modèle</dt>
+        <dt class="metadata-grid__label">{{ 'common.model' | translate }}</dt>
         <dd class="metadata-grid__value">{{ displayOrDash(item.modelName) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Version modèle</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.modelVersion' | translate }}</dt>
         <dd class="metadata-grid__value">{{ displayOrDash(item.modelVersion) }}</dd>
       </div>
       <div class="metadata-grid__item">
-        <dt class="metadata-grid__label">Version dataset</dt>
+        <dt class="metadata-grid__label">{{ 'decisions.detail.datasetVersion' | translate }}</dt>
         <dd class="metadata-grid__value">{{ displayOrDash(item.datasetVersion || domainMeta().datasetVersion) }}</dd>
       </div>
     </dl>
@@ -104,7 +104,7 @@
   <p-tabs [value]="activeTab()" (valueChange)="onTabsValueChange($event)" [scrollable]="true" [selectOnFocus]="true">
     <p-tablist>
       @for (tab of tabs; track tab.id) {
-      <p-tab [value]="tab.id">{{ tab.label }}</p-tab>
+      <p-tab [value]="tab.id">{{ tab.labelKey | translate }}</p-tab>
       }
     </p-tablist>
     <p-tabpanels>
@@ -116,50 +116,50 @@
           @case ('resume') {
           <div class="summary-grid">
             <div class="summary-item">
-              <span class="label">{{ domainMeta().riskLabel }} (ML)</span>
-              <app-status-badge [label]="mlDecision(item) || 'N/A'" [chipClass]="decisionChipClass(mlDecision(item))" />
+              <span class="label">{{ ('domainMeta.' + domain() + '.riskLabel') | translate }} (ML)</span>
+              <app-status-badge [label]="mlDecision(item) || ('common.na' | translate)" [chipClass]="decisionChipClass(mlDecision(item))" />
             </div>
             <div class="summary-item">
-              <span class="label">Confiance / probabilité</span>
-              <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
+              <span class="label">{{ 'decisions.detail.confidenceProb' | translate }}</span>
+              <app-confidence-display [confidence]="mlConfidence(item)" scale="ratio" />
             </div>
             <div class="summary-item">
-              <span class="label">Risque</span>
+              <span class="label">{{ 'common.risk' | translate }}</span>
               <app-risk-badge [riskLevel]="item.riskLevel" />
             </div>
             <div class="summary-item">
-              <span class="label">Statut</span>
+              <span class="label">{{ 'common.status' | translate }}</span>
               <span class="value">{{ statutLabel(item.statutValidation) }}</span>
             </div>
             <div class="summary-item">
-              <span class="label">Décision humaine</span>
-              <span class="value">{{ humanFinalLabel(item) || '—' }}</span>
+              <span class="label">{{ 'decisions.detail.humanDecision' | translate }}</span>
+              <span class="value">{{ humanFinalLabel(item) || ('common.dash' | translate) }}</span>
             </div>
             <div class="summary-item">
-              <span class="label">Accord avec l'IA</span>
+              <span class="label">{{ 'decisions.detail.agreeWithAi' | translate }}</span>
               <span class="value">
-                @if (item.accordAvecIa == null) { — }
-                @else if (item.accordAvecIa) { Oui }
-                @else { Non (désaccord) }
+                @if (item.accordAvecIa == null) { {{ 'common.dash' | translate }} }
+                @else if (item.accordAvecIa) { {{ 'common.yes' | translate }} }
+                @else { {{ 'decisions.detail.disagree' | translate }} }
               </span>
             </div>
             <div class="summary-item summary-item--full">
-              <span class="label">Recommandation</span>
+              <span class="label">{{ 'decisions.detail.recommendation' | translate }}</span>
               <p class="value value--text">{{ item.reponse }}</p>
             </div>
             <div class="summary-item summary-item--full">
-              <span class="label">Facteurs principaux</span>
+              <span class="label">{{ 'decisions.detail.mainFactors' | translate }}</span>
               <ul class="factor-list">
                 @for (f of item.factors ?? []; track f.rank) {
                 <li>{{ factorLabel(f.name) }} ({{ f.impact }})</li>
                 } @empty {
-                <li class="muted">Aucun facteur disponible</li>
+                <li class="muted">{{ 'decisions.detail.noFactors' | translate }}</li>
                 }
               </ul>
             </div>
             <div class="summary-item summary-item--full">
-              <span class="label">Validateur attendu</span>
-              <span class="value">{{ domainMeta().validatorRole }}</span>
+              <span class="label">{{ 'decisions.detail.expectedValidator' | translate }}</span>
+              <span class="value">{{ roleLabel(domainMeta().validatorRole) }}</span>
             </div>
           </div>
           }
@@ -167,22 +167,22 @@
           @case ('prediction') {
           <article class="ml-prediction-card">
             <div class="ml-prediction-card__row">
-              <span class="label">Décision ML</span>
-              <app-status-badge [label]="mlDecision(item) || 'N/A'" [chipClass]="decisionChipClass(mlDecision(item))" />
+              <span class="label">{{ 'decisions.detail.mlDecision' | translate }}</span>
+              <app-status-badge [label]="mlDecision(item) || ('common.na' | translate)" [chipClass]="decisionChipClass(mlDecision(item))" />
             </div>
             <div class="ml-prediction-card__row">
-              <span class="label">Confiance</span>
+              <span class="label">{{ 'common.confidence' | translate }}</span>
               <div class="ml-prediction-card__confidence">
-                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
+                <app-confidence-display [confidence]="mlConfidence(item)" scale="ratio" />
                 <div class="confidence-progress" role="progressbar" [attr.aria-valuenow]="mlConfidence(item) ?? 0"
                   aria-valuemin="0" aria-valuemax="100"
-                  [attr.aria-label]="'Confiance ML ' + (mlConfidence(item) ?? 0) + ' pour cent'">
+                  [attr.aria-label]="'decisions.detail.confidenceMlAria' | translate:{ value: mlConfidence(item) ?? 0 }">
                   <div class="confidence-progress__fill" [style.width.%]="mlConfidence(item) ?? 0"></div>
                 </div>
               </div>
             </div>
             <div class="ml-prediction-card__row">
-              <span class="label">Risque</span>
+              <span class="label">{{ 'common.risk' | translate }}</span>
               <app-risk-badge [riskLevel]="item.riskLevel" />
             </div>
             <app-model-identity [modelName]="item.modelName" [modelVersion]="item.modelVersion"
@@ -190,7 +190,7 @@
           </article>
 
           @if (item.probabilities && (item.probabilities | keyvalue).length > 0) {
-          <h3 class="section-title">Probabilités</h3>
+          <h3 class="section-title">{{ 'decisions.detail.probabilities' | translate }}</h3>
           <ul class="list-plain">
             @for (entry of item.probabilities | keyvalue; track entry.key) {
             <li>{{ entry.key }} : {{ entry.value }}%</li>
@@ -199,7 +199,7 @@
           }
 
           @if (featureEntries(item).length > 0) {
-          <h3 class="section-title">Features</h3>
+          <h3 class="section-title">{{ 'decisions.detail.featuresTitle' | translate }}</h3>
           <ul class="list-plain">
             @for (feature of featureEntries(item); track feature.key) {
             <li>{{ feature.key }} : {{ feature.value }}</li>
@@ -210,9 +210,7 @@
 
           @case ('shap') {
           <p class="tech-note">
-            Source : <strong>{{ item.explanationSource || 'SHAP' }}</strong> —
-            classe expliquée : <strong>APPROUVER</strong> (log-odds).
-            contribution % = |SHAP| / Σ|SHAP| × 100.
+            {{ 'decisions.detail.shapNote' | translate:{ source: item.explanationSource || 'SHAP' } }}
           </p>
           <div class="shap-factors">
             @for (factor of item.factors ?? []; track factor.factorId ?? factor.rank) {
@@ -230,29 +228,29 @@
                 <div class="shap-factor-row__fill" [style.width.%]="factor.contributionPercent"></div>
               </div>
               <div class="shap-factor-row__values">
-                <span>valeur: {{ factor.value }}</span>
+                <span>{{ 'decisions.detail.value' | translate }} {{ factor.value }}</span>
                 <span>{{ factor.contributionPercent | number:'1.0-2' }}%</span>
-                <span>valeur SHAP: {{ factor.shapValue | number:'1.0-4' }}</span>
+                <span>{{ 'decisions.detail.shapValue' | translate }} {{ factor.shapValue | number:'1.0-4' }}</span>
               </div>
             </div>
             } @empty {
-            <app-empty-state icon="lightbulb" message="Aucun facteur explicatif disponible." />
+            <app-empty-state icon="lightbulb" [message]="'decisions.detail.noShap' | translate" />
             }
           </div>
           }
 
           @case ('agents') {
           @if (domain() === 'MEDICAL') {
-          <p-message severity="info" text="Les avis générés ne remplacent pas l’évaluation d’un professionnel de santé."
+          <p-message severity="info" [text]="'decisions.detail.medicalAgentsNote' | translate"
             styleClass="w-full mb-3" />
           }
           @if (isAdmin() && hasRetryableAgents()) {
           <div class="agent-retry-bar">
             <button type="button" class="btn-secondary" [disabled]="retryLoading()" (click)="retryFailedAgents()">
               @if (retryLoading()) {
-              Relance en cours…
+              {{ 'decisions.detail.retrying' | translate }}
               } @else {
-              Relancer les agents en échec
+              {{ 'decisions.detail.retryFailed' | translate }}
               }
             </button>
             @if (retryError()) {
@@ -270,8 +268,8 @@
             <app-agent-response-card [agent]="agent" />
             } @empty {
             <app-empty-state icon="bar-chart" [message]="agentsConsulted()
-                    ? 'Avis complémentaires indisponibles. L’analyse ML reste valide.'
-                    : 'Agents IA non consultés pour cette décision.'" />
+                    ? ('decisions.detail.agentsUnavailable' | translate)
+                    : ('decisions.detail.agentsNotConsulted' | translate)" />
             }
           </div>
           }
@@ -287,38 +285,37 @@
           }
 
           @if (isPendingValidation()) {
-          <p-message severity="warn" text="Décision en attente de validation humaine" styleClass="w-full mb-3" />
+          <p-message severity="warn" [text]="'decisions.detail.pendingHuman' | translate" styleClass="w-full mb-3" />
           } @else if (humanFinalLabel(item)) {
-          <p-message severity="info" [text]="'Décision finale humaine : ' + humanFinalLabel(item)"
+          <p-message severity="info" [text]="'decisions.detail.finalHuman' | translate:{ decision: humanFinalLabel(item) }"
             styleClass="w-full mb-3" />
           }
 
           <div class="validation-block">
-            <h3 class="section-title">Dossier consulté</h3>
+            <h3 class="section-title">{{ 'decisions.detail.dossierConsulted' | translate }}</h3>
             <p class="muted">
-              Synthèse du dossier complet (ML, SHAP, agents, consensus, sources) avant validation.
-              La validation humaine porte toujours sur le dossier global, jamais sur un agent isolé.
+              {{ 'decisions.detail.dossierHint' | translate }}
             </p>
             <div class="summary-grid">
               <div class="summary-item">
-                <span class="label">Décision ML</span>
+                <span class="label">{{ 'decisions.detail.mlDecision' | translate }}</span>
                 <p-tag [value]="mlDecision(item) || 'N/A'" [severity]="decisionTagSeverity(mlDecision(item))" />
               </div>
               <div class="summary-item">
-                <span class="label">Confiance ML</span>
-                <app-confidence-display [confidence]="mlConfidence(item)" scale="percent" />
+                <span class="label">{{ 'decisions.detail.confidenceMl' | translate }}</span>
+                <app-confidence-display [confidence]="mlConfidence(item)" scale="ratio" />
               </div>
               <div class="summary-item">
-                <span class="label">Risque ML</span>
+                <span class="label">{{ 'decisions.detail.riskMl' | translate }}</span>
                 <app-risk-badge [riskLevel]="item.riskLevel" />
               </div>
               <div class="summary-item">
-                <span class="label">Consensus</span>
+                <span class="label">{{ 'decisions.detail.consensus' | translate }}</span>
                 <span class="value">{{ consensusLabel(item) }}</span>
               </div>
               @if (item.consensus?.agreementRate != null) {
               <div class="summary-item">
-                <span class="label">Taux d'accord</span>
+                <span class="label">{{ 'shared.agreementRate' | translate }}</span>
                 <span class="value">{{ item.consensus?.agreementRate }}%</span>
               </div>
               }
@@ -335,19 +332,19 @@
                 @if (agent) {
                 <p class="muted">{{ agent.modelId }}</p>
                 <p>
-                  Décision :
+                  {{ 'shared.decision' | translate }}
                   <p-tag [value]="agent.decisionProposee || '—'"
                     [severity]="decisionTagSeverity(agent.decisionProposee)" />
                 </p>
                 <p>
-                  Confiance déclarée :
+                  {{ 'decisions.detail.declaredConfidence' | translate }}
                   <app-confidence-display [confidence]="agent.declaredConfidence ?? agent.confianceDeclaree" />
                 </p>
                 @if (agent.resume) {
                 <p class="value value--text">{{ agent.resume }}</p>
                 }
                 } @else {
-                <p class="muted">Aucune réponse enregistrée pour cet agent.</p>
+                <p class="muted">{{ 'decisions.detail.noAgentResponse' | translate }}</p>
                 }
               </article>
               }
@@ -357,58 +354,57 @@
           @if (canValidate()) {
           <p-divider />
           <div class="validation-block validation-form">
-            <h3 class="section-title">Décision humaine</h3>
+            <h3 class="section-title">{{ 'decisions.detail.humanDecision' | translate }}</h3>
             <p class="muted validation-note">
-              La décision humaine n'efface pas les résultats IA.
+              {{ 'decisions.detail.humanNote' | translate }}
             </p>
             <p class="muted">
-              La validation porte sur l'ensemble du dossier (ML, SHAP, agents, consensus, sources).
-              L'échec d'un ou plusieurs agents n'empêche pas la validation.
+              {{ 'decisions.detail.humanScope' | translate }}
             </p>
 
             <div class="field mb-3 mt-4">
-              <label class="field-label" for="decisionHumaine">Décision humaine finale</label>
+              <label class="field-label" for="decisionHumaine">{{ 'decisions.detail.humanFinal' | translate }}</label>
               <p-select inputId="decisionHumaine" [options]="humanDecisionOptions()" optionLabel="label"
                 optionValue="value" [formControl]="validationForm.controls.decisionHumaine" styleClass="w-full"
-                placeholder="Sélectionnez la décision" ariaLabel="Décision humaine finale" />
+                [placeholder]="'decisions.detail.selectDecision' | translate" [ariaLabel]="'decisions.detail.humanFinal' | translate" />
               @if (validationForm.controls.decisionHumaine.touched && validationForm.controls.decisionHumaine.invalid) {
-                <p class="error-inline">La décision est requise.</p>
+                <p class="error-inline">{{ 'decisions.detail.decisionRequired' | translate }}</p>
               }
             </div>
 
             <div class="field mb-3 mt-3">
-              <label class="field-label" for="commentaire">Justification</label>
+              <label class="field-label" for="commentaire">{{ 'decisions.detail.justification' | translate }}</label>
               <textarea pTextarea id="commentaire" rows="4" class="w-full"
-                [formControl]="validationForm.controls.commentaire" placeholder="Justification de la décision humaine (minimum 10 caractères)…"
-                aria-label="Justification de la décision humaine"></textarea>
+                [formControl]="validationForm.controls.commentaire" [placeholder]="'decisions.detail.justificationPlaceholder' | translate"
+                [attr.aria-label]="'decisions.detail.justification' | translate"></textarea>
               @if (validationForm.controls.commentaire.touched && validationForm.controls.commentaire.invalid) {
-                <p class="error-inline">La justification est requise et doit contenir au moins 10 caractères.</p>
+                <p class="error-inline">{{ 'decisions.detail.justificationRequired' | translate }}</p>
               }
             </div>
 
             <div class="field mb-4 mt-3">
               <p-checkbox inputId="accordAvecIa" [binary]="true" [formControl]="validationForm.controls.accordAvecIa"
-                ariaLabel="Accord avec l'IA" />
+                [ariaLabel]="'decisions.detail.agreeWithAi' | translate" />
               <label for="accordAvecIa" class="ml-2">
-                Je suis en accord avec la recommandation de l'IA (décochez en cas de désaccord)
+                {{ 'decisions.detail.agreeCheckbox' | translate }}
               </label>
             </div>
 
             <div class="validation-confirm mb-4">
               <p-checkbox inputId="confirmed" [binary]="true" [formControl]="validationForm.controls.confirmed"
-                ariaLabel="Confirmer la consultation du dossier global" />
+                [ariaLabel]="'decisions.detail.confirmCheckbox' | translate" />
               <label for="confirmed" class="ml-2">
-                Je confirme avoir consulté l'ensemble du dossier et prendre une décision éclairée.
+                {{ 'decisions.detail.confirmCheckbox' | translate }}
               </label>
               @if (validationForm.controls.confirmed.touched && validationForm.controls.confirmed.invalid) {
-                <p class="error-inline mt-1">Veuillez confirmer avant d'enregistrer votre décision.</p>
+                <p class="error-inline mt-1">{{ 'decisions.detail.confirmRequired' | translate }}</p>
               }
             </div>
 
             <div class="validation-actions">
-              <p-button label="Valider la décision" icon="pi pi-check" severity="primary"
+              <p-button [label]="'decisions.detail.validate' | translate" icon="pi pi-check" severity="primary"
                 [disabled]="validationLoading() || validationForm.controls.confirmed.invalid"
-                [loading]="validationLoading()" (onClick)="submitDomainValidation()" ariaLabel="Valider la décision" />
+                [loading]="validationLoading()" (onClick)="submitDomainValidation()" [ariaLabel]="'decisions.detail.validate' | translate" />
             </div>
           </div>
           } @else if (!isPendingValidation()) {
@@ -416,7 +412,7 @@
           <div class="validation-block validation-result">
             <div class="summary-grid">
               <div class="summary-item">
-                <span class="label">Décision humaine finale</span>
+                <span class="label">{{ 'decisions.detail.humanFinal' | translate }}</span>
                 <p-tag [value]="humanFinalLabel(item) || '—'" [severity]="decisionTagSeverity(humanFinalLabel(item))" />
               </div>
               <div class="summary-item">
@@ -430,11 +426,11 @@
             </div>
           </div>
           } @else {
-          <p class="muted">Votre rôle ne permet pas la validation de cette décision.</p>
+          <p class="muted">{{ 'decisions.detail.roleCannotValidate' | translate }}</p>
           }
 
           <p-divider />
-          <h3 class="section-title">Historique des validations</h3>
+          <h3 class="section-title">{{ 'decisions.detail.validationHistory' | translate }}</h3>
           <div class="validation-history">
             @for (action of item.validations ?? []; track action.validationActionId) {
             <article class="history-item">
@@ -460,16 +456,16 @@
               }
             </article>
             } @empty {
-            <p class="muted">Aucune validation humaine enregistrée.</p>
+            <p class="muted">{{ 'decisions.detail.noHumanValidation' | translate }}</p>
             }
           </div>
           }
 
           @case ('history') {
           @if (traceLoading()) {
-          <app-loading-skeleton [lines]="5" label="Chargement de l'historique…" />
+          <app-loading-skeleton [lines]="5" [label]="'decisions.detail.loadingHistory' | translate" />
           } @else if (historyEntries().length === 0) {
-          <app-empty-state icon="history" message="Aucun événement de traçabilité enregistré pour cette décision." />
+          <app-empty-state icon="history" [message]="'decisions.detail.emptyHistory' | translate" />
           } @else {
           <app-timeline [entries]="historyEntries()" />
           }
@@ -477,7 +473,7 @@
 
           @case ('sources') {
           @if (traceLoading()) {
-          <app-loading-skeleton [lines]="5" label="Chargement des sources…" />
+          <app-loading-skeleton [lines]="5" [label]="'decisions.detail.loadingSources' | translate" />
           } @else {
           @if (sourceError()) {
           <app-error-state [message]="sourceError()!" />

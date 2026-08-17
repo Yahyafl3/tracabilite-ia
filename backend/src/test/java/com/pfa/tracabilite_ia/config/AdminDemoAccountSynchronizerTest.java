@@ -71,7 +71,7 @@ class AdminDemoAccountSynchronizerTest {
         Utilisateur other = new Utilisateur();
         other.setId(UUID.randomUUID());
         other.setEmail(AdminDemoAccountSynchronizer.TARGET_ADMIN_EMAIL);
-        other.setRole(RoleEnum.UTILISATEUR);
+        other.setRole(RoleEnum.AGENT_CREDIT);
         when(utilisateurRepository.findByEmailIgnoreCase(AdminDemoAccountSynchronizer.TARGET_ADMIN_EMAIL))
                 .thenReturn(Optional.of(other));
 

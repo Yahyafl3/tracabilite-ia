@@ -9,7 +9,8 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/assets/i18n/*.json"
   ],
   "exclude": [
     "src/**/*.spec.ts"

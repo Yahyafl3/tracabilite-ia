@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { SupportComponent } from './support.component';
 import { SupportService } from '../../core/services/support.service';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('SupportComponent', () => {
   let fixture: ComponentFixture<SupportComponent>;
@@ -17,7 +18,7 @@ describe('SupportComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [SupportComponent],
-      providers: [provideRouter([]), { provide: SupportService, useValue: support }],
+      providers: [provideRouter([]), ...provideI18nTesting(), { provide: SupportService, useValue: support }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SupportComponent);
@@ -29,7 +30,7 @@ describe('SupportComponent', () => {
     const text = el.textContent ?? '';
     expect(text).toContain('Contactez le support');
     expect(text).toContain('Revenir à la connexion');
-    expect(text).toContain('Revenir à l’accueil');
+    expect(text).toContain('Revenir à l\'accueil');
     expect(el.querySelector('#support-name')).toBeTruthy();
     expect(el.querySelector('#support-email')).toBeTruthy();
     expect(el.querySelector('#support-subject')).toBeTruthy();

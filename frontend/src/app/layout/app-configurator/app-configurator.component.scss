@@ -1,7 +1,7 @@
 .layout-configurator {
   position: absolute;
   top: calc(100% + 0.5rem);
-  right: 0;
+  inset-inline-end: 0;
   width: 16.5rem;
   padding: 0.9rem;
   border-radius: 0.85rem;

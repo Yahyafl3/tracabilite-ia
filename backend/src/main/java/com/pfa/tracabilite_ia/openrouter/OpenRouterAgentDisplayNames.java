@@ -15,7 +15,9 @@ public final class OpenRouterAgentDisplayNames {
             Map.entry("google/gemma-4-26b-a4b-it:free", "Gemma 4 26B A4B"),
             Map.entry("google/gemma-4-31b-it:free", "Gemma 4 31B"),
             Map.entry("openai/gpt-oss-20b:free", "GPT-OSS 20B"),
-            Map.entry("openai/gpt-oss-120b:free", "GPT-OSS 120B")
+            Map.entry("openai/gpt-oss-120b:free", "GPT-OSS 120B"),
+            Map.entry("groq/compound-mini", "Groq Compound Mini"),
+            Map.entry("groq/compound", "Groq Compound")
     );
 
     private OpenRouterAgentDisplayNames() {
@@ -48,6 +50,9 @@ public final class OpenRouterAgentDisplayNames {
         }
         if (lower.contains("nemotron-3-nano")) {
             return "Nemotron 3 Nano 30B";
+        }
+        if (lower.contains("compound-mini")) {
+            return "Groq Compound Mini";
         }
         int slash = modelId.lastIndexOf('/');
         String base = slash >= 0 ? modelId.substring(slash + 1) : modelId;

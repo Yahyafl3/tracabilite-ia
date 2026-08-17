@@ -27,10 +27,21 @@ public class DashboardChartResponse {
     public static class KpiData {
         private double approvalRate;
         private long highRiskCount;
-        private long newTickets;
-        private long returnedTickets;
+        /** Dossiers en attente d'arbitrage humain (brouillon inclus). */
+        private long pendingValidation;
+        /** Dossiers signés dont l'empreinte SHA-256 se recalcule à l'identique. */
+        private long integrityVerified;
+        /** Dossiers portant une empreinte, donc vérifiables. */
+        private long integrityTotal;
+        /** Validations humaines ayant confirmé la suggestion de l'IA. */
+        private long aiAgreement;
+        /** Validations humaines s'étant écartées de la suggestion de l'IA. */
+        private long aiDisagreement;
+        /** Dossiers pas encore arbitrés par un humain. */
+        private long aiNotArbitrated;
         private Map<String, Object> domainMetrics;
         private Map<String, Long> riskBreakdown;
+        private Map<String, List<Double>> sparklines;
     }
 
     @Data

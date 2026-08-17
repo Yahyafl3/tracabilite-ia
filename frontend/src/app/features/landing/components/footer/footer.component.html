@@ -5,7 +5,7 @@
         class="brand"
         href="#accueil"
         (click)="navigate('accueil'); $event.preventDefault()"
-        aria-label="Traçabilité IA — Accueil"
+        [attr.aria-label]="('app.name' | translate) + ' — ' + ('landing.nav.home' | translate)"
       >
         <span class="brand__mark" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -14,31 +14,26 @@
             <path d="m8.5 12 2.2 2.2L15.5 9.5" />
           </svg>
         </span>
-        <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
+        <span class="brand__name">{{ 'app.name' | translate }}</span>
       </a>
-      <p class="footer__desc">
-        Plateforme de traçabilité, d'explicabilité et d'audit des décisions assistées
-        par intelligence artificielle.
-      </p>
-      <p class="footer__stack">
-        Développé avec Angular, Spring Boot, PostgreSQL, Scikit-learn, SHAP et Groq.
-      </p>
+      <p class="footer__desc">{{ 'landing.footer.desc' | translate }}</p>
+      <p class="footer__stack">{{ 'landing.footer.stack' | translate }}</p>
     </div>
 
     <div class="footer__cols">
-      @for (col of columns; track col.title) {
-        <nav class="footer__col" [attr.aria-label]="col.title">
-          <h3 class="footer__col-title">{{ col.title }}</h3>
+      @for (col of columns; track col.titleKey) {
+        <nav class="footer__col" [attr.aria-label]="col.titleKey | translate">
+          <h3 class="footer__col-title">{{ col.titleKey | translate }}</h3>
           <ul>
-            @for (link of col.links; track link.label) {
+            @for (link of col.links; track link.labelKey) {
               <li>
                 @if (link.route) {
-                  <a [routerLink]="link.route">{{ link.label }}</a>
+                  <a [routerLink]="link.route">{{ link.labelKey | translate }}</a>
                 } @else if (link.target) {
                   <a
                     [href]="'#' + link.target"
                     (click)="navigate(link.target!); $event.preventDefault()"
-                    >{{ link.label }}</a
+                    >{{ link.labelKey | translate }}</a
                   >
                 }
               </li>
@@ -52,7 +47,7 @@
   <div class="footer__bottom">
     <div class="container footer__bottom-inner">
       <span class="footer__copy">
-        © {{ year }} Traçabilité IA — Projet académique.
+        {{ 'landing.footer.copy' | translate:{ year: year } }}
       </span>
     </div>
   </div>

@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../core/models/auth.models';
 import { AppMenuItemComponent, type AppMenuItem } from '../app-menu-item/app-menu-item.component';
@@ -7,7 +8,7 @@ import { AppMenuItemComponent, type AppMenuItem } from '../app-menu-item/app-men
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, AppMenuItemComponent],
+  imports: [CommonModule, TranslatePipe, AppMenuItemComponent],
   templateUrl: './app-menu.component.html',
   styleUrl: './app-menu.component.scss',
 })
@@ -18,7 +19,6 @@ export class AppMenuComponent {
     const role = this.authService.currentUser?.role;
     const isAdmin = role === UserRole.ADMINISTRATEUR;
     const isAuditeur = role === UserRole.AUDITEUR;
-    const isValidateur = role === UserRole.VALIDATEUR;
     const isDomainValidator =
       role === UserRole.RESPONSABLE_CREDIT ||
       role === UserRole.PROFESSIONNEL_SANTE ||
@@ -26,62 +26,60 @@ export class AppMenuComponent {
     const isAgent =
       role === UserRole.AGENT_CREDIT ||
       role === UserRole.AGENT_SANTE ||
-      role === UserRole.AGENT_PEDAGOGIQUE ||
-      role === UserRole.UTILISATEUR;
-    const canValidate = isValidateur || isDomainValidator || isAdmin;
+      role === UserRole.AGENT_PEDAGOGIQUE;
+    const canValidate = isDomainValidator || isAdmin;
     const canCreate = isAdmin || isAgent;
 
-    // All roles see Dashboard
     const appItems: AppMenuItem[] = [
-      { label: 'Tableau de bord', icon: 'pi pi-home', routerLink: '/dashboard' }
+      { label: 'nav.dashboard', icon: 'pi pi-home', routerLink: '/dashboard' }
     ];
 
     if (!isAuditeur) {
-      if (isValidateur || isDomainValidator) {
-         appItems.push({ label: 'Historique des validations', icon: 'pi pi-file', routerLink: '/decisions' });
+      if (isDomainValidator) {
+         appItems.push({ label: 'nav.validationHistory', icon: 'pi pi-file', routerLink: '/decisions' });
       } else {
-         appItems.push({ label: 'Mes décisions', icon: 'pi pi-file', routerLink: '/decisions' });
+         appItems.push({ label: 'nav.myDecisions', icon: 'pi pi-file', routerLink: '/decisions' });
       }
     }
 
     if (canCreate) {
-      appItems.push({ label: 'Nouvelle décision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' });
+      appItems.push({ label: 'nav.newDecision', icon: 'pi pi-plus-circle', routerLink: '/decisions/new' });
     }
 
     const items: AppMenuItem[] = [
-      { label: 'Application', items: appItems },
+      { label: 'nav.application', items: appItems },
     ];
 
     const analysisItems: AppMenuItem[] = [];
     if (canValidate) {
       analysisItems.push({
-        label: 'File de validation',
+        label: 'nav.validationQueue',
         icon: 'pi pi-check-square',
         routerLink: '/validation',
       });
     }
     if (isAdmin) {
       analysisItems.push({
-        label: 'Comparaison IA',
+        label: 'nav.aiComparison',
         icon: 'pi pi-chart-bar',
         routerLink: '/comparaison',
       });
     }
     if (isAdmin || isAuditeur) {
-      analysisItems.push({ label: 'Audit & traçabilité', icon: 'pi pi-shield', routerLink: '/audit' });
+      analysisItems.push({ label: 'nav.audit', icon: 'pi pi-shield', routerLink: '/audit' });
     }
 
     if (analysisItems.length > 0) {
-      items.push({ label: 'Analyse', items: analysisItems });
+      items.push({ label: 'nav.analysis', items: analysisItems });
     }
 
     if (isAdmin) {
       items.push({
-        label: 'Administration',
+        label: 'nav.administration',
         items: [
-          { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: '/admin/users' },
-          { label: 'Agents Groq', icon: 'pi pi-server', routerLink: '/admin/groq' },
-          { label: 'Support', icon: 'pi pi-envelope', routerLink: '/admin/support' },
+          { label: 'nav.users', icon: 'pi pi-users', routerLink: '/admin/users' },
+          { label: 'nav.groqAgents', icon: 'pi pi-server', routerLink: '/admin/groq' },
+          { label: 'nav.support', icon: 'pi pi-envelope', routerLink: '/admin/support' },
         ],
       });
     }

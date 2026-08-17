@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('ForgotPasswordComponent', () => {
   let fixture: ComponentFixture<ForgotPasswordComponent>;
@@ -20,7 +21,7 @@ describe('ForgotPasswordComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent],
-      providers: [provideRouter([]), { provide: AuthService, useValue: auth }],
+      providers: [provideRouter([]), ...provideI18nTesting(), { provide: AuthService, useValue: auth }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ForgotPasswordComponent);

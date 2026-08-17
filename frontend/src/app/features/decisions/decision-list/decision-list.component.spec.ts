@@ -6,6 +6,7 @@ import { DecisionService } from '../../../core/services/decision.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StatutDecisionEnum } from '../../../core/models/decision.models';
 import { UserRole } from '../../../core/models/auth.models';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('DecisionListComponent', () => {
   const populated = {
@@ -45,11 +46,12 @@ describe('DecisionListComponent', () => {
     size: 10,
   };
 
-  async function setup(role: UserRole = UserRole.UTILISATEUR) {
+  async function setup(role: UserRole = UserRole.AGENT_CREDIT) {
     await TestBed.configureTestingModule({
       imports: [DecisionListComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: DecisionService,
           useValue: {
@@ -75,14 +77,14 @@ describe('DecisionListComponent', () => {
   it('affiche les badges de domaine', async () => {
     const fixture = await setup();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text).toContain('CREDIT');
-    expect(text).toContain('MEDICAL');
+    expect(text).toContain('Crédit');
+    expect(text).toContain('Médical');
   });
 
   it('expose les filtres domaine et risque', async () => {
     const fixture = await setup();
-    expect(fixture.componentInstance.domaineOptions.some((o) => o.value === 'EDUCATION')).toBe(true);
-    expect(fixture.componentInstance.riskOptions.some((o) => o.value === 'ELEVE')).toBe(true);
+    expect(fixture.componentInstance.domaineOptions().some((o) => o.value === 'EDUCATION')).toBe(true);
+    expect(fixture.componentInstance.riskOptions().some((o) => o.value === 'ELEVE')).toBe(true);
   });
 
   it('montre le bouton export pour AUDITEUR', async () => {
@@ -91,8 +93,8 @@ describe('DecisionListComponent', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Exporter');
   });
 
-  it('cache le bouton export pour UTILISATEUR', async () => {
-    const fixture = await setup(UserRole.UTILISATEUR);
+  it('cache le bouton export pour AGENT_CREDIT', async () => {
+    const fixture = await setup(UserRole.AGENT_CREDIT);
     expect(fixture.componentInstance.canExport()).toBe(false);
   });
 });

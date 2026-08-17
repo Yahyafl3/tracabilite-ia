@@ -25,7 +25,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = DecisionController.class)
+@WebMvcTest(controllers = {DecisionController.class, MultidomainDecisionController.class})
 @Import({
         SecurityConfig.class,
         CorrelationIdFilter.class,
@@ -54,33 +54,32 @@ class DecisionControllerUserSecurityTest {
     @MockitoBean
     private JwtProvider jwtProvider;
 
+    @MockitoBean
+    private com.pfa.tracabilite_ia.service.DecisionOrchestratorService decisionOrchestratorService;
+
+    @MockitoBean
+    private com.pfa.tracabilite_ia.repository.DecisionRepository decisionRepository;
+
+    @MockitoBean
+    private com.pfa.tracabilite_ia.service.DecisionHashService decisionHashService;
+
     @Test
     @WithMockUser(roles = "USER")
-    void approve_forbiddenForCreditAgent() throws Exception {
+    void validate_forbiddenForCreditAgent() throws Exception {
         UUID id = UUID.randomUUID();
-        mockMvc.perform(post("/api/decisions/{id}/approve", id)
+        mockMvc.perform(post("/api/decisions/{id}/validate", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("{\"decisionFinale\":\"APPROUVEE\",\"justificationHumaine\":\"OK\"}"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "USER")
-    void reject_forbiddenForCreditAgent() throws Exception {
+    void requestReview_forbiddenForCreditAgent() throws Exception {
         UUID id = UUID.randomUUID();
-        mockMvc.perform(post("/api/decisions/{id}/reject", id)
+        mockMvc.perform(post("/api/decisions/{id}/request-review", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void modify_forbiddenForCreditAgent() throws Exception {
-        UUID id = UUID.randomUUID();
-        mockMvc.perform(post("/api/decisions/{id}/modify", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"commentaire\":\"x\",\"decisionHumaine\":\"APPROUVER\"}"))
+                        .content("{\"justificationHumaine\":\"Review requested\"}"))
                 .andExpect(status().isForbidden());
     }
 

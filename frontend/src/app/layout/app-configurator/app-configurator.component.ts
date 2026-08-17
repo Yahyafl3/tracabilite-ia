@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LayoutService } from '../layout.service';
 
 @Component({
   selector: 'app-configurator',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './app-configurator.component.html',
   styleUrl: './app-configurator.component.scss',
 })

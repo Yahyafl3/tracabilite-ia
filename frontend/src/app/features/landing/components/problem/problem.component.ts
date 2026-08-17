@@ -1,39 +1,19 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconComponent } from '../../../../shared/icon.component';
 import { RevealDirective } from '../../../../shared/reveal.directive';
-
-interface ProblemItem {
-  icon: string;
-  title: string;
-  description: string;
-}
 
 @Component({
   selector: 'app-problem',
   standalone: true,
-  imports: [IconComponent, RevealDirective],
+  imports: [IconComponent, RevealDirective, TranslatePipe],
   templateUrl: './problem.component.html',
   styleUrl: './problem.component.scss',
 })
 export class ProblemComponent {
-  readonly problems: ProblemItem[] = [
-    {
-      icon: 'eye-off',
-      title: 'Manque de transparence',
-      description:
-        'Les utilisateurs ne savent pas toujours pourquoi un modèle propose une décision.',
-    },
-    {
-      icon: 'history',
-      title: "Difficulté d'audit",
-      description:
-        "Sans historique et sans intégrité, il devient difficile de reconstruire le dossier d'une décision.",
-    },
-    {
-      icon: 'users',
-      title: 'Responsabilité humaine',
-      description:
-        "L'intelligence artificielle doit assister la décision sans remplacer le contrôle humain.",
-    },
+  readonly problems = [
+    { icon: 'eye-off', titleKey: 'landing.problem.items.transparency.title', textKey: 'landing.problem.items.transparency.text' },
+    { icon: 'history', titleKey: 'landing.problem.items.audit.title', textKey: 'landing.problem.items.audit.text' },
+    { icon: 'users', titleKey: 'landing.problem.items.human.title', textKey: 'landing.problem.items.human.text' },
   ];
 }

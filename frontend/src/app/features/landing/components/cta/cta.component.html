@@ -2,32 +2,25 @@
   <div class="container">
     <div class="cta__card" appReveal>
       <div class="cta__intro">
-        <span class="eyebrow eyebrow--light">Passer à l'action</span>
-        <h2 class="cta__title">
-          Découvrez une approche responsable de la décision assistée par IA
-        </h2>
-        <p class="cta__subtitle">
-          Accédez à la plateforme pour créer, analyser, expliquer et auditer un
-          dossier de décision.
-        </p>
+        <span class="eyebrow eyebrow--light">{{ 'landing.cta.eyebrow' | translate }}</span>
+        <h2 class="cta__title">{{ 'landing.cta.title' | translate }}</h2>
+        <p class="cta__subtitle">{{ 'landing.cta.subtitle' | translate }}</p>
         <ul class="cta__highlights">
           @for (item of highlights; track item) {
             <li>
               <app-icon name="check-circle" [size]="20" />
-              {{ item }}
+              {{ item | translate }}
             </li>
           }
         </ul>
       </div>
 
       <div class="cta__actions-panel">
-        <h3 class="cta__actions-title">Commencer maintenant</h3>
-        <p class="cta__actions-text">
-          Ouvrez l'application pour créer et auditer vos dossiers de décision.
-        </p>
+        <h3 class="cta__actions-title">{{ 'landing.cta.start' | translate }}</h3>
+        <p class="cta__actions-text">{{ 'landing.cta.startText' | translate }}</p>
         <div class="cta__buttons">
           <a routerLink="/auth/login" class="btn btn-primary btn-lg btn-block">
-            Ouvrir l'application
+            {{ 'landing.cta.open' | translate }}
             <app-icon name="arrow-right" [size]="18" />
           </a>
         </div>

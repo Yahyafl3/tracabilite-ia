@@ -7,7 +7,7 @@ public class GroqProperties {
 
     private String baseUrl = "https://api.groq.com/openai/v1";
     private String apiKey = "";
-    private String model1 = "llama-3.3-70b-versatile";
+    private String model1 = "groq/compound-mini";
     private String model2 = "openai/gpt-oss-120b";
     private String model3 = "openai/gpt-oss-20b";
     private int connectTimeoutMs = 10_000;

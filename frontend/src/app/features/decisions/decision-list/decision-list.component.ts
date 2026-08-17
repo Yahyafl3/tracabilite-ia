@@ -13,6 +13,7 @@ import { Paginator, type PaginatorState } from 'primeng/paginator';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import type { MenuItem } from 'primeng/api';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ConfidenceDisplayComponent, RiskBadgeComponent } from '../../../shared/ui';
 import { DecisionService } from '../../../core/services/decision.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -24,9 +25,10 @@ import {
   mlConfidence,
 } from '../../../core/models/decision.models';
 import { UserRole } from '../../../core/models/auth.models';
-import { statutLabel } from '../../../core/utils/label.util';
+import { decisionLabel, domainLabel, roleLabel, statutLabel } from '../../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { DECISION_DOMAINS } from '../../../core/config/domains/domain.config';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-decision-list',
@@ -47,6 +49,7 @@ import { DECISION_DOMAINS } from '../../../core/config/domains/domain.config';
     Message,
     ConfidenceDisplayComponent,
     RiskBadgeComponent,
+    TranslatePipe,
   ],
   templateUrl: './decision-list.component.html',
   styleUrl: './decision-list.component.scss',
@@ -58,53 +61,59 @@ export class DecisionListComponent {
   private readonly decisionService = inject(DecisionService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(TranslationService);
 
-  readonly statutOptions = [
-    { label: 'Tous', value: '' },
-    ...[
-      StatutDecisionEnum.BROUILLON,
-      StatutDecisionEnum.EN_ANALYSE,
-      StatutDecisionEnum.ANALYSEE,
-      StatutDecisionEnum.EN_ATTENTE_VALIDATION,
-      StatutDecisionEnum.EN_ATTENTE,
-      StatutDecisionEnum.VALIDEE,
-      StatutDecisionEnum.APPROUVEE,
-      StatutDecisionEnum.A_REVOIR,
-      StatutDecisionEnum.REJETEE,
-      StatutDecisionEnum.ARCHIVEE,
-      StatutDecisionEnum.MODIFIEE,
-    ].map((statut) => ({ label: statutLabel(statut), value: statut })),
-  ];
-
-  readonly domaineOptions = computed(() => {
-    const role = this.authService.currentUser?.role as UserRole | undefined;
-    // Specialist roles only see their own domain — no "Tous" option
-    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) {
-      return [{ label: 'Crédit', value: 'CREDIT' }];
-    }
-    if (role === UserRole.PROFESSIONNEL_SANTE) {
-      return [{ label: 'Médical', value: 'MEDICAL' }];
-    }
-    if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) {
-      return [{ label: 'Éducation', value: 'EDUCATION' }];
-    }
-    // Admin / Auditeur / Utilisateur see all domains
+  readonly statutOptions = computed(() => {
+    this.i18n.currentLang();
     return [
-      { label: 'Tous', value: '' },
-      ...DECISION_DOMAINS.map((d) => ({ label: d.label, value: d.value })),
+      { label: this.i18n.t('common.all'), value: '' },
+      ...[
+        StatutDecisionEnum.BROUILLON,
+        StatutDecisionEnum.EN_ANALYSE,
+        StatutDecisionEnum.ANALYSEE,
+        StatutDecisionEnum.EN_ATTENTE_VALIDATION,
+        StatutDecisionEnum.EN_ATTENTE,
+        StatutDecisionEnum.VALIDEE,
+        StatutDecisionEnum.APPROUVEE,
+        StatutDecisionEnum.A_REVOIR,
+        StatutDecisionEnum.REJETEE,
+        StatutDecisionEnum.ARCHIVEE,
+        StatutDecisionEnum.MODIFIEE,
+      ].map((statut) => ({ label: statutLabel(statut), value: statut })),
     ];
   });
 
-  readonly riskOptions = [
-    { label: 'Tous', value: '' },
-    { label: 'Faible', value: 'FAIBLE' },
-    { label: 'Modéré', value: 'MODERE' },
-    { label: 'Moyen', value: 'MOYEN' },
-    { label: 'Élevé', value: 'ELEVE' },
-    { label: 'Low (legacy)', value: 'LOW' },
-    { label: 'Medium (legacy)', value: 'MEDIUM' },
-    { label: 'High (legacy)', value: 'HIGH' },
-  ];
+  readonly domaineOptions = computed(() => {
+    this.i18n.currentLang();
+    const role = this.authService.currentUser?.role as UserRole | undefined;
+    if (role === UserRole.RESPONSABLE_CREDIT) {
+      return [{ label: domainLabel('CREDIT'), value: 'CREDIT' }];
+    }
+    if (role === UserRole.PROFESSIONNEL_SANTE) {
+      return [{ label: domainLabel('MEDICAL'), value: 'MEDICAL' }];
+    }
+    if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) {
+      return [{ label: domainLabel('EDUCATION'), value: 'EDUCATION' }];
+    }
+    return [
+      { label: this.i18n.t('common.all'), value: '' },
+      ...DECISION_DOMAINS.map((d) => ({ label: domainLabel(d.value), value: d.value })),
+    ];
+  });
+
+  readonly riskOptions = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('common.all'), value: '' },
+      { label: this.i18n.t('riskCode.FAIBLE'), value: 'FAIBLE' },
+      { label: this.i18n.t('riskCode.MODERE'), value: 'MODERE' },
+      { label: this.i18n.t('riskCode.MOYEN'), value: 'MOYEN' },
+      { label: this.i18n.t('riskCode.ELEVE'), value: 'ELEVE' },
+      { label: this.i18n.t('decisions.list.legacyLow'), value: 'LOW' },
+      { label: this.i18n.t('decisions.list.legacyMedium'), value: 'MEDIUM' },
+      { label: this.i18n.t('decisions.list.legacyHigh'), value: 'HIGH' },
+    ];
+  });
 
   readonly pageSizeOptions = [5, 10, 20];
   readonly decisions = signal<DecisionResponse[]>([]);
@@ -123,7 +132,12 @@ export class DecisionListComponent {
 
   readonly canCreate = computed(() => {
     const role = this.authService.currentUser?.role;
-    return role === UserRole.ADMINISTRATEUR || role === UserRole.UTILISATEUR || role === 'ADMINISTRATEUR' || role === 'UTILISATEUR';
+    return (
+      role === UserRole.ADMINISTRATEUR ||
+      role === UserRole.AGENT_CREDIT ||
+      role === UserRole.AGENT_SANTE ||
+      role === UserRole.AGENT_PEDAGOGIQUE
+    );
   });
 
   readonly totalPages = computed(() =>
@@ -179,7 +193,7 @@ export class DecisionListComponent {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger les décisions.'));
+          this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.list.loadError')));
           this.loading.set(false);
         },
       });
@@ -217,7 +231,7 @@ export class DecisionListComponent {
           this.exporting.set(false);
         },
         error: (err) => {
-          this.error.set(resolveHttpErrorMessage(err, 'Export impossible.'));
+          this.error.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.list.exportError')));
           this.exporting.set(false);
         },
       });
@@ -226,7 +240,7 @@ export class DecisionListComponent {
   openRowMenu(event: Event, row: DecisionResponse): void {
     this.rowMenuItems.set([
       {
-        label: 'Voir le détail',
+        label: this.i18n.t('decisions.list.viewDetail'),
         icon: 'pi pi-eye',
         command: () => void this.router.navigate(['/decisions', row.decisionId]),
       },
@@ -238,7 +252,22 @@ export class DecisionListComponent {
     void this.router.navigate(['/decisions/new']);
   }
 
-  statutLabel = statutLabel;
+  statutLabel = (statut: string) => {
+    this.i18n.currentLang();
+    return statutLabel(statut);
+  };
+  domainLabel = (domain: string) => {
+    this.i18n.currentLang();
+    return domainLabel(domain);
+  };
+  decisionLabel = (decision?: string | null) => {
+    this.i18n.currentLang();
+    return decisionLabel(decision);
+  };
+  roleLabel = (role: string) => {
+    this.i18n.currentLang();
+    return roleLabel(role);
+  };
 
   domainBadge(row: DecisionResponse): string {
     return row.domaine || 'CREDIT';
@@ -287,7 +316,7 @@ export class DecisionListComponent {
 
   formatDate(iso: string | undefined): string {
     if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('fr-FR', {
+    return new Date(iso).toLocaleDateString(this.i18n.localeId(), {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -296,7 +325,7 @@ export class DecisionListComponent {
 
   formatTime(iso: string | undefined): string {
     if (!iso) return '';
-    return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString(this.i18n.localeId(), { hour: '2-digit', minute: '2-digit' });
   }
 
   reference(row: DecisionResponse): string {

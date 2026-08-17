@@ -55,6 +55,8 @@ public final class RoleAuthorityMapper {
     public static String mapToSpringRole(String role) {
         return switch (role.toUpperCase()) {
             case "ADMIN", "ADMINISTRATEUR" -> "ROLE_ADMIN";
+            // UTILISATEUR/VALIDATEUR ne sont acceptés que le temps que les JWT émis avant la
+            // migration des rôles expirent ; la portée réelle vient du rôle relu en base.
             case "USER", "UTILISATEUR",
                  "AGENT_CREDIT", "AGENT_SANTE", "AGENT_PEDAGOGIQUE" -> "ROLE_USER";
             case "VALIDATOR", "VALIDATEUR",

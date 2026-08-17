@@ -22,6 +22,6 @@ public class ComparaisonController {
 
     @GetMapping
     public List<ComparaisonAgentResponse> classerAgents() {
-        return comparaisonService.classerAgentsOpenRouter();
+        return comparaisonService.classerAgents();
     }
 }

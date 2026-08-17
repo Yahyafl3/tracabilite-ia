@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { AppMenuComponent } from './app-menu.component';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../core/models/auth.models';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('AppMenuComponent', () => {
   async function create(role: UserRole): Promise<ComponentFixture<AppMenuComponent>> {
@@ -11,6 +12,7 @@ describe('AppMenuComponent', () => {
       imports: [AppMenuComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: AuthService,
           useValue: {
@@ -36,42 +38,42 @@ describe('AppMenuComponent', () => {
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toContain('Dashboard');
-    expect(labels).toContain('Mes décisions');
-    expect(labels).toContain('Audit');
-    expect(labels).toContain('Utilisateurs');
-    expect(labels).toContain('Agents Groq');
-    expect(labels).toContain('Support');
-    expect(labels).toContain('Comparaison IA');
+    expect(labels).toContain('nav.dashboard');
+    expect(labels).toContain('nav.myDecisions');
+    expect(labels).toContain('nav.audit');
+    expect(labels).toContain('nav.users');
+    expect(labels).toContain('nav.groqAgents');
+    expect(labels).toContain('nav.support');
+    expect(labels).toContain('nav.aiComparison');
     expect(labels).not.toContain('Consensus OpenRouter');
   });
 
   it('hides admin entries for non-admin users', async () => {
-    const fixture = await create(UserRole.VALIDATEUR);
+    const fixture = await create(UserRole.RESPONSABLE_CREDIT);
     const labels = fixture.componentInstance
       .model()
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toContain('File de validation');
-    expect(labels).not.toContain('Utilisateurs');
-    expect(labels).not.toContain('Agents Groq');
-    expect(labels).not.toContain('Support');
+    expect(labels).toContain('nav.validationQueue');
+    expect(labels).not.toContain('nav.users');
+    expect(labels).not.toContain('nav.groqAgents');
+    expect(labels).not.toContain('nav.support');
   });
 
-  it('shows only Agent de crédit menus for UTILISATEUR role', async () => {
-    const fixture = await create(UserRole.UTILISATEUR);
+  it('shows only Agent de crédit menus for AGENT_CREDIT role', async () => {
+    const fixture = await create(UserRole.AGENT_CREDIT);
     const labels = fixture.componentInstance
       .model()
       .flatMap((group) => group.items ?? [])
       .map((item) => item.label);
 
-    expect(labels).toEqual(['Dashboard', 'Mes décisions', 'Nouvelle décision']);
-    expect(labels).not.toContain('Utilisateurs');
-    expect(labels).not.toContain('Agents Groq');
-    expect(labels).not.toContain('Support');
-    expect(labels).not.toContain('File de validation');
-    expect(labels).not.toContain('Comparaison IA');
-    expect(labels).not.toContain('Audit');
+    expect(labels).toEqual(['nav.dashboard', 'nav.myDecisions', 'nav.newDecision']);
+    expect(labels).not.toContain('nav.users');
+    expect(labels).not.toContain('nav.groqAgents');
+    expect(labels).not.toContain('nav.support');
+    expect(labels).not.toContain('nav.validationQueue');
+    expect(labels).not.toContain('nav.aiComparison');
+    expect(labels).not.toContain('nav.audit');
   });
 });

@@ -1,16 +1,13 @@
 <section id="fonctionnalites" class="section section--soft">
   <div class="container">
     <div class="section-head" appReveal>
-      <span class="eyebrow">Fonctionnalités</span>
-      <h2 class="section-title">Une traçabilité complète de bout en bout</h2>
-      <p class="section-subtitle">
-        Une plateforme de traçabilité, d'explicabilité et d'audit des décisions
-        assistées par intelligence artificielle.
-      </p>
+      <span class="eyebrow">{{ 'landing.features.eyebrow' | translate }}</span>
+      <h2 class="section-title">{{ 'landing.features.title' | translate }}</h2>
+      <p class="section-subtitle">{{ 'landing.features.subtitle' | translate }}</p>
     </div>
 
     <div class="features-grid">
-      @for (feature of features; track feature.title; let i = $index) {
+      @for (feature of features; track feature.titleKey; let i = $index) {
         <article
           class="feature-card"
           [attr.data-accent]="feature.accent"
@@ -20,8 +17,8 @@
           <span class="feature-card__icon">
             <app-icon [name]="feature.icon" [size]="28" />
           </span>
-          <h3 class="feature-card__title">{{ feature.title }}</h3>
-          <p class="feature-card__text">{{ feature.description }}</p>
+          <h3 class="feature-card__title">{{ feature.titleKey | translate }}</h3>
+          <p class="feature-card__text">{{ feature.textKey | translate }}</p>
         </article>
       }
     </div>

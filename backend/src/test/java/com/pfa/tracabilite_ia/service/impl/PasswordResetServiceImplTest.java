@@ -252,7 +252,7 @@ class PasswordResetServiceImplTest {
         user.setId(UUID.randomUUID());
         user.setEmail("user@test.fr");
         user.setNom("User");
-        user.setRole(RoleEnum.UTILISATEUR);
+        user.setRole(RoleEnum.AGENT_CREDIT);
         user.setMotDePasseHash("old-hash");
         return user;
     }

@@ -1,9 +1,32 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Card } from 'primeng/card';
 import { UIChart } from 'primeng/chart';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { AuditRecentItemResponse } from '../../../core/services/audit.service';
 import { StatutDecisionEnum } from '../../../core/models/decision.models';
+import { TranslationService } from '../../../core/i18n/translation.service';
+
+type StatusBucket = 'approuvee' | 'enAttente' | 'rejetee' | 'modifiee' | 'autres';
+
+/**
+ * Le backend expose les statuts canoniques (VALIDEE, EN_ATTENTE_VALIDATION) et
+ * leurs équivalents legacy (APPROUVEE, EN_ATTENTE). Les deux doivent alimenter
+ * la même part du graphique.
+ */
+const STATUS_BUCKETS: Record<StatutDecisionEnum, StatusBucket> = {
+  [StatutDecisionEnum.VALIDEE]: 'approuvee',
+  [StatutDecisionEnum.APPROUVEE]: 'approuvee',
+  [StatutDecisionEnum.EN_ATTENTE_VALIDATION]: 'enAttente',
+  [StatutDecisionEnum.EN_ATTENTE]: 'enAttente',
+  [StatutDecisionEnum.BROUILLON]: 'enAttente',
+  [StatutDecisionEnum.EN_ANALYSE]: 'enAttente',
+  [StatutDecisionEnum.ANALYSEE]: 'enAttente',
+  [StatutDecisionEnum.REJETEE]: 'rejetee',
+  [StatutDecisionEnum.MODIFIEE]: 'modifiee',
+  [StatutDecisionEnum.A_REVOIR]: 'modifiee',
+  [StatutDecisionEnum.ARCHIVEE]: 'autres',
+};
 
 interface StatisticsData {
   totalDecisions: number;
@@ -11,6 +34,7 @@ interface StatisticsData {
   invalidIntegrity: number;
   chainIntact: boolean;
   byStatus: Record<StatutDecisionEnum, number>;
+  byBucket: Record<StatusBucket, number>;
   byDay: { date: string; count: number; validCount: number }[];
   integrityRate: number;
 }
@@ -18,37 +42,34 @@ interface StatisticsData {
 @Component({
   selector: 'app-audit-statistics',
   standalone: true,
-  imports: [CommonModule, Card, UIChart],
+  imports: [CommonModule, Card, UIChart, TranslatePipe],
   template: `
     <div class="statistics-grid">
-      <!-- Status Distribution Chart -->
       <p-card styleClass="chart-card">
-        <ng-template pTemplate="header">
-          <div class="card-header">
-            <h3>Répartition par statut</h3>
-            <span class="card-hint">{{ stats().totalDecisions }} décisions</span>
+        <ng-template pTemplate="title">
+          <div class="card-header mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 m-0">{{ 'audit.byStatus' | translate }}</h3>
+            <span class="card-hint">{{ 'audit.nDecisions' | translate:{ count: stats().totalDecisions } }}</span>
           </div>
         </ng-template>
         <p-chart type="doughnut" [data]="statusChartData()" [options]="chartOptions" [style]="{ width: '100%', height: '280px' }" />
       </p-card>
 
-      <!-- Integrity Trend Chart -->
       <p-card styleClass="chart-card">
-        <ng-template pTemplate="header">
-          <div class="card-header">
-            <h3>Évolution de l'intégrité</h3>
-            <span class="card-hint">7 derniers jours</span>
+        <ng-template pTemplate="title">
+          <div class="card-header mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 m-0">{{ 'audit.integrityTrend' | translate }}</h3>
+            <span class="card-hint">{{ 'audit.last7' | translate }}</span>
           </div>
         </ng-template>
         <p-chart type="line" [data]="integrityTrendData()" [options]="lineChartOptions" [style]="{ width: '100%', height: '280px' }" />
       </p-card>
 
-      <!-- Integrity Rate Gauge -->
       <p-card styleClass="chart-card gauge-card">
-        <ng-template pTemplate="header">
-          <div class="card-header">
-            <h3>Taux d'intégrité</h3>
-            <span class="card-hint">Validations réussies</span>
+        <ng-template pTemplate="title">
+          <div class="card-header mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 m-0">{{ 'audit.integrityRate' | translate }}</h3>
+            <span class="card-hint">{{ 'audit.successValidations' | translate }}</span>
           </div>
         </ng-template>
         <div class="gauge-container">
@@ -70,28 +91,27 @@ interface StatisticsData {
             </svg>
             <div class="gauge-value">
               <span class="gauge-percentage">{{ stats().integrityRate.toFixed(1) }}%</span>
-              <span class="gauge-label">Intégrité</span>
+              <span class="gauge-label">{{ 'audit.integrity' | translate }}</span>
             </div>
           </div>
           <div class="gauge-stats">
             <div class="gauge-stat">
               <i class="pi pi-check-circle"></i>
-              <span>{{ stats().validIntegrity }} valides</span>
+              <span>{{ 'audit.nValid' | translate:{ count: stats().validIntegrity } }}</span>
             </div>
             <div class="gauge-stat gauge-stat-danger">
               <i class="pi pi-times-circle"></i>
-              <span>{{ stats().invalidIntegrity }} invalides</span>
+              <span>{{ 'audit.nInvalid' | translate:{ count: stats().invalidIntegrity } }}</span>
             </div>
           </div>
         </div>
       </p-card>
 
-      <!-- Activity by Day Chart -->
       <p-card styleClass="chart-card">
-        <ng-template pTemplate="header">
-          <div class="card-header">
-            <h3>Activité quotidienne</h3>
-            <span class="card-hint">Décisions par jour</span>
+        <ng-template pTemplate="title">
+          <div class="card-header mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 m-0">{{ 'audit.dailyActivity' | translate }}</h3>
+            <span class="card-hint">{{ 'audit.perDay' | translate }}</span>
           </div>
         </ng-template>
         <p-chart type="bar" [data]="activityChartData()" [options]="barChartOptions" [style]="{ width: '100%', height: '280px' }" />
@@ -125,7 +145,6 @@ interface StatisticsData {
     }
 
     .card-header h3 {
-      margin: 0;
       font-size: 1rem;
       font-weight: 600;
       color: var(--ink);
@@ -236,6 +255,8 @@ interface StatisticsData {
   `],
 })
 export class AuditStatisticsComponent {
+  private readonly i18n = inject(TranslationService);
+
   @Input() set items(value: AuditRecentItemResponse[]) {
     this.auditItems.set(value);
   }
@@ -245,31 +266,49 @@ export class AuditStatisticsComponent {
   readonly stats = computed(() => this.calculateStatistics(this.auditItems()));
 
   readonly statusChartData = computed(() => {
+    this.i18n.currentLang();
     const stats = this.stats();
+    if (stats.totalDecisions === 0) {
+      return {
+        labels: [this.i18n.t('audit.noData')],
+        datasets: [{ data: [1], backgroundColor: ['#e5e7eb'], hoverBackgroundColor: ['#d1d5db'], borderWidth: 0 }]
+      };
+    }
+
+    const labels = [
+      this.i18n.t('audit.statusApproved'),
+      this.i18n.t('audit.statusPending'),
+      this.i18n.t('audit.statusRejected'),
+      this.i18n.t('audit.statusModified'),
+    ];
+    const colors = ['#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+    const data = [
+      stats.byBucket.approuvee,
+      stats.byBucket.enAttente,
+      stats.byBucket.rejetee,
+      stats.byBucket.modifiee,
+    ];
+
+    if (stats.byBucket.autres > 0) {
+      labels.push(this.i18n.t('audit.others'));
+      colors.push('#94a3b8');
+      data.push(stats.byBucket.autres);
+    }
+
     return {
-      labels: ['Approuvée', 'En attente', 'Rejetée', 'Modifiée'],
-      datasets: [
-        {
-          data: [
-            stats.byStatus[StatutDecisionEnum.APPROUVEE] || 0,
-            stats.byStatus[StatutDecisionEnum.EN_ATTENTE] || 0,
-            stats.byStatus[StatutDecisionEnum.REJETEE] || 0,
-            stats.byStatus[StatutDecisionEnum.MODIFIEE] || 0,
-          ],
-          backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1'],
-          borderWidth: 0,
-        },
-      ],
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderWidth: 0 }],
     };
   });
 
   readonly integrityTrendData = computed(() => {
+    this.i18n.currentLang();
     const stats = this.stats();
     return {
       labels: stats.byDay.map((d) => this.formatShortDate(d.date)),
       datasets: [
         {
-          label: 'Intégrité valide',
+          label: this.i18n.t('audit.validCount'),
           data: stats.byDay.map((d) => d.validCount),
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -277,7 +316,7 @@ export class AuditStatisticsComponent {
           fill: true,
         },
         {
-          label: 'Total décisions',
+          label: this.i18n.t('audit.kpiTotal'),
           data: stats.byDay.map((d) => d.count),
           borderColor: '#6366f1',
           backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -289,15 +328,17 @@ export class AuditStatisticsComponent {
   });
 
   readonly activityChartData = computed(() => {
+    this.i18n.currentLang();
     const stats = this.stats();
     return {
       labels: stats.byDay.map((d) => this.formatShortDate(d.date)),
       datasets: [
         {
-          label: 'Décisions',
+          label: this.i18n.t('audit.dailyCount'),
           data: stats.byDay.map((d) => d.count),
           backgroundColor: '#6366f1',
           borderRadius: 4,
+          maxBarThickness: 40,
         },
       ],
     };
@@ -306,6 +347,7 @@ export class AuditStatisticsComponent {
   readonly chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: '75%',
     plugins: {
       legend: {
         position: 'bottom' as const,
@@ -370,6 +412,15 @@ export class AuditStatisticsComponent {
       {} as Record<StatutDecisionEnum, number>
     );
 
+    const byBucket = items.reduce(
+      (acc, item) => {
+        const bucket = STATUS_BUCKETS[item.statutValidation] ?? 'autres';
+        acc[bucket] += 1;
+        return acc;
+      },
+      { approuvee: 0, enAttente: 0, rejetee: 0, modifiee: 0, autres: 0 } as Record<StatusBucket, number>
+    );
+
     // Group by day (last 7 days)
     const byDay = this.groupByDay(items);
 
@@ -379,6 +430,7 @@ export class AuditStatisticsComponent {
       invalidIntegrity,
       chainIntact: invalidIntegrity === 0,
       byStatus,
+      byBucket,
       byDay,
       integrityRate,
     };
@@ -415,6 +467,6 @@ export class AuditStatisticsComponent {
 
   private formatShortDate(isoDate: string): string {
     const date = new Date(isoDate);
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString(this.i18n.localeId(), { day: 'numeric', month: 'short' });
   }
 }

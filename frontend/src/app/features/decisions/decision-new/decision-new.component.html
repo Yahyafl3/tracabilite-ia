@@ -1,16 +1,16 @@
 <div class="page">
   <p-button
-    label="Retour aux décisions"
+    [label]="'decisions.new.back' | translate"
     icon="pi pi-arrow-left"
     [text]="true"
     (onClick)="goBack()"
-    ariaLabel="Retour à la liste des décisions"
+    [ariaLabel]="'decisions.new.backAria' | translate"
   />
 
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Décisions / Nouvelle analyse</p>
-      <h1>Nouvelle décision</h1>
+      <p class="page-eyebrow">{{ 'decisions.new.eyebrow' | translate }}</p>
+      <h1>{{ 'decisions.new.title' | translate }}</h1>
       <p class="page-subtitle">{{ domainDescription }}</p>
     </div>
   </header>
@@ -19,14 +19,14 @@
     <p-card styleClass="form-card">
       <ng-template #header>
         <div class="card-head">
-          <strong>Dossier — {{ selectedDomain }}</strong>
-          <span class="muted">{{ domainMeta.useCase }}</span>
+          <strong>{{ 'decisions.new.dossier' | translate:{ domain: domainName() } }}</strong>
+          <span class="muted">{{ metaText('useCase') }}</span>
         </div>
       </ng-template>
 
       <form [formGroup]="shellForm" class="form-grid" (ngSubmit)="submit()" novalidate>
         <div class="field field--full">
-          <label for="domaine">Domaine de décision</label>
+          <label for="domaine">{{ 'decisions.new.domain' | translate }}</label>
           <p-select
             inputId="domaine"
             formControlName="domaine"
@@ -36,10 +36,10 @@
             styleClass="w-full"
             (onChange)="onDomainChange()"
             [disabled]="domainLocked"
-            ariaLabel="Domaine de décision"
+            [ariaLabel]="'decisions.new.domain' | translate"
           />
           @if (domainLocked) {
-            <small class="muted">Domaine fixé par votre rôle.</small>
+            <small class="muted">{{ 'decisions.new.domainLocked' | translate }}</small>
           }
         </div>
       </form>
@@ -63,7 +63,7 @@
           inputId="includeOpenRouter"
         />
         <label for="includeOpenRouter">
-          Consulter les agents IA (informatif — n’affecte pas la prédiction ML)
+          {{ 'decisions.new.consultAgents' | translate }}
         </label>
       </div>
 
@@ -74,42 +74,42 @@
       <div class="form-actions field--full">
         <p-button
           type="button"
-          label="Analyser la décision"
+          [label]="'decisions.new.analyze' | translate"
           icon="pi pi-search"
           [disabled]="loading() || !childValid()"
           [loading]="loading()"
           (onClick)="submit()"
-          ariaLabel="Lancer l'analyse de la décision"
+          [ariaLabel]="'decisions.new.analyzeAria' | translate"
         />
       </div>
     </p-card>
 
     <aside class="side-column">
-      <p-card header="Résumé du dossier">
+      <p-card [header]="'decisions.new.summary' | translate">
         <ul class="side-list">
-          <li><span>Domaine</span><strong>{{ selectedDomain }}</strong></li>
-          <li><span>Cas d’usage</span><strong>{{ domainMeta.useCase }}</strong></li>
-          <li><span>Features</span><strong>{{ domainMeta.featureCount }}</strong></li>
-          <li><span>Modèle</span><strong>{{ domainMeta.modelLabel }}</strong></li>
-          <li><span>Version</span><strong>{{ domainMeta.modelVersion }}</strong></li>
+          <li><span>{{ 'common.domain' | translate }}</span><strong>{{ domainName() }}</strong></li>
+          <li><span>{{ 'decisions.new.useCase' | translate }}</span><strong>{{ metaText('useCase') }}</strong></li>
+          <li><span>{{ 'decisions.new.featuresCount' | translate }}</span><strong>{{ domainMeta.featureCount }}</strong></li>
+          <li><span>{{ 'common.model' | translate }}</span><strong>{{ domainMeta.modelLabel }}</strong></li>
+          <li><span>{{ 'common.version' | translate }}</span><strong>{{ domainMeta.modelVersion }}</strong></li>
           <li>
-            <span>Agents IA</span>
-            <strong>{{ shellForm.get('includeOpenRouter')?.value ? 'Activés' : 'Désactivés' }}</strong>
+            <span>{{ 'decisions.new.agents' | translate }}</span>
+            <strong>{{ shellForm.get('includeOpenRouter')?.value ? ('decisions.new.enabled' | translate) : ('decisions.new.disabled' | translate) }}</strong>
           </li>
-          <li><span>Validateur</span><strong>{{ domainMeta.validatorRole }}</strong></li>
+          <li><span>{{ 'decisions.new.validator' | translate }}</span><strong>{{ validatorRoleLabel() }}</strong></li>
         </ul>
       </p-card>
 
-      <p-card header="Statut système">
+      <p-card [header]="'decisions.new.systemStatus' | translate">
         @if (loading()) {
           <div class="loading-box" role="status" aria-live="polite">
             <p-progressSpinner strokeWidth="4" [style]="{ width: '42px', height: '42px' }" />
-            <p>Analyse ML en cours…</p>
+            <p>{{ 'decisions.new.analyzing' | translate }}</p>
           </div>
         } @else if (result()) {
-          <p-tag severity="success" value="Analyse terminée" icon="pi pi-check" />
+          <p-tag severity="success" [value]="'decisions.new.done' | translate" icon="pi pi-check" />
         } @else {
-          <p class="muted">En attente de soumission.</p>
+          <p class="muted">{{ 'decisions.new.waiting' | translate }}</p>
         }
       </p-card>
 
@@ -117,44 +117,44 @@
         <p-card>
           <ng-template #header>
             <div class="card-head">
-              <strong>Prédiction ML</strong>
-              <span class="muted">{{ analysis.domaine || selectedDomain }} · {{ analysis.modelVersion }}</span>
+              <strong>{{ 'decisions.new.mlPrediction' | translate }}</strong>
+              <span class="muted">{{ domainName(analysis.domaine || selectedDomain) }} · {{ analysis.modelVersion }}</span>
             </div>
           </ng-template>
           <div class="result-summary">
             <div>
-              <span class="label">Recommandation</span>
+              <span class="label">{{ 'decisions.new.recommendation' | translate }}</span>
               <p-tag
-                [value]="analysis.suggestedDecision || 'N/A'"
+                [value]="mlLabel(analysis.suggestedDecision) || ('common.na' | translate)"
                 [severity]="mlSeverity(analysis.suggestedDecision)"
               />
             </div>
             <div>
-              <span class="label">Confiance</span>
+              <span class="label">{{ 'common.confidence' | translate }}</span>
               <strong>{{ analysis.confidenceScore | number:'1.0-4' }}</strong>
             </div>
             <div>
-              <span class="label">Risque</span>
+              <span class="label">{{ 'common.risk' | translate }}</span>
               <p-tag
-                [value]="analysis.riskLevel || '—'"
+                [value]="riskCodeLabel(analysis.riskLevel)"
                 [severity]="riskSeverity(analysis.riskLevel)"
               />
             </div>
             <div>
-              <span class="label">Dataset</span>
-              <strong>{{ analysis.datasetVersion || '—' }}</strong>
+              <span class="label">{{ 'decisions.new.dataset' | translate }}</span>
+              <strong>{{ analysis.datasetVersion || ('common.dash' | translate) }}</strong>
             </div>
           </div>
         </p-card>
 
         @if (analysis.consensus) {
-          <p-card [header]="multiAgentLabels.consensus">
+          <p-card [header]="'shared.consensus' | translate">
             <app-consensus-card [consensus]="analysis.consensus" />
           </p-card>
         }
 
         @if ((analysis.agentResponses?.length ?? 0) > 0) {
-          <p-card [header]="multiAgentLabels.agentResponses">
+          <p-card [header]="'shared.agentResponses' | translate">
             <div class="agent-grid">
               @for (agent of analysis.agentResponses ?? []; track agent.agentKey) {
                 <app-agent-response-card [agent]="agent" />
@@ -163,7 +163,7 @@
           </p-card>
         }
 
-        <p-card header="Facteurs principaux">
+        <p-card [header]="'decisions.new.mainFactors' | translate">
           <div class="factors">
             @for (factor of analysis.factors ?? []; track factor.name + factor.rank) {
               <div class="factor-row">
@@ -176,7 +176,7 @@
                   />
                 </div>
                 <div class="factor-values">
-                  <span>contribution: {{ factor.contributionPercent | number:'1.0-2' }}%</span>
+                  <span>{{ 'decisions.new.contribution' | translate:{ value: (factor.contributionPercent | number:'1.0-2') } }}</span>
                 </div>
               </div>
             }
@@ -184,13 +184,13 @@
           <p-divider />
           <div class="form-actions">
             <p-button
-              label="Soumettre à validation"
+              [label]="'decisions.new.submitValidation' | translate"
               icon="pi pi-send"
               (onClick)="submitForValidation()"
               [loading]="loading()"
             />
             <p-button
-              label="Voir le détail enregistré"
+              [label]="'decisions.new.viewSaved' | translate"
               icon="pi pi-eye"
               [outlined]="true"
               (onClick)="openDetail()"
@@ -198,9 +198,9 @@
           </div>
         </p-card>
       } @else {
-        <p-card header="Résultat de l'analyse">
+        <p-card [header]="'decisions.new.result' | translate">
           <p class="muted">
-            Choisissez un domaine, remplissez le formulaire, puis lancez l’analyse.
+            {{ 'decisions.new.resultHint' | translate }}
           </p>
         </p-card>
       }

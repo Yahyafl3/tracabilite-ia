@@ -95,6 +95,7 @@
   // Typographie
   --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-arabic: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
 
   // Élévations
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
@@ -996,5 +997,20 @@ canvas.p-chart,
     width: min(100vw - 1.5rem, 28rem) !important;
     max-width: calc(100vw - 1.5rem) !important;
     margin: 0.75rem;
+  }
+}
+
+html[dir="rtl"] {
+  font-family: var(--font-arabic);
+
+  body {
+    font-family: var(--font-arabic);
+  }
+
+  .layout-menuitem-link.active-route::before {
+    border-start-start-radius: 3px;
+    border-end-start-radius: 3px;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
   }
 }

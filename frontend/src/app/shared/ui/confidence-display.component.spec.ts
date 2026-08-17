@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 import { ConfidenceDisplayComponent } from './confidence-display.component';
 
 describe('ConfidenceDisplayComponent', () => {
@@ -7,6 +8,7 @@ describe('ConfidenceDisplayComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConfidenceDisplayComponent],
+      providers: [...provideI18nTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfidenceDisplayComponent);

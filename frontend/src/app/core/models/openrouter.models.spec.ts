@@ -1,6 +1,8 @@
 import { formatConsensusDisplay, formatDeclaredConfidence, successfulAgentCount, agentFallbackMessage, agentDisplayName, type ConsensusResponse, type AgentResponse } from './openrouter.models';
+import { bindLabelTranslator } from '../i18n/label-translator';
 
 describe('consensus display', () => {
+  beforeEach(() => bindLabelTranslator(null));
   const base: ConsensusResponse = {
     agentsConsultes: 3,
     agentsReussis: 0,

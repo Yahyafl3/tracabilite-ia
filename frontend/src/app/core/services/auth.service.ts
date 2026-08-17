@@ -15,6 +15,7 @@ import {
   PasswordReset,
   TokenPayload
 } from '../models/auth.models';
+import { i18nLabel } from '../i18n/label-translator';
 
 /**
  * Professional Authentication Service
@@ -260,15 +261,27 @@ export class AuthService {
   static resolveLoginErrorMessage(error: { status?: number } | null | undefined): string {
     const status = error?.status ?? 0;
     if (status === 400 || status === 401) {
-      return 'Adresse email ou mot de passe incorrect.';
+      return i18nLabel(
+        'authErrors.invalidCredentials',
+        'Adresse email ou mot de passe incorrect.',
+      );
     }
     if (status === 403) {
-      return 'Votre compte est désactivé ou vous ne disposez pas des autorisations nécessaires.';
+      return i18nLabel(
+        'authErrors.disabled',
+        'Votre compte est désactivé ou vous ne disposez pas des autorisations nécessaires.',
+      );
     }
     if (status === 0 || status === 500 || status === 502 || status === 503) {
-      return 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
+      return i18nLabel(
+        'authErrors.unavailable',
+        'Le service est temporairement indisponible. Veuillez réessayer plus tard.',
+      );
     }
-    return 'Adresse email ou mot de passe incorrect.';
+    return i18nLabel(
+      'authErrors.invalidCredentials',
+      'Adresse email ou mot de passe incorrect.',
+    );
   }
 
   private setLoading(loading: boolean): void {

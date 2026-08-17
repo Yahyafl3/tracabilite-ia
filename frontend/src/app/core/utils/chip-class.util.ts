@@ -9,9 +9,11 @@ export function decisionChipClass(decision?: string | null): string {
 
 /** Classe CSS pour les chips de niveau de risque. */
 export function riskChipClass(risk?: string | null): string {
-  if (risk === 'HIGH') return 'chip--rejected';
-  if (risk === 'MEDIUM') return 'chip--modified';
-  if (risk === 'LOW') return 'chip--approved';
+  if (!risk) return 'chip--pending';
+  const normalized = risk.toUpperCase().replace('É', 'E');
+  if (normalized === 'HIGH' || normalized === 'ELEVE') return 'chip--rejected';
+  if (normalized === 'MEDIUM' || normalized === 'MOYEN' || normalized === 'MODERE') return 'chip--modified';
+  if (normalized === 'LOW' || normalized === 'FAIBLE') return 'chip--approved';
   return 'chip--pending';
 }
 

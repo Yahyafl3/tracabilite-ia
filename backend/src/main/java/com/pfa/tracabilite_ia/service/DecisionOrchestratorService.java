@@ -40,6 +40,7 @@ public class DecisionOrchestratorService {
     private final DecisionMapper decisionMapper;
     private final ObjectMapper objectMapper;
     private final DomainAgentConsultationService domainAgentConsultationService;
+    private final DecisionHashService decisionHashService;
 
     public DecisionOrchestratorService(
             DecisionRepository decisionRepository,
@@ -48,7 +49,8 @@ public class DecisionOrchestratorService {
             AuditLogService auditLogService,
             DecisionMapper decisionMapper,
             ObjectMapper objectMapper,
-            DomainAgentConsultationService domainAgentConsultationService
+            DomainAgentConsultationService domainAgentConsultationService,
+            DecisionHashService decisionHashService
     ) {
         this.decisionRepository = decisionRepository;
         this.mlDecisionService = mlDecisionService;
@@ -57,6 +59,7 @@ public class DecisionOrchestratorService {
         this.decisionMapper = decisionMapper;
         this.objectMapper = objectMapper;
         this.domainAgentConsultationService = domainAgentConsultationService;
+        this.decisionHashService = decisionHashService;
     }
 
     @Transactional
@@ -180,9 +183,12 @@ public class DecisionOrchestratorService {
         if (Boolean.TRUE.equals(includeAgents)) {
             domainAgentConsultationService.consultAgents(
                     saved, domain, saved.getFeaturesJson(), user);
-            saved.setCurrentHash(saved.calculerHash());
-            saved = decisionRepository.save(saved);
         }
+
+        // 3) Signature après persist : decisionId n'est généré qu'à ce moment, et le hacher
+        // avant produirait une empreinte que la relecture ne pourra jamais reproduire.
+        decisionHashService.refreshHashComponents(saved, saved.getReponsesAgents());
+        saved = decisionRepository.save(saved);
 
         // 3) Audit après sauvegarde cohérente (pas dans @PrePersist)
         auditLogService.record(saved.getDecisionId(), user, "ANALYSE",
@@ -279,7 +285,7 @@ public class DecisionOrchestratorService {
         if (role != RoleEnum.ADMINISTRATEUR && role != RoleEnum.AUDITEUR) {
              DecisionDomain checkDomain = domain != null ? domain : DecisionDomain.CREDIT;
              boolean allowed = switch (checkDomain) {
-                case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
+                case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT;
                 case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
                 case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
              };
@@ -307,7 +313,7 @@ public class DecisionOrchestratorService {
                 .filter(d -> {
                     if (role == RoleEnum.ADMINISTRATEUR || role == RoleEnum.AUDITEUR) return true;
                     DecisionDomain domain = d.getDomaine() != null ? d.getDomaine() : DecisionDomain.CREDIT;
-                    if (role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR) return domain == DecisionDomain.CREDIT;
+                    if (role == RoleEnum.RESPONSABLE_CREDIT) return domain == DecisionDomain.CREDIT;
                     if (role == RoleEnum.PROFESSIONNEL_SANTE) return domain == DecisionDomain.MEDICAL;
                     if (role == RoleEnum.RESPONSABLE_PEDAGOGIQUE) return domain == DecisionDomain.EDUCATION;
                     return false;
@@ -362,13 +368,12 @@ public class DecisionOrchestratorService {
             }
             decision.setExplanationFactors(factors);
         }
-        decision.setCurrentHash(decision.calculerHash());
     }
 
     /**
      * Vérifie que l'utilisateur courant est autorisé à créer une décision pour ce domaine.
      * ADMINISTRATEUR : tous les domaines.
-     * AGENT_CREDIT / UTILISATEUR (legacy) : CREDIT uniquement.
+     * AGENT_CREDIT : CREDIT uniquement.
      * AGENT_SANTE : MEDICAL uniquement.
      * AGENT_PEDAGOGIQUE : EDUCATION uniquement.
      * Tout autre rôle (validateurs, auditeur) : interdit.
@@ -380,7 +385,7 @@ public class DecisionOrchestratorService {
         RoleEnum role = user.getRole();
         if (role == RoleEnum.ADMINISTRATEUR) return; // all domains
         boolean allowed = switch (domain) {
-            case CREDIT    -> role == RoleEnum.AGENT_CREDIT    || role == RoleEnum.UTILISATEUR;
+            case CREDIT    -> role == RoleEnum.AGENT_CREDIT;
             case MEDICAL   -> role == RoleEnum.AGENT_SANTE;
             case EDUCATION -> role == RoleEnum.AGENT_PEDAGOGIQUE;
         };
@@ -399,9 +404,9 @@ public class DecisionOrchestratorService {
         DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
 
         boolean allowed = switch (domain) {
-            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
-            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE || role == RoleEnum.VALIDATEUR;
-            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE || role == RoleEnum.VALIDATEUR;
+            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT;
+            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
+            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
         };
         if (!allowed) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,

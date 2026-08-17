@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-copy-hash',
   standalone: true,
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
@@ -17,13 +20,14 @@ import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core
       }
       <code class="copy-hash__value">{{ truncated }}</code>
       @if (copied()) {
-        <span class="copy-hash__feedback" aria-live="polite">Copié</span>
+        <span class="copy-hash__feedback" aria-live="polite">{{ 'shared.copied' | translate }}</span>
       }
     </button>
   `,
   styleUrl: './copy-hash.component.scss',
 })
 export class CopyHashComponent {
+  private readonly i18n = inject(TranslationService);
   @Input({ required: true }) hash!: string;
   @Input() label?: string;
   @Input() truncateLength = 12;
@@ -31,7 +35,7 @@ export class CopyHashComponent {
   readonly copied = signal(false);
 
   get truncated(): string {
-    if (!this.hash) return '—';
+    if (!this.hash) return this.i18n.t('common.dash');
     if (this.hash.length <= this.truncateLength * 2 + 1) {
       return this.hash;
     }
@@ -39,8 +43,9 @@ export class CopyHashComponent {
   }
 
   get ariaLabelText(): string {
-    const prefix = this.label ? `${this.label} : ` : 'Hash : ';
-    return `${prefix}copier ${this.hash}`;
+    this.i18n.currentLang();
+    const prefix = this.label ? `${this.label} : ` : `${this.i18n.t('shared.copyHash')} `;
+    return `${prefix}${this.hash}`;
   }
 
   async copy(): Promise<void> {

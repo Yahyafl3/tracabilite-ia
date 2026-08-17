@@ -1,5 +1,6 @@
 import type { ValidationActionResponse } from './validation.models';
 import type { AgentResponse, ConsensusResponse } from './openrouter.models';
+import { i18nLabel } from '../i18n/label-translator';
 
 export enum StatutDecisionEnum {
   BROUILLON = 'BROUILLON',
@@ -189,13 +190,13 @@ export function humanFinalLabel(decision: DecisionResponse): string | undefined 
 
 export function consensusLabel(decision: DecisionResponse): string {
   if (!decision.consensusDecision) {
-    return 'Indisponible';
+    return i18nLabel('agents.unavailable', 'Indisponible');
   }
   if (decision.consensusDecision === 'NO_CONSENSUS') {
-    return 'Pas de consensus';
+    return i18nLabel('agents.noConsensus', 'Pas de consensus');
   }
   if (decision.consensusDecision === 'INSUFFICIENT_RESPONSES') {
-    return 'Réponses insuffisantes';
+    return i18nLabel('agents.insufficient', 'Réponses insuffisantes');
   }
   return decision.consensusDecision;
 }

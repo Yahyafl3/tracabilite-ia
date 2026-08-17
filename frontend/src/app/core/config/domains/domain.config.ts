@@ -1,3 +1,5 @@
+import { i18nLabel } from '../../i18n/label-translator';
+
 /**
  * Configuration des domaines métier (distincts du secteur économique crédit).
  */
@@ -188,7 +190,8 @@ export function resolveDomain(value?: string | null): DecisionDomain {
 }
 
 export function featureDisplayName(domain: DecisionDomain, raw: string): string {
-  return DOMAIN_META[domain].featureLabels[raw] ?? raw.replace(/_/g, ' ');
+  const fallback = DOMAIN_META[domain].featureLabels[raw] ?? raw.replace(/_/g, ' ');
+  return i18nLabel(`features.${raw}`, fallback);
 }
 
 export const REGIONS_MAROC = [

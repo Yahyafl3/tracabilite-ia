@@ -22,11 +22,11 @@ public class GroqAgentRegistryService {
 
     public static final String PROVIDER = "GROQ";
 
-    public static final String MODEL_1_ID = "llama-3.3-70b-versatile";
+    public static final String MODEL_1_ID = "groq/compound-mini";
     public static final String MODEL_2_ID = "openai/gpt-oss-120b";
     public static final String MODEL_3_ID = "openai/gpt-oss-20b";
 
-    public static final String DISPLAY_1 = "Llama 3.3 70B Versatile";
+    public static final String DISPLAY_1 = "Groq Compound Mini";
     public static final String DISPLAY_2 = "GPT-OSS 120B";
     public static final String DISPLAY_3 = "GPT-OSS 20B";
 

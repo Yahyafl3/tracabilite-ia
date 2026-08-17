@@ -6,18 +6,21 @@ import { Tag } from 'primeng/tag';
 import { Button } from 'primeng/button';
 import { Skeleton } from 'primeng/skeleton';
 import { Message } from 'primeng/message';
+import { TranslatePipe } from '@ngx-translate/core';
 import { GroqAdminService, type GroqAdminStatus } from '../../../core/services/groq-admin.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-groq-admin',
   standalone: true,
-  imports: [CommonModule, Card, TableModule, Tag, Button, Skeleton, Message],
+  imports: [CommonModule, Card, TableModule, Tag, Button, Skeleton, Message, TranslatePipe],
   templateUrl: './groq-admin.component.html',
   styleUrl: './groq-admin.component.scss',
 })
 export class GroqAdminComponent {
   private readonly groqAdminService = inject(GroqAdminService);
+  private readonly i18n = inject(TranslationService);
 
   readonly status = signal<GroqAdminStatus | null>(null);
   readonly loading = signal(true);
@@ -39,21 +42,25 @@ export class GroqAdminComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger le statut Groq.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.groq.loadError')));
         this.loading.set(false);
       },
     });
   }
 
   keyAvailabilityLabel(status: GroqAdminStatus): string {
-    return status.configured ? 'Clé API configurée (valeur masquée)' : 'Clé API absente';
+    this.i18n.currentLang();
+    return status.configured
+      ? this.i18n.t('admin.groq.keyOk')
+      : this.i18n.t('admin.groq.keyMissing');
   }
 
   globalStateLabel(status: GroqAdminStatus): string {
+    this.i18n.currentLang();
     if (!status.configured) {
-      return 'Non configuré';
+      return this.i18n.t('admin.groq.notConfigured');
     }
-    return status.reachable ? 'Configuré et joignable' : 'Configuré (hors ligne)';
+    return status.reachable ? this.i18n.t('admin.groq.reachable') : this.i18n.t('admin.groq.offline');
   }
 
   globalSeverity(status: GroqAdminStatus): 'success' | 'warn' | 'danger' | 'secondary' {

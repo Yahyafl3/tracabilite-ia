@@ -48,7 +48,10 @@ export interface User {
   derniereConnexion?: Date;
 }
 
-/** Rôles des comptes internes. UTILISATEUR/VALIDATEUR sont LEGACY (compatibilité uniquement). */
+/**
+ * Rôles des comptes internes. UTILISATEUR/VALIDATEUR ont été migrés vers AGENT_CREDIT et
+ * RESPONSABLE_CREDIT ; ils ne donnent plus accès à aucune route.
+ */
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
   AUDITEUR = 'AUDITEUR',
@@ -61,9 +64,9 @@ export enum UserRole {
   RESPONSABLE_CREDIT = 'RESPONSABLE_CREDIT',
   PROFESSIONNEL_SANTE = 'PROFESSIONNEL_SANTE',
   RESPONSABLE_PEDAGOGIQUE = 'RESPONSABLE_PEDAGOGIQUE',
-  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
+  /** @deprecated Migré vers AGENT_CREDIT. Conservé pour lire les JWT émis avant la migration. */
   UTILISATEUR = 'UTILISATEUR',
-  /** @deprecated Legacy — ne plus utiliser pour de nouveaux comptes. */
+  /** @deprecated Migré vers RESPONSABLE_CREDIT. Conservé pour lire les JWT émis avant la migration. */
   VALIDATEUR = 'VALIDATEUR',
 }
 

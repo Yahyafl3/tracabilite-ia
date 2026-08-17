@@ -1,53 +1,54 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputNumber } from 'primeng/inputnumber';
 import { Textarea } from 'primeng/textarea';
 import { Message } from 'primeng/message';
-import { DOMAIN_META } from '../../../core/config/domains/domain.config';
+import { TranslatePipe } from '@ngx-translate/core';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-medical-decision-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputNumber, Textarea, Message],
+  imports: [CommonModule, ReactiveFormsModule, InputNumber, Textarea, Message, TranslatePipe],
   template: `
-    <p-message severity="warn" [text]="disclaimer" styleClass="mb-3 w-full" />
+    <p-message severity="warn" [text]="disclaimer()" styleClass="mb-3 w-full" />
     <form [formGroup]="form" class="form-grid">
       <div class="field">
-        <label for="age">Âge</label>
+        <label for="age">{{ 'forms.age' | translate }}</label>
         <p-inputNumber inputId="age" formControlName="age" [min]="1" [max]="120" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="grossesses">Grossesses</label>
+        <label for="grossesses">{{ 'forms.medical.pregnancies' | translate }}</label>
         <p-inputNumber inputId="grossesses" formControlName="grossesses" [min]="0" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="glycemieMgDl">Glycémie (mg/dL)</label>
+        <label for="glycemieMgDl">{{ 'forms.medical.glycemia' | translate }}</label>
         <p-inputNumber inputId="glycemieMgDl" formControlName="glycemieMgDl"
           [min]="0" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="pressionArterielleMmhg">Pression artérielle (mmHg)</label>
+        <label for="pressionArterielleMmhg">{{ 'forms.medical.bloodPressure' | translate }}</label>
         <p-inputNumber inputId="pressionArterielleMmhg" formControlName="pressionArterielleMmhg"
           [min]="0" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="epaisseurPliCutaneMm">Épaisseur pli cutané (mm)</label>
+        <label for="epaisseurPliCutaneMm">{{ 'forms.medical.skinFold' | translate }}</label>
         <p-inputNumber inputId="epaisseurPliCutaneMm" formControlName="epaisseurPliCutaneMm"
           [min]="0" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="insulineMicroUMl">Insuline (µU/mL)</label>
+        <label for="insulineMicroUMl">{{ 'forms.medical.insulin' | translate }}</label>
         <p-inputNumber inputId="insulineMicroUMl" formControlName="insulineMicroUMl"
           [min]="0" [minFractionDigits]="2" [step]="0.01" styleClass="w-full" />
       </div>
       <div class="field">
-        <label for="imcKgM2">IMC (kg/m²)</label>
+        <label for="imcKgM2">{{ 'forms.medical.bmi' | translate }}</label>
         <p-inputNumber inputId="imcKgM2" formControlName="imcKgM2"
           [min]="10" [max]="80" [minFractionDigits]="1" [step]="0.1" styleClass="w-full" />
       </div>
       <div class="field field--full">
-        <label for="description">Description</label>
+        <label for="description">{{ 'forms.description' | translate }}</label>
         <textarea pTextarea id="description" formControlName="description" rows="3" class="w-full"></textarea>
       </div>
     </form>
@@ -79,7 +80,12 @@ export class MedicalDecisionFormComponent {
   @Output() readonly formReady = new EventEmitter<{ valid: boolean; value: Record<string, unknown> }>();
 
   private readonly fb = inject(FormBuilder);
-  readonly disclaimer = DOMAIN_META.MEDICAL.disclaimer!;
+  private readonly i18n = inject(TranslationService);
+
+  readonly disclaimer = computed(() => {
+    this.i18n.currentLang();
+    return this.i18n.t('domainMeta.MEDICAL.disclaimer');
+  });
 
   readonly form = this.fb.group({
     age: [45, [Validators.required, Validators.min(1), Validators.max(120)]],

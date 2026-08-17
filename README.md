@@ -175,7 +175,7 @@ Provider actif (nouvelles décisions) : **Groq**
 
 | Agent | Modèle (valeur par défaut) |
 |-------|----------------------------|
-| Agent 1 | Llama 3.3 70B Versatile (`llama-3.3-70b-versatile`) |
+| Agent 1 | Groq Compound Mini (`groq/compound-mini`) |
 | Agent 2 | GPT-OSS 120B (`openai/gpt-oss-120b`) |
 | Agent 3 | GPT-OSS 20B (`openai/gpt-oss-20b`) |
 
@@ -333,13 +333,14 @@ Les noms suivants sont définis dans `.env.example` (à adapter localement) :
 ## Comptes de démonstration
 
 Au **premier démarrage** (base vide), `DataInitializer` crée des comptes de développement.
-Sur une base déjà peuplée, les comptes démo manquants (`user@`, validateurs domaine, etc.) sont créés s’ils n’existent pas encore.
+Sur une base déjà peuplée, les comptes démo manquants (agents et validateurs domaine) sont créés s’ils n’existent pas encore.
 
 | Email | Mot de passe (dev) | Rôle |
 |-------|--------------------|------|
 | `0629378510a@gmail.com` | `admin123` | Administrateur |
-| `user@tracabilite.ia` | `user123` | Agent métier (`UTILISATEUR`) |
-| `validateur@tracabilite.ia` | `validateur123` | Validateur (compat) |
+| `agent.credit@tracabilite.ia` | `agent123` | Agent crédit |
+| `agent.sante@tracabilite.ia` | `agent123` | Agent santé |
+| `agent.pedago@tracabilite.ia` | `agent123` | Agent pédagogique |
 | `credit@tracabilite.ia` | `credit123` | Responsable crédit |
 | `sante@tracabilite.ia` | `sante123` | Professionnel de santé |
 | `pedago@tracabilite.ia` | `pedago123` | Responsable pédagogique |
@@ -380,12 +381,12 @@ Il n’y a pas de pipeline CI/CD ni de suite E2E automatisée dans le dépôt à
 
 ## Scénario de démonstration recommandé
 
-1. Connexion avec le compte **Agent de crédit** (`user@tracabilite.ia`).
+1. Connexion avec le compte **Agent de crédit** (`agent.credit@tracabilite.ia`).
 2. Création d’une décision pour un **dossier client**.
 3. Affichage de la prédiction ML et des facteurs SHAP.
 4. Affichage des réponses des agents Groq (si clé configurée).
 5. Affichage du consensus multi-agents.
-6. Déconnexion, puis connexion avec le compte **Validateur**.
+6. Déconnexion, puis connexion avec le compte **Responsable crédit** (`credit@tracabilite.ia`).
 7. Ouverture du dossier dans la file de validation et décision humaine finale.
 8. Consultation de l’historique de la décision.
 9. Connexion **Auditeur** (ou Administrateur) : consultation de l’audit et de l’intégrité.

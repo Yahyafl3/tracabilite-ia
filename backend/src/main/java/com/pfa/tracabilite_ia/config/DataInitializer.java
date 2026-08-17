@@ -40,18 +40,16 @@ public class DataInitializer {
             if (userCount == 0) {
                 // First bootstrap only — do not recreate accounts after an admin deletes them.
                 seedAdmin(utilisateurRepository, passwordEncoder);
-                seedUser(utilisateurRepository, passwordEncoder);
-                seedValidateur(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
+                seedDomainAgents(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed initial des utilisateurs de demo termine");
             } else {
                 ensureAtLeastOneAdmin(utilisateurRepository, passwordEncoder);
                 // Comptes démo manquants (bases Docker déjà peuplées avec d'autres emails).
-                seedUser(utilisateurRepository, passwordEncoder);
-                seedValidateur(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
+                seedDomainAgents(utilisateurRepository, passwordEncoder);
                 log.info(">>> Seed utilisateurs ignore (base deja initialisee, {} compte(s))", userCount);
             }
 
@@ -109,14 +107,32 @@ public class DataInitializer {
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur DROP CONSTRAINT IF EXISTS utilisateur_role_check
                 """);
+        migrateLegacyRoles(jdbcTemplate);
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
                 CHECK (role IN (
-                    'ADMINISTRATEUR', 'VALIDATEUR', 'AUDITEUR', 'UTILISATEUR',
+                    'ADMINISTRATEUR', 'AUDITEUR',
                     'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE',
                     'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE'
                 ))
                 """);
+    }
+
+    /**
+     * Bascule les comptes encore porteurs des rôles legacy vers leur équivalent fonctionnel.
+     * UTILISATEUR était un créateur de dossiers CREDIT, VALIDATEUR un valideur CREDIT dont la
+     * file ne montrait déjà que ce domaine. Doit s'exécuter pendant que la contrainte CHECK
+     * est levée, sinon les lignes restantes empêcheraient de la recréer.
+     */
+    private void migrateLegacyRoles(JdbcTemplate jdbcTemplate) {
+        int agents = jdbcTemplate.update(
+                "UPDATE utilisateur SET role = 'AGENT_CREDIT' WHERE role = 'UTILISATEUR'");
+        int validateurs = jdbcTemplate.update(
+                "UPDATE utilisateur SET role = 'RESPONSABLE_CREDIT' WHERE role = 'VALIDATEUR'");
+        if (agents > 0 || validateurs > 0) {
+            log.info(">>> Migration roles legacy : {} UTILISATEUR -> AGENT_CREDIT, {} VALIDATEUR -> RESPONSABLE_CREDIT",
+                    agents, validateurs);
+        }
     }
 
     /** Soft-disable flag — default true for existing rows. */
@@ -146,19 +162,6 @@ public class DataInitializer {
         }
     }
 
-    private void seedUser(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
-        String email = "user@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
-            Utilisateur user = new Utilisateur();
-            user.setNom("Agent de crédit");
-            user.setEmail(email);
-            user.setMotDePasseHash(passwordEncoder.encode("user123"));
-            user.setRole(RoleEnum.UTILISATEUR);
-            utilisateurRepository.save(user);
-            log.info(">>> Agent de credit (UTILISATEUR) cree : {} / user123", email);
-        }
-    }
-
     private void seedAuditeur(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         String email = "auditeur@tracabilite.ia";
         if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
@@ -176,19 +179,6 @@ public class DataInitializer {
         }
     }
 
-    private void seedValidateur(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
-        String email = "validateur@tracabilite.ia";
-        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
-            Utilisateur validateur = new Utilisateur();
-            validateur.setNom("Validateur");
-            validateur.setEmail(email);
-            validateur.setMotDePasseHash(passwordEncoder.encode("validateur123"));
-            validateur.setRole(RoleEnum.VALIDATEUR);
-            utilisateurRepository.save(validateur);
-            log.info(">>> Utilisateur validateur cree : {} / validateur123", email);
-        }
-    }
-
     /** Validateurs spécialisés par domaine (idempotent sur bases déjà initialisées). */
     private void seedDomainValidators(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
         seedIfMissing(utilisateurRepository, passwordEncoder,
@@ -197,6 +187,16 @@ public class DataInitializer {
                 "sante@tracabilite.ia", "Professionnel santé", RoleEnum.PROFESSIONNEL_SANTE, "sante123");
         seedIfMissing(utilisateurRepository, passwordEncoder,
                 "pedago@tracabilite.ia", "Responsable pédagogique", RoleEnum.RESPONSABLE_PEDAGOGIQUE, "pedago123");
+    }
+
+    /** Agents créateurs par domaine (idempotent sur bases déjà initialisées). */
+    private void seedDomainAgents(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "agent.credit@tracabilite.ia", "Agent Crédit", RoleEnum.AGENT_CREDIT, "agent123");
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "agent.sante@tracabilite.ia", "Agent Santé", RoleEnum.AGENT_SANTE, "agent123");
+        seedIfMissing(utilisateurRepository, passwordEncoder,
+                "agent.pedago@tracabilite.ia", "Agent Pédagogique", RoleEnum.AGENT_PEDAGOGIQUE, "agent123");
     }
 
     private void seedIfMissing(

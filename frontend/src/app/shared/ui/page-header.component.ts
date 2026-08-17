@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-page-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="ui-page-header">
       @if (breadcrumbs.length) {
-        <nav class="ui-page-header__breadcrumb" aria-label="Fil d'Ariane">
+        <nav class="ui-page-header__breadcrumb" [attr.aria-label]="'shared.breadcrumb' | translate">
           @for (crumb of breadcrumbs; track $index; let last = $last) {
             @if (!last) {
               <span class="ui-page-header__crumb">{{ crumb }}</span>

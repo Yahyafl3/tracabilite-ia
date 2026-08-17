@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
@@ -14,13 +15,14 @@ describe('LoginComponent', () => {
     sessionStorage.clear();
 
     auth = {
-      login: vi.fn(() => of({ token: 'token', user: { role: 'UTILISATEUR' } })),
+      login: vi.fn(() => of({ token: 'token', user: { role: 'AGENT_CREDIT' } })),
     };
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
         provideRouter([{ path: 'decisions', children: [] }]),
+        ...provideI18nTesting(),
         { provide: AuthService, useValue: auth },
       ],
     }).compileComponents();
@@ -178,7 +180,7 @@ describe('LoginComponent', () => {
       }),
     );
     // Default post-login route (unchanged JWT / redirect logic).
-    expect(navigateSpy).toHaveBeenCalledWith(['/decisions']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/dashboard']);
   });
 
   it('keeps Traçabilité IA branding without OpenRouter marketing labels', () => {

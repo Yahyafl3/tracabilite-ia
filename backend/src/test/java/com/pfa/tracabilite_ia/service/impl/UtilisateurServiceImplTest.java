@@ -54,7 +54,7 @@ class UtilisateurServiceImplTest {
         request.setNom("Operateur");
         request.setEmail("op@tracabilite.ia");
         request.setMotDePasse("secret123");
-        request.setRole(RoleEnum.UTILISATEUR);
+        request.setRole(RoleEnum.AGENT_CREDIT);
 
         when(utilisateurRepository.existsByEmail("op@tracabilite.ia")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("hash");
@@ -66,7 +66,7 @@ class UtilisateurServiceImplTest {
 
         UtilisateurResponse response = service.creer(request);
 
-        assertThat(response.getRole()).isEqualTo(RoleEnum.UTILISATEUR);
+        assertThat(response.getRole()).isEqualTo(RoleEnum.AGENT_CREDIT);
         assertThat(response.isActif()).isTrue();
 
         ArgumentCaptor<Utilisateur> captor = ArgumentCaptor.forClass(Utilisateur.class);
@@ -99,8 +99,8 @@ class UtilisateurServiceImplTest {
 
         Utilisateur operator = new Utilisateur();
         operator.setId(operatorId);
-        operator.setEmail("user@tracabilite.ia");
-        operator.setRole(RoleEnum.UTILISATEUR);
+        operator.setEmail("agent.credit@tracabilite.ia");
+        operator.setRole(RoleEnum.AGENT_CREDIT);
         operator.setActif(true);
 
         when(utilisateurRepository.findById(operatorId)).thenReturn(Optional.of(operator));
@@ -135,7 +135,7 @@ class UtilisateurServiceImplTest {
         UUID id = UUID.randomUUID();
         Utilisateur user = new Utilisateur();
         user.setId(id);
-        user.setRole(RoleEnum.UTILISATEUR);
+        user.setRole(RoleEnum.AGENT_CREDIT);
         user.setActif(false);
 
         when(utilisateurRepository.findById(id)).thenReturn(Optional.of(user));
@@ -163,7 +163,7 @@ class UtilisateurServiceImplTest {
         when(authService.getCurrentUser()).thenReturn(current);
         when(utilisateurRepository.findAll()).thenReturn(List.of(lastAdmin, current));
         // current is also admin → not last; make current a non-admin for last-admin case
-        current.setRole(RoleEnum.VALIDATEUR);
+        current.setRole(RoleEnum.RESPONSABLE_CREDIT);
 
         assertThatThrownBy(() -> service.desactiver(adminId))
                 .isInstanceOf(IllegalStateException.class)

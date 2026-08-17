@@ -5,6 +5,7 @@ import { UsersAdminComponent } from './users-admin.component';
 import { UserAdminService } from '../../../core/services/user-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/auth.models';
+import { provideI18nTesting } from '../../../core/i18n/provide-i18n';
 
 describe('UsersAdminComponent', () => {
   let fixture: ComponentFixture<UsersAdminComponent>;
@@ -30,9 +31,9 @@ describe('UsersAdminComponent', () => {
           },
           {
             id: '2',
-            nom: 'Validateur',
-            email: 'validateur@test.fr',
-            role: UserRole.VALIDATEUR,
+            nom: 'Responsable crédit',
+            email: 'credit@test.fr',
+            role: UserRole.RESPONSABLE_CREDIT,
             actif: true,
             dateCreation: '2026-07-02T10:00:00.000Z',
           },
@@ -40,7 +41,7 @@ describe('UsersAdminComponent', () => {
             id: '3',
             nom: 'Operateur',
             email: 'ops@test.fr',
-            role: UserRole.UTILISATEUR,
+            role: UserRole.AGENT_CREDIT,
             actif: true,
             dateCreation: '2026-07-03T10:00:00.000Z',
           },
@@ -56,6 +57,7 @@ describe('UsersAdminComponent', () => {
       imports: [UsersAdminComponent],
       providers: [
         ConfirmationService,
+        ...provideI18nTesting(),
         { provide: UserAdminService, useValue: userAdmin },
         {
           provide: AuthService,
@@ -75,34 +77,38 @@ describe('UsersAdminComponent', () => {
     fixture.detectChanges();
   });
 
-  it('exposes Agent de crédit label with UTILISATEUR technical value', () => {
+  it('offers only current roles, with no legacy entry', () => {
     const roles = fixture.componentInstance.roles;
-    expect(roles).toContain(UserRole.UTILISATEUR);
+    expect(roles).not.toContain(UserRole.UTILISATEUR);
+    expect(roles).not.toContain(UserRole.VALIDATEUR);
     expect(roles).toEqual([
-      UserRole.UTILISATEUR,
-      UserRole.VALIDATEUR,
+      UserRole.AGENT_CREDIT,
+      UserRole.AGENT_SANTE,
+      UserRole.AGENT_PEDAGOGIQUE,
       UserRole.RESPONSABLE_CREDIT,
       UserRole.PROFESSIONNEL_SANTE,
       UserRole.RESPONSABLE_PEDAGOGIQUE,
       UserRole.AUDITEUR,
       UserRole.ADMINISTRATEUR,
     ]);
-    expect(fixture.componentInstance.roleOptions.map((o) => o.label)).toEqual([
-      'Agent de crédit',
-      'Validateur',
-      'Responsable crédit',
-      'Professionnel de santé',
-      'Responsable pédagogique',
+    const labels = fixture.componentInstance.roleOptions().map((o) => o.label);
+    expect(labels).toEqual([
+      'Agent Crédit',
+      'Agent Santé',
+      'Agent Pédagogique',
+      'Responsable Crédit',
+      'Professionnel de Santé',
+      'Responsable Pédagogique',
       'Auditeur',
       'Administrateur',
     ]);
-    expect(fixture.componentInstance.roleOptions[0].value).toBe(UserRole.UTILISATEUR);
+    expect(labels.some((label) => label.includes('legacy'))).toBe(false);
   });
 
-  it('filters users by role including Agent de crédit (UTILISATEUR)', () => {
+  it('filters users by role (Agent Crédit)', () => {
     expect(fixture.componentInstance.filteredUsers()).toHaveLength(3);
 
-    fixture.componentInstance.roleFilter.set(UserRole.UTILISATEUR);
+    fixture.componentInstance.roleFilter.set(UserRole.AGENT_CREDIT);
     fixture.detectChanges();
 
     const filtered = fixture.componentInstance.filteredUsers();

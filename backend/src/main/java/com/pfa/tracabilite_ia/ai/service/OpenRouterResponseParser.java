@@ -6,6 +6,7 @@ import com.pfa.tracabilite_ia.dto.response.AIAnalysisResult;
 import com.pfa.tracabilite_ia.exception.OpenRouterErrorCode;
 import com.pfa.tracabilite_ia.exception.OpenRouterException;
 import com.pfa.tracabilite_ia.util.AgentTextSanitizer;
+import com.pfa.tracabilite_ia.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -149,11 +150,14 @@ public class OpenRouterResponseParser {
 
     private String normalizeRiskLevel(String value) {
         if (value == null || value.isBlank()) {
-            return "MEDIUM";
+            return "MOYEN";
         }
-        return switch (value.trim().toUpperCase(Locale.ROOT)) {
-            case "LOW", "MEDIUM", "HIGH" -> value.trim().toUpperCase(Locale.ROOT);
-            default -> "MEDIUM";
+        String normalized = StringUtils.normalizeForComparison(value);
+        return switch (normalized) {
+            case "LOW", "FAIBLE" -> "FAIBLE";
+            case "MEDIUM", "MOYEN", "MODERE", "MODERÉ" -> "MOYEN";
+            case "HIGH", "ELEVE", "ÉLEVÉ" -> "ELEVE";
+            default -> "MOYEN";
         };
     }
 

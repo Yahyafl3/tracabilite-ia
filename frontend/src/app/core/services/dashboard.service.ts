@@ -9,7 +9,7 @@ export interface DashboardRecentDecision {
   prompt: string;
   modelName: string;
   agentLabel: string;
-  statutValidation: 'APPROUVEE' | 'MODIFIEE' | 'REJETEE' | 'EN_ATTENTE' | 'BROUILLON';
+  statutValidation: 'VALIDEE' | 'MODIFIEE' | 'REJETEE' | 'EN_ATTENTE_VALIDATION' | 'BROUILLON';
   timestamp: string;
   riskLevel?: string;
   confidenceScore?: number;
@@ -49,10 +49,15 @@ export interface DailyStats {
 export interface KpiData {
   approvalRate: number;
   highRiskCount: number;
-  newTickets: number;
-  returnedTickets: number;
+  pendingValidation: number;
+  integrityVerified: number;
+  integrityTotal: number;
+  aiAgreement: number;
+  aiDisagreement: number;
+  aiNotArbitrated: number;
   domainMetrics?: Record<string, any>;
   riskBreakdown?: Record<string, number>;
+  sparklines?: Record<string, number[]>;
 }
 
 @Injectable({ providedIn: 'root' })

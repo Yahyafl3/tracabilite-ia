@@ -1,18 +1,18 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Accueil / Comparaison</p>
-      <h1>Comparaison des agents IA</h1>
+      <p class="page-eyebrow">{{ 'comparaison.eyebrow' | translate }}</p>
+      <h1>{{ 'comparaison.title' | translate }}</h1>
       <p class="page-subtitle">
-        Classement des agents IA par taux de succès API et décisions proposées (historique OpenRouter et nouvelles décisions Groq).
+        {{ 'comparaison.subtitle' | translate }}
       </p>
     </div>
-    <p-tag severity="info" [value]="agents().length + ' agents'" />
+    <p-tag severity="info" [value]="'comparaison.agentsCount' | translate:{ count: agents().length }" />
   </header>
 
   @if (loading()) {
     <p-card>
-      <div aria-label="Chargement de la comparaison agents">
+      <div [attr.aria-label]="'comparaison.loadingAria' | translate">
         <p-skeleton height="4rem" styleClass="mb-2" />
         <p-skeleton height="12rem" styleClass="mb-2" />
         <p-skeleton height="8rem" />
@@ -26,15 +26,15 @@
     <p-card>
       <div class="empty-state" role="status">
         <i class="pi pi-chart-bar empty-state__icon" aria-hidden="true"></i>
-        <h2>Aucun agent configuré</h2>
-        <p>Aucun agent n’est disponible pour la comparaison.</p>
+        <h2>{{ 'comparaison.emptyTitle' | translate }}</h2>
+        <p>{{ 'comparaison.emptyText' | translate }}</p>
       </div>
     </p-card>
   } @else {
     <p-card styleClass="filters-card">
       <div class="filters">
         <div class="field">
-          <label for="period">Période</label>
+          <label for="period">{{ 'comparaison.period' | translate }}</label>
           <p-datepicker
             inputId="period"
             selectionMode="range"
@@ -42,13 +42,13 @@
             (ngModelChange)="periodRange.set($event)"
             [showIcon]="true"
             dateFormat="dd/mm/yy"
-            placeholder="Plage de dates"
+            [placeholder]="'comparaison.periodPlaceholder' | translate"
             styleClass="w-full"
-            ariaLabel="Filtrer par période"
+            [ariaLabel]="'common.filterByPeriod' | translate"
           />
         </div>
         <div class="field">
-          <label for="provider">Provider</label>
+          <label for="provider">{{ 'comparaison.provider' | translate }}</label>
           <p-select
             inputId="provider"
             [options]="providerOptions()"
@@ -57,11 +57,11 @@
             [ngModel]="providerFilter()"
             (ngModelChange)="providerFilter.set($event)"
             styleClass="w-full"
-            ariaLabel="Filtrer par provider"
+            [ariaLabel]="'common.filterByProvider' | translate"
           />
         </div>
         <div class="field">
-          <label for="model">Modèle</label>
+          <label for="model">{{ 'common.model' | translate }}</label>
           <p-select
             inputId="model"
             [options]="modelOptions()"
@@ -70,23 +70,23 @@
             [ngModel]="modelFilter()"
             (ngModelChange)="modelFilter.set($event)"
             styleClass="w-full"
-            ariaLabel="Filtrer par modèle"
+            [ariaLabel]="'common.filterByModel' | translate"
           />
         </div>
         <div class="field field--action">
           <p-button
-            label="Réinitialiser"
+            [label]="'common.reset' | translate"
             icon="pi pi-filter-slash"
             [outlined]="true"
             (onClick)="clearFilters()"
-            ariaLabel="Réinitialiser les filtres"
+            [ariaLabel]="'common.resetFilters' | translate"
           />
         </div>
       </div>
       @if (periodFilterActive()) {
         <p-message
           severity="info"
-          text="Les indicateurs agents sont des agrégats globaux fournis par l’API. Aucun recalcul par période n’est effectué."
+          [text]="'comparaison.periodNote' | translate"
           styleClass="w-full mt-3"
         />
       }
@@ -96,12 +96,12 @@
       <p-card>
         <div class="empty-state" role="status">
           <i class="pi pi-filter empty-state__icon" aria-hidden="true"></i>
-          <h2>Aucun résultat</h2>
-          <p>Aucun agent ne correspond aux filtres provider / modèle.</p>
+          <h2>{{ 'comparaison.emptyFilterTitle' | translate }}</h2>
+          <p>{{ 'comparaison.emptyFilterText' | translate }}</p>
         </div>
       </p-card>
     } @else {
-      <section class="kpi-row" aria-label="Indicateurs par agent">
+      <section class="kpi-row" [attr.aria-label]="'comparaison.kpisAria' | translate">
         @for (agent of agents(); track agent.systemeIaId ?? agent.nom; let i = $index) {
           <p-card styleClass="kpi-card">
             <div class="kpi-head">
@@ -117,21 +117,21 @@
               <span class="kpi-score" [class]="successRateClass(agent.scorePourcentage)">
                 {{ agent.scorePourcentage | number:'1.1-1' }}&thinsp;%
               </span>
-              <span class="kpi-score-label">Taux de succès API</span>
+              <span class="kpi-score-label">{{ 'comparaison.apiSuccess' | translate }}</span>
             </div>
             <p-progressbar
               [value]="agent.scorePourcentage"
               [showValue]="false"
               styleClass="kpi-progress"
-              [attr.aria-label]="'Taux de succès API ' + agent.nom"
+              [attr.aria-label]="('comparaison.apiSuccess' | translate) + ' ' + agent.nom"
             />
             <div class="breakdown-pills">
-              <p-tag severity="info" [value]="'Appels API ' + agent.totalDecisions" />
-              <p-tag severity="success" [value]="'Accord APPROUVER ' + agent.approuvees" />
+              <p-tag severity="info" [value]="('comparaison.apiCalls' | translate) + ' ' + agent.totalDecisions" />
+              <p-tag severity="success" [value]="('comparaison.approveAgree' | translate) + ' ' + agent.approuvees" />
               <p-tag severity="warn" [value]="'REVIEW ' + agent.modifiees" />
               <p-tag severity="danger" [value]="'REJETER ' + agent.rejetees" />
               @if (agent.enAttente > 0) {
-                <p-tag severity="secondary" [value]="'Échecs ' + agent.enAttente" />
+                <p-tag severity="secondary" [value]="('comparaison.failures' | translate) + ' ' + agent.enAttente" />
               }
             </div>
           </p-card>
@@ -140,9 +140,9 @@
 
       <div class="content-grid">
         <p-card>
-          <ng-template #title>Taux de succès API (%)</ng-template>
+          <ng-template #title>{{ 'comparaison.chartTitle' | translate }}</ng-template>
           <ng-template #subtitle>
-            Part d'appels API aboutissant à une réponse exploitable — visualisation SVG (sans recalcul)
+            {{ 'comparaison.chartSubtitle' | translate }}
           </ng-template>
 
           <div class="chart-scroll">
@@ -153,7 +153,7 @@
               xmlns="http://www.w3.org/2000/svg"
               class="chart-svg"
               role="img"
-              aria-label="Graphique du taux de succès API par agent"
+              [attr.aria-label]="'comparaison.chartAria' | translate"
             >
               <defs>
                 <linearGradient id="grad0" x1="0" y1="0" x2="0" y2="1">
@@ -226,7 +226,7 @@
             </svg>
           </div>
 
-          <div class="chart-legend" aria-label="Légende des agents">
+          <div class="chart-legend" [attr.aria-label]="'comparaison.legendAria' | translate">
             @for (bar of chartBars(); track bar.systemeIaId ?? bar.nom; let i = $index) {
               <span class="legend-item">
                 <span class="legend-dot" [attr.data-i]="i + 1"></span>
@@ -237,43 +237,43 @@
         </p-card>
 
         <p-card>
-          <ng-template #title>Répartition des décisions proposées</ng-template>
-          <ng-template #subtitle>Valeurs fournies par l’API — sans recalcul local</ng-template>
+          <ng-template #title>{{ 'comparaison.breakdownTitle' | translate }}</ng-template>
+          <ng-template #subtitle>{{ 'comparaison.breakdownSubtitle' | translate }}</ng-template>
 
           <div class="breakdown-list">
             @for (agent of agents(); track agent.systemeIaId ?? agent.nom) {
               <div class="breakdown-agent">
                 <div class="breakdown-agent__header">
                   <span class="breakdown-agent__name">{{ agent.nom }}</span>
-                  <span class="muted">{{ agent.totalDecisions }} appels API</span>
+                  <span class="muted">{{ 'comparaison.apiCallsCount' | translate:{ count: agent.totalDecisions } }}</span>
                 </div>
-                <div class="stacked-bar" [attr.title]="agent.nom + ' — répartition'">
+                <div class="stacked-bar" [attr.title]="agent.nom + ' — ' + ('comparaison.breakdownTitle' | translate)">
                   @if (agent.approuvees > 0) {
                     <div
                       class="stacked-bar__seg stacked-bar__seg--approved"
                       [style.flex]="agent.approuvees"
-                      [attr.title]="'Accord APPROUVER : ' + agent.approuvees"
+                      [attr.title]="('comparaison.approveAgree' | translate) + ' : ' + agent.approuvees"
                     ></div>
                   }
                   @if (agent.modifiees > 0) {
                     <div
                       class="stacked-bar__seg stacked-bar__seg--modified"
                       [style.flex]="agent.modifiees"
-                      [attr.title]="'REVIEW proposés : ' + agent.modifiees"
+                      [attr.title]="('comparaison.reviewProposed' | translate) + ' : ' + agent.modifiees"
                     ></div>
                   }
                   @if (agent.rejetees > 0) {
                     <div
                       class="stacked-bar__seg stacked-bar__seg--rejected"
                       [style.flex]="agent.rejetees"
-                      [attr.title]="'REJETER proposés : ' + agent.rejetees"
+                      [attr.title]="('comparaison.rejectProposed' | translate) + ' : ' + agent.rejetees"
                     ></div>
                   }
                   @if (agent.enAttente > 0) {
                     <div
                       class="stacked-bar__seg stacked-bar__seg--pending"
                       [style.flex]="agent.enAttente"
-                      [attr.title]="'Échecs / non succès : ' + agent.enAttente"
+                      [attr.title]="('comparaison.failNonSuccess' | translate) + ' : ' + agent.enAttente"
                     ></div>
                   }
                 </div>
@@ -282,36 +282,36 @@
           </div>
 
           <div class="stacked-legend">
-            <span class="stacked-legend__item stacked-legend__item--approved">Accord APPROUVER</span>
-            <span class="stacked-legend__item stacked-legend__item--modified">REVIEW proposés</span>
-            <span class="stacked-legend__item stacked-legend__item--rejected">REJETER proposés</span>
-            <span class="stacked-legend__item stacked-legend__item--pending">Échecs / non succès</span>
+            <span class="stacked-legend__item stacked-legend__item--approved">{{ 'comparaison.approveAgree' | translate }}</span>
+            <span class="stacked-legend__item stacked-legend__item--modified">{{ 'comparaison.reviewProposed' | translate }}</span>
+            <span class="stacked-legend__item stacked-legend__item--rejected">{{ 'comparaison.rejectProposed' | translate }}</span>
+            <span class="stacked-legend__item stacked-legend__item--pending">{{ 'comparaison.failNonSuccess' | translate }}</span>
           </div>
         </p-card>
       </div>
 
       <p-card>
-        <ng-template #title>Classement détaillé</ng-template>
-        <ng-template #subtitle>Cliquez sur un en-tête pour trier</ng-template>
+        <ng-template #title>{{ 'comparaison.rankingTitle' | translate }}</ng-template>
+        <ng-template #subtitle>{{ 'comparaison.rankingSubtitle' | translate }}</ng-template>
 
         <div class="table-scroll">
           <p-table
             [value]="agents()"
             styleClass="p-datatable-sm"
             [tableStyle]="{ 'min-width': '48rem' }"
-            ariaLabel="Classement des agents IA"
+            [ariaLabel]="'comparaison.tableAria' | translate"
           >
             <ng-template #header>
               <tr>
-                <th (click)="sort('rang')" class="th-sortable" [class.th--active]="isSorted('rang')">Rang</th>
-                <th (click)="sort('nom')" class="th-sortable" [class.th--active]="isSorted('nom')">Agent</th>
-                <th (click)="sort('totalDecisions')" class="th-sortable" [class.th--active]="isSorted('totalDecisions')">Appels API</th>
-                <th (click)="sort('approuvees')" class="th-sortable" [class.th--active]="isSorted('approuvees')">Accord APPROUVER</th>
-                <th (click)="sort('modifiees')" class="th-sortable" [class.th--active]="isSorted('modifiees')">REVIEW proposés</th>
-                <th (click)="sort('rejetees')" class="th-sortable" [class.th--active]="isSorted('rejetees')">REJETER proposés</th>
-                <th (click)="sort('enAttente')" class="th-sortable" [class.th--active]="isSorted('enAttente')">Échecs</th>
-                <th (click)="sort('scorePourcentage')" class="th-sortable" [class.th--active]="isSorted('scorePourcentage')">Taux de succès API</th>
-                <th>Barre</th>
+                <th (click)="sort('rang')" class="th-sortable" [class.th--active]="isSorted('rang')">{{ 'comparaison.rank' | translate }}</th>
+                <th (click)="sort('nom')" class="th-sortable" [class.th--active]="isSorted('nom')">{{ 'comparaison.agent' | translate }}</th>
+                <th (click)="sort('totalDecisions')" class="th-sortable" [class.th--active]="isSorted('totalDecisions')">{{ 'comparaison.apiCalls' | translate }}</th>
+                <th (click)="sort('approuvees')" class="th-sortable" [class.th--active]="isSorted('approuvees')">{{ 'comparaison.approveAgree' | translate }}</th>
+                <th (click)="sort('modifiees')" class="th-sortable" [class.th--active]="isSorted('modifiees')">{{ 'comparaison.reviewProposed' | translate }}</th>
+                <th (click)="sort('rejetees')" class="th-sortable" [class.th--active]="isSorted('rejetees')">{{ 'comparaison.rejectProposed' | translate }}</th>
+                <th (click)="sort('enAttente')" class="th-sortable" [class.th--active]="isSorted('enAttente')">{{ 'comparaison.failures' | translate }}</th>
+                <th (click)="sort('scorePourcentage')" class="th-sortable" [class.th--active]="isSorted('scorePourcentage')">{{ 'comparaison.apiSuccess' | translate }}</th>
+                <th>{{ 'comparaison.bar' | translate }}</th>
               </tr>
             </ng-template>
             <ng-template #body let-agent>
@@ -349,7 +349,7 @@
         </div>
 
         <p class="table-footer muted">
-          Données issues des appels API agents — chaîne SHA-256 intègre. Providers historiques OpenRouter et nouvelles décisions Groq affichés sans modification.
+          {{ 'comparaison.footer' | translate }}
         </p>
       </p-card>
     }

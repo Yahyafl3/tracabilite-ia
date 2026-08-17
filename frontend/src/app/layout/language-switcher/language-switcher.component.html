@@ -1,0 +1,15 @@
+<div class="lang-switcher" role="group" [attr.aria-label]="'language.selector' | translate">
+  @for (option of i18n.options; track option.code) {
+    <button
+      type="button"
+      class="lang-switcher__btn"
+      [class.is-active]="i18n.currentLang() === option.code"
+      [attr.aria-pressed]="i18n.currentLang() === option.code"
+      [attr.aria-label]="('language.' + option.code) | translate"
+      [title]="('language.' + option.code) | translate"
+      (click)="select(option.code)"
+    >
+      {{ option.shortLabel }}
+    </button>
+  }
+</div>

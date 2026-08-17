@@ -20,6 +20,7 @@ import { CtaComponent } from './components/cta/cta.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { IconComponent } from '../../shared/icon.component';
 import { ScrollService } from '../../shared/scroll.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 /**
  * Landing Page — présentation réelle de Traçabilité IA.
@@ -40,6 +41,7 @@ import { ScrollService } from '../../shared/scroll.service';
     CtaComponent,
     FooterComponent,
     IconComponent,
+    TranslatePipe,
   ],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',

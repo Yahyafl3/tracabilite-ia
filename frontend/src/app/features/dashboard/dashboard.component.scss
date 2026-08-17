@@ -28,14 +28,72 @@
   font-size: 0.95rem;
 }
 
+.dashboard-onboarding {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--color-primary, #6366f1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+
+  > .pi {
+    font-size: 1.5rem;
+    color: var(--color-primary, #6366f1);
+    flex-shrink: 0;
+  }
+
+  button {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 700px) {
+    flex-wrap: wrap;
+
+    button {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}
+
+.dashboard-onboarding-text {
+  strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+}
+
+.table-empty-cell {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 .crm-dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 320px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(280px, 340px);
   grid-template-rows: min-content auto auto;
   gap: 24px;
+  margin-top: 24px;
+  width: 100%;
+  box-sizing: border-box;
   
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     .crm-kpi-large { grid-column: span 1; }
     .crm-kpi-small-col { grid-column: span 2; display: flex; gap: 16px; flex-direction: row; }
     .crm-area-card { grid-column: span 2; grid-row: auto; }
@@ -57,6 +115,7 @@
   border: 1px solid var(--border-color) !important;
   box-shadow: var(--shadow-sm) !important;
   height: 100%;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -221,20 +280,38 @@
   grid-row: 2 / 3;
 }
 
-.bottom-card:nth-of-type(1) /* Donut 1 */ { grid-column: 1 / 2; grid-row: 3 / 4; }
-.bottom-card:nth-of-type(2) /* Donut 2 */ { grid-column: 2 / 4; grid-row: 3 / 4; }
-.right-col-card:not(.crm-area-card) { grid-column: 4 / 5; grid-row: 3 / 4; }
+.middle-sparklines {
+  grid-column: 1 / 5;
+  grid-row: 3 / 4;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    & > *:last-child { grid-column: span 2; }
+  }
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    & > *:last-child { grid-column: span 1; }
+  }
+}
+
+.donut-1-card { grid-column: 1 / 2; grid-row: 4 / 5; }
+.donut-2-card { grid-column: 2 / 4; grid-row: 4 / 5; }
+.donut-2-card.full-width-donut { grid-column: 1 / 4; }
+.right-col-card:not(.crm-area-card) { grid-column: 4 / 5; grid-row: 4 / 5; }
 
 /* Chart Containers */
 .chart-container-area { height: 250px; width: 100%; position: relative; }
 .chart-container-line { height: 300px; width: 100%; position: relative; }
-.chart-container-donut { height: 200px; width: 100%; position: relative; display: flex; justify-content: center; }
+.chart-container-donut { height: 230px; width: 100%; position: relative; display: flex; justify-content: center; }
 .chart-container-bar { height: 200px; width: 100%; position: relative; }
 
 .donut-center-text {
   position: absolute;
-  top: 50%;
-  left: 25%; /* Slightly adjusted for better centering relative to canvas */
+  top: 40%;
+  left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
@@ -291,3 +368,40 @@
 }
 
 /* Dark mode chart overrides via global CSS vars applied to canvas by TS */
+
+/* Sparkline Mini Cards */
+::ng-deep .mini-chart-card {
+  position: relative;
+  overflow: hidden;
+  height: 140px;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  .p-card-body {
+    padding: 20px !important;
+    height: 100%;
+  }
+
+  .p-card-content {
+    padding: 0 !important;
+    height: 100%;
+  }
+
+  .mini-chart-container {
+    position: absolute;
+    bottom: -5px; /* slight overflow to hide bottom border and points */
+    left: 0;
+    width: 100%;
+    height: 70px;
+    pointer-events: none;
+    z-index: 1;
+  }
+}

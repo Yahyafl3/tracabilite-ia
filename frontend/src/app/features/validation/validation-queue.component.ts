@@ -13,14 +13,16 @@ import { Divider } from 'primeng/divider';
 import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
+import { TranslatePipe } from '@ngx-translate/core';
 import { DecisionService } from '../../core/services/decision.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DecisionResponse, mlDecision, mlConfidence } from '../../core/models/decision.models';
 import { UserRole } from '../../core/models/auth.models';
-import { decisionLabel, riskLabel } from '../../core/utils/label.util';
+import { decisionLabel, domainLabel, riskLabel } from '../../core/utils/label.util';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 import { ConfidenceDisplayComponent } from '../../shared/ui';
 import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.config';
+import { TranslationService } from '../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-validation-queue',
@@ -41,6 +43,7 @@ import { DOMAIN_META, DecisionDomain } from '../../core/config/domains/domain.co
     Select,
     Checkbox,
     ConfidenceDisplayComponent,
+    TranslatePipe,
   ],
   templateUrl: './validation-queue.component.html',
   styleUrl: './validation-queue.component.scss',
@@ -50,11 +53,12 @@ export class ValidationQueueComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly i18n = inject(TranslationService);
 
   /** Domain allowed for the current user's role. null = admin/auditor (all domains). */
   private readonly allowedDomain = computed<DecisionDomain | null>(() => {
     const role = this.authService.currentUser?.role as UserRole | undefined;
-    if (role === UserRole.RESPONSABLE_CREDIT || role === UserRole.VALIDATEUR) return 'CREDIT';
+    if (role === UserRole.RESPONSABLE_CREDIT) return 'CREDIT';
     if (role === UserRole.PROFESSIONNEL_SANTE) return 'MEDICAL';
     if (role === UserRole.RESPONSABLE_PEDAGOGIQUE) return 'EDUCATION';
     return null; // ADMIN / AUDITEUR see all
@@ -62,11 +66,12 @@ export class ValidationQueueComponent {
 
   /** Label for the "Examiner" button, domain-specific. */
   readonly examinerLabel = computed(() => {
+    this.i18n.currentLang();
     const d = this.allowedDomain();
-    if (d === 'CREDIT') return 'Examiner le dossier crédit';
-    if (d === 'MEDICAL') return 'Examiner le dossier médical';
-    if (d === 'EDUCATION') return 'Examiner le dossier pédagogique';
-    return 'Examiner le dossier';
+    if (d === 'CREDIT') return this.i18n.t('validation.examineCredit');
+    if (d === 'MEDICAL') return this.i18n.t('validation.examineMedical');
+    if (d === 'EDUCATION') return this.i18n.t('validation.examineEducation');
+    return this.i18n.t('validation.viewDossier');
   });
 
   /**
@@ -105,30 +110,34 @@ export class ValidationQueueComponent {
   readonly detailTarget = signal<DecisionResponse | null>(null);
 
   readonly decisionOptions = computed(() => {
+    this.i18n.currentLang();
     const row = this.actionTarget();
     const domain = (row?.domaine || 'CREDIT') as DecisionDomain;
-    return DOMAIN_META[domain]?.humanDecisions ?? [];
+    return (DOMAIN_META[domain]?.humanDecisions ?? []).map((option) => ({
+      ...option,
+      label: this.i18n.t(`humanDecision.${option.value}`),
+    }));
   });
 
   readonly medicalWarning = computed(() => {
+    this.i18n.currentLang();
     const domain = this.actionTarget()?.domaine || this.detailTarget()?.domaine;
-    return domain === 'MEDICAL'
-      ? 'Cette estimation ne constitue pas un diagnostic médical et doit être revue par un professionnel de santé.'
-      : null;
+    return domain === 'MEDICAL' ? this.i18n.t('validation.medicalWarning') : null;
   });
 
   readonly kpis = computed(() => {
+    this.i18n.currentLang();
     const all = this.decisions();
     const high = all.filter((d) => {
       const r = (d.riskLevel || '').toUpperCase();
       return r.includes('ELEVE') || r === 'HIGH';
     }).length;
     return [
-      { label: 'En attente', value: String(this.totalElements()), icon: 'pi pi-clock', color: 'warn' },
-      { label: 'Risque élevé', value: String(high), icon: 'pi pi-exclamation-triangle', color: high > 0 ? 'danger' : 'success' },
-      { label: 'Crédit', value: String(all.filter((d) => (d.domaine || 'CREDIT') === 'CREDIT').length), icon: 'pi pi-wallet', color: 'info' },
-      { label: 'Médical', value: String(all.filter((d) => d.domaine === 'MEDICAL').length), icon: 'pi pi-heart', color: 'warn' },
-      { label: 'Éducation', value: String(all.filter((d) => d.domaine === 'EDUCATION').length), icon: 'pi pi-book', color: 'success' },
+      { label: this.i18n.t('validation.kpiPending'), value: String(this.totalElements()), icon: 'pi pi-clock', color: 'warn' },
+      { label: this.i18n.t('validation.kpiHighRisk'), value: String(high), icon: 'pi pi-exclamation-triangle', color: high > 0 ? 'danger' : 'success' },
+      { label: this.i18n.t('domainCode.CREDIT'), value: String(all.filter((d) => (d.domaine || 'CREDIT') === 'CREDIT').length), icon: 'pi pi-wallet', color: 'info' },
+      { label: this.i18n.t('domainCode.MEDICAL'), value: String(all.filter((d) => d.domaine === 'MEDICAL').length), icon: 'pi pi-heart', color: 'warn' },
+      { label: this.i18n.t('domainCode.EDUCATION'), value: String(all.filter((d) => d.domaine === 'EDUCATION').length), icon: 'pi pi-book', color: 'success' },
     ];
   });
 
@@ -155,7 +164,7 @@ export class ValidationQueueComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger la file de validation.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('validation.loadError')));
         this.loading.set(false);
       },
     });
@@ -219,7 +228,7 @@ export class ValidationQueueComponent {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.submitError.set(resolveHttpErrorMessage(err, 'Erreur lors de la validation.'));
+          this.submitError.set(resolveHttpErrorMessage(err, this.i18n.t('validation.submitError')));
         },
       });
   }
@@ -245,8 +254,18 @@ export class ValidationQueueComponent {
     return !!ctrl && ctrl.invalid && ctrl.touched;
   }
 
-  decisionLabel = decisionLabel;
-  riskLabel = riskLabel;
+  decisionLabel = (decision?: string | null) => {
+    this.i18n.currentLang();
+    return decisionLabel(decision);
+  };
+  riskLabel = (risk?: string | null) => {
+    this.i18n.currentLang();
+    return riskLabel(risk);
+  };
+  domainLabel = (domain: string) => {
+    this.i18n.currentLang();
+    return domainLabel(domain);
+  };
   mlDecision = mlDecision;
   mlConfidence = mlConfidence;
 

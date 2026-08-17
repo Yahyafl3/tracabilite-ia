@@ -12,12 +12,14 @@ import { Textarea } from 'primeng/textarea';
 import { Message } from 'primeng/message';
 import { Skeleton } from 'primeng/skeleton';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   SupportMessage,
   SupportMessageStatus,
   SupportService,
 } from '../../../core/services/support.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 @Component({
   selector: 'app-support-admin',
@@ -36,12 +38,14 @@ import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
     Message,
     Skeleton,
     PaginatorModule,
+    TranslatePipe,
   ],
   templateUrl: './support-admin.component.html',
   styleUrl: './support-admin.component.scss',
 })
 export class SupportAdminComponent {
   private readonly supportService = inject(SupportService);
+  private readonly i18n = inject(TranslationService);
 
   readonly messages = signal<SupportMessage[]>([]);
   readonly loading = signal(true);
@@ -57,15 +61,18 @@ export class SupportAdminComponent {
   readonly size = signal(10);
   readonly totalElements = signal(0);
 
-  readonly statusOptions = [
-    { label: 'Tous les statuts', value: null as SupportMessageStatus | null },
-    { label: 'NEW', value: 'NEW' as SupportMessageStatus },
-    { label: 'IN_PROGRESS', value: 'IN_PROGRESS' as SupportMessageStatus },
-    { label: 'RESOLVED', value: 'RESOLVED' as SupportMessageStatus },
-    { label: 'CLOSED', value: 'CLOSED' as SupportMessageStatus },
-  ];
+  readonly statusOptions = computed(() => {
+    this.i18n.currentLang();
+    return [
+      { label: this.i18n.t('admin.support.allStatuses'), value: null as SupportMessageStatus | null },
+      { label: this.i18n.t('admin.support.statusNew'), value: 'NEW' as SupportMessageStatus },
+      { label: this.i18n.t('admin.support.statusInProgress'), value: 'IN_PROGRESS' as SupportMessageStatus },
+      { label: this.i18n.t('admin.support.statusResolved'), value: 'RESOLVED' as SupportMessageStatus },
+      { label: this.i18n.t('admin.support.statusClosed'), value: 'CLOSED' as SupportMessageStatus },
+    ];
+  });
 
-  readonly statusEditOptions = this.statusOptions.filter((o) => o.value !== null);
+  readonly statusEditOptions = computed(() => this.statusOptions().filter((o) => o.value !== null));
 
   readonly empty = computed(() => !this.loading() && this.messages().length === 0);
 
@@ -91,7 +98,7 @@ export class SupportAdminComponent {
         },
         error: (err) => {
           this.loading.set(false);
-          this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger les demandes.'));
+          this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.support.loadError')));
         },
       });
   }
@@ -122,7 +129,7 @@ export class SupportAdminComponent {
     this.supportService.getMessageById(item.id).subscribe({
       next: (detail) => this.selected.set(detail),
       error: (err) =>
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de charger le détail.')),
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.support.detailError'))),
     });
   }
 
@@ -142,14 +149,30 @@ export class SupportAdminComponent {
       next: (updated) => {
         this.saving.set(false);
         this.selected.set(updated);
-        this.success.set('Statut mis à jour.');
+        this.success.set(this.i18n.t('admin.support.updated'));
         this.loadMessages();
       },
       error: (err) => {
         this.saving.set(false);
-        this.error.set(resolveHttpErrorMessage(err, 'Impossible de mettre à jour le statut.'));
+        this.error.set(resolveHttpErrorMessage(err, this.i18n.t('admin.support.statusError')));
       },
     });
+  }
+
+  statusLabel(status: SupportMessageStatus): string {
+    this.i18n.currentLang();
+    switch (status) {
+      case 'NEW':
+        return this.i18n.t('admin.support.statusNew');
+      case 'IN_PROGRESS':
+        return this.i18n.t('admin.support.statusInProgress');
+      case 'RESOLVED':
+        return this.i18n.t('admin.support.statusResolved');
+      case 'CLOSED':
+        return this.i18n.t('admin.support.statusClosed');
+      default:
+        return status;
+    }
   }
 
   statusSeverity(status: SupportMessageStatus): 'info' | 'warn' | 'success' | 'secondary' | 'contrast' {
@@ -168,9 +191,9 @@ export class SupportAdminComponent {
   }
 
   formatDate(value: string | null | undefined): string {
-    if (!value) return '—';
+    if (!value) return this.i18n.t('common.dash');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString('fr-FR');
+    return date.toLocaleString(this.i18n.localeId());
   }
 }

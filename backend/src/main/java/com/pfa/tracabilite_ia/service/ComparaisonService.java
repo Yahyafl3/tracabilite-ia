@@ -14,6 +14,6 @@ public interface ComparaisonService {
 
 
 
-    List<ComparaisonAgentResponse> classerAgentsOpenRouter();
+    List<ComparaisonAgentResponse> classerAgents();
 
 }

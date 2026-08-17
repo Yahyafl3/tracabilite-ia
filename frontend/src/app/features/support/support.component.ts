@@ -8,8 +8,11 @@ import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Card } from 'primeng/card';
+import { TranslatePipe } from '@ngx-translate/core';
 import { SupportService } from '../../core/services/support.service';
 import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
+import { TranslationService } from '../../core/i18n/translation.service';
+import { LanguageSwitcherComponent } from '../../layout/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-support',
@@ -24,6 +27,8 @@ import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
     Message,
     ProgressSpinner,
     Card,
+    TranslatePipe,
+    LanguageSwitcherComponent,
   ],
   templateUrl: './support.component.html',
   styleUrl: './support.component.scss',
@@ -31,6 +36,7 @@ import { resolveHttpErrorMessage } from '../../core/utils/http-error.util';
 export class SupportComponent {
   private readonly fb = inject(FormBuilder);
   private readonly supportService = inject(SupportService);
+  private readonly i18n = inject(TranslationService);
 
   readonly isLoading = signal(false);
   readonly successMessage = signal<string | null>(null);
@@ -64,16 +70,13 @@ export class SupportComponent {
       .subscribe({
         next: (res) => {
           this.isLoading.set(false);
-          this.successMessage.set(
-            res.message ||
-              'Votre demande a été envoyée. Notre équipe vous répondra dès que possible.',
-          );
+          this.successMessage.set(res.message || this.i18n.t('support.success'));
           this.form.reset();
         },
         error: (err) => {
           this.isLoading.set(false);
           this.errorMessage.set(
-            resolveHttpErrorMessage(err, 'Impossible d’envoyer la demande. Réessayez plus tard.'),
+            resolveHttpErrorMessage(err, this.i18n.t('support.error')),
           );
         },
       });
@@ -87,14 +90,14 @@ export class SupportComponent {
   errorText(control: string): string {
     const c = this.form.get(control);
     if (!c?.errors) return '';
-    if (c.errors['required']) return 'Ce champ est requis';
-    if (c.errors['email']) return 'Adresse email invalide';
+    if (c.errors['required']) return this.i18n.t('login.required');
+    if (c.errors['email']) return this.i18n.t('login.invalidEmail');
     if (c.errors['minlength']) {
-      return `Minimum ${c.errors['minlength'].requiredLength} caractères`;
+      return this.i18n.t('login.minLength', { min: c.errors['minlength'].requiredLength });
     }
     if (c.errors['maxlength']) {
-      return `Maximum ${c.errors['maxlength'].requiredLength} caractères`;
+      return this.i18n.t('support.maxLength', { max: c.errors['maxlength'].requiredLength });
     }
-    return 'Valeur invalide';
+    return this.i18n.t('support.invalid');
   }
 }

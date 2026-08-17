@@ -105,9 +105,9 @@ public class DecisionScopeService {
         DecisionDomain domain = decision.getDomaine() != null ? decision.getDomaine() : DecisionDomain.CREDIT;
 
         boolean allowed = switch (domain) {
-            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT || role == RoleEnum.VALIDATEUR;
-            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE || role == RoleEnum.VALIDATEUR;
-            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE || role == RoleEnum.VALIDATEUR;
+            case CREDIT -> role == RoleEnum.RESPONSABLE_CREDIT;
+            case MEDICAL -> role == RoleEnum.PROFESSIONNEL_SANTE;
+            case EDUCATION -> role == RoleEnum.RESPONSABLE_PEDAGOGIQUE;
         };
 
         if (!allowed) {

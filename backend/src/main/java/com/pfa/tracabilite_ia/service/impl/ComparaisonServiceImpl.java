@@ -6,9 +6,9 @@ import com.pfa.tracabilite_ia.dto.response.ComparaisonAgentResponse;
 
 import com.pfa.tracabilite_ia.enumeration.StatutReponseAgentEnum;
 
-import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentDefinition;
+import com.pfa.tracabilite_ia.groq.GroqAgentDefinition;
 
-import com.pfa.tracabilite_ia.openrouter.OpenRouterAgentRegistryService;
+import com.pfa.tracabilite_ia.groq.GroqAgentRegistryService;
 
 import com.pfa.tracabilite_ia.repository.ReponseAgentIARepository;
 
@@ -38,17 +38,17 @@ public class ComparaisonServiceImpl implements ComparaisonService {
 
     private final ReponseAgentIARepository reponseAgentIARepository;
 
-    private final OpenRouterAgentRegistryService openRouterAgentRegistryService;
+    private final GroqAgentRegistryService groqAgentRegistryService;
 
 
 
     public ComparaisonServiceImpl(ReponseAgentIARepository reponseAgentIARepository,
 
-                                  OpenRouterAgentRegistryService openRouterAgentRegistryService) {
+                                  GroqAgentRegistryService groqAgentRegistryService) {
 
         this.reponseAgentIARepository = reponseAgentIARepository;
 
-        this.openRouterAgentRegistryService = openRouterAgentRegistryService;
+        this.groqAgentRegistryService = groqAgentRegistryService;
 
     }
 
@@ -56,13 +56,13 @@ public class ComparaisonServiceImpl implements ComparaisonService {
 
     @Override
 
-    public List<ComparaisonAgentResponse> classerAgentsOpenRouter() {
+    public List<ComparaisonAgentResponse> classerAgents() {
 
         List<ComparaisonAgentResponse> resultats = new ArrayList<>();
 
 
 
-        for (OpenRouterAgentDefinition agent : openRouterAgentRegistryService.configuredAgents()) {
+        for (GroqAgentDefinition agent : groqAgentRegistryService.configuredAgents()) {
 
             long total = reponseAgentIARepository.countByAgentKey(agent.agentKey());
 
@@ -104,7 +104,7 @@ public class ComparaisonServiceImpl implements ComparaisonService {
 
                     agent.modelId(),
 
-                    "openrouter",
+                    "groq",
 
                     total,
 

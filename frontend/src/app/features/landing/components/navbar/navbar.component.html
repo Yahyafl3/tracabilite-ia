@@ -4,19 +4,19 @@
       class="brand"
       href="#accueil"
       (click)="scrollTo('accueil'); $event.preventDefault()"
-      aria-label="Traçabilité IA — Accueil"
+      [attr.aria-label]="('app.name' | translate) + ' — ' + ('landing.nav.home' | translate)"
     >
       <app-logo class="brand__mark" [size]="38" />
-      <span class="brand__name">Traçabilité<span class="brand__accent"> IA</span></span>
+      <span class="brand__name">{{ 'app.name' | translate }}</span>
     </a>
 
-    <nav class="nav-links" [class.nav-links--open]="menuOpen()" aria-label="Navigation principale">
+    <nav class="nav-links" [class.nav-links--open]="menuOpen()" [attr.aria-label]="'nav.application' | translate">
       @for (link of links; track link.target) {
         <a
           class="nav-links__item"
           [href]="'#' + link.target"
           (click)="scrollTo(link.target); $event.preventDefault()"
-          >{{ link.label }}</a
+          >{{ link.labelKey | translate }}</a
         >
       }
 
@@ -26,14 +26,14 @@
           routerLink="/auth/login"
           (click)="menuOpen.set(false)"
         >
-          Se connecter
+          {{ 'landing.nav.login' | translate }}
         </a>
         <a
           class="btn btn-primary nav-links__cta"
           routerLink="/auth/login"
           (click)="menuOpen.set(false)"
         >
-          Accéder à l'application
+          {{ 'landing.nav.openApp' | translate }}
           <app-icon name="arrow-right" [size]="18" />
         </a>
       </div>
@@ -44,21 +44,22 @@
         class="nav-actions__login"
         routerLink="/auth/login"
       >
-        Se connecter
+        {{ 'landing.nav.login' | translate }}
       </a>
       <a
         class="btn btn-primary nav-actions__cta"
         routerLink="/auth/login"
       >
-        Accéder à l'application
+        {{ 'landing.nav.openApp' | translate }}
         <app-icon name="arrow-right" [size]="18" />
       </a>
+      <app-language-switcher />
       <button
         type="button"
         class="theme-toggle"
         (click)="toggleTheme()"
-        [attr.aria-label]="theme() === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'"
-        title="Changer de thème"
+        [attr.aria-label]="theme() === 'dark' ? ('landing.nav.themeLight' | translate) : ('landing.nav.themeDark' | translate)"
+        [title]="'topbar.appearance' | translate"
       >
         <app-icon [name]="theme() === 'dark' ? 'sun' : 'moon'" [size]="20" />
       </button>
@@ -68,7 +69,7 @@
         class="nav-toggle"
         (click)="toggleMenu()"
         [attr.aria-expanded]="menuOpen()"
-        [attr.aria-label]="menuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+        [attr.aria-label]="menuOpen() ? ('landing.nav.closeMenu' | translate) : ('landing.nav.openMenu' | translate)"
       >
         <app-icon [name]="menuOpen() ? 'close' : 'menu'" [size]="26" />
       </button>

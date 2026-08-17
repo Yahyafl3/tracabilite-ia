@@ -17,6 +17,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Divider } from 'primeng/divider';
 import { ConfirmationService } from 'primeng/api';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconComponent } from '../../../shared/icon.component';
 import {
   StatusBadgeComponent,
@@ -70,7 +71,8 @@ import {
 } from '../../../core/services/decision-trace.service';
 import { resolveHttpErrorMessage } from '../../../core/utils/http-error.util';
 import { decisionChipClass, riskChipClass, statutChipClass } from '../../../core/utils/chip-class.util';
-import { historyActionLabel, riskLabel, statutLabel } from '../../../core/utils/label.util';
+import { decisionLabel, domainLabel, historyActionLabel, riskLabel, roleLabel as toRoleLabel, statutLabel } from '../../../core/utils/label.util';
+import { TranslationService } from '../../../core/i18n/translation.service';
 
 type DetailTab =
   | 'resume'
@@ -120,6 +122,7 @@ type DetailTab =
     CreditDecisionDetailsComponent,
     MedicalDecisionDetailsComponent,
     EducationDecisionDetailsComponent,
+    TranslatePipe,
   ],
   providers: [ConfirmationService],
   templateUrl: './decision-detail.component.html',
@@ -135,17 +138,26 @@ export class DecisionDetailComponent {
   private readonly confirmation = inject(ConfirmationService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly i18n = inject(TranslationService);
 
   readonly humanDecisionOptions = computed(() => {
+    this.i18n.currentLang();
     const domain = this.domain();
-    return DOMAIN_META[domain].humanDecisions;
+    return DOMAIN_META[domain].humanDecisions.map((option) => ({
+      ...option,
+      label: this.i18n.t(`humanDecision.${option.value}`),
+    }));
   });
 
   readonly domain = computed<DecisionDomain>(() => resolveDomain(this.decision()?.domaine));
 
   readonly domainMeta = computed(() => DOMAIN_META[this.domain()]);
 
-  readonly domainWarning = computed(() => this.domainMeta().warning ?? null);
+  readonly domainWarning = computed(() => {
+    this.i18n.currentLang();
+    const warning = this.i18n.t(`domainMeta.${this.domain()}.warning`);
+    return warning && warning !== `domainMeta.${this.domain()}.warning` ? warning : null;
+  });
 
   readonly agentsConsulted = computed(() => (this.decision()?.agentResponses?.length ?? 0) > 0);
 
@@ -188,7 +200,7 @@ export class DecisionDetailComponent {
 
   readonly canManageSources = computed(() => {
     const role = this.authService.currentUser?.role;
-    return role === UserRole.VALIDATEUR || role === UserRole.ADMINISTRATEUR;
+    return role === UserRole.ADMINISTRATEUR;
   });
 
   readonly hasRetryableAgents = computed(() =>
@@ -230,7 +242,6 @@ export class DecisionDetailComponent {
     const expected = DOMAIN_META[domain].validatorRole as UserRole;
     const allowed =
       role === expected ||
-      role === UserRole.VALIDATEUR ||
       role === UserRole.ADMINISTRATEUR ||
       role === UserRole.RESPONSABLE_CREDIT ||
       role === UserRole.PROFESSIONNEL_SANTE ||
@@ -246,15 +257,15 @@ export class DecisionDetailComponent {
     return s === StatutDecisionEnum.EN_ATTENTE || s === StatutDecisionEnum.EN_ATTENTE_VALIDATION;
   });
 
-  readonly tabs: Array<{ id: DetailTab; label: string }> = [
-    { id: 'resume', label: 'Résumé' },
-    { id: 'prediction', label: 'ML' },
-    { id: 'shap', label: 'SHAP' },
-    { id: 'agents', label: 'Agents IA' },
-    { id: 'validation', label: 'Validation humaine' },
-    { id: 'history', label: 'Historique' },
-    { id: 'sources', label: 'Sources' },
-    { id: 'integrity', label: 'Intégrité' },
+  readonly tabs: Array<{ id: DetailTab; labelKey: string }> = [
+    { id: 'resume', labelKey: 'decisions.detail.tabs.resume' },
+    { id: 'prediction', labelKey: 'decisions.detail.tabs.prediction' },
+    { id: 'shap', labelKey: 'decisions.detail.tabs.shap' },
+    { id: 'agents', labelKey: 'decisions.detail.tabs.agents' },
+    { id: 'validation', labelKey: 'decisions.detail.tabs.validation' },
+    { id: 'history', labelKey: 'decisions.detail.tabs.history' },
+    { id: 'sources', labelKey: 'decisions.detail.tabs.sources' },
+    { id: 'integrity', labelKey: 'decisions.detail.tabs.integrity' },
   ];
 
   constructor() {
@@ -284,7 +295,7 @@ export class DecisionDetailComponent {
         this.loadTraceData(id);
       },
       error: () => {
-        this.error.set('Impossible de charger la décision.');
+        this.error.set(this.i18n.t('decisions.detail.loadError'));
         this.loading.set(false);
       },
     });
@@ -308,16 +319,37 @@ export class DecisionDetailComponent {
     });
   }
 
-  historyActionLabel = historyActionLabel;
-  statutLabel = statutLabel;
-  riskLabel = riskLabel;
+  historyActionLabel = (action: string) => {
+    this.i18n.currentLang();
+    return historyActionLabel(action);
+  };
+  statutLabel = (statut: string) => {
+    this.i18n.currentLang();
+    return statutLabel(statut);
+  };
+  riskLabel = (risk?: string | null) => {
+    this.i18n.currentLang();
+    return riskLabel(risk);
+  };
+  domainLabel = (domain?: string | null) => {
+    this.i18n.currentLang();
+    return domainLabel(domain);
+  };
+  roleLabel = (role: string) => {
+    this.i18n.currentLang();
+    return toRoleLabel(role);
+  };
+  decisionLabel = (decision?: string | null) => {
+    this.i18n.currentLang();
+    return decisionLabel(decision);
+  };
 
   reference(item: DecisionResponse): string {
     return item.reference ?? item.decisionId.slice(0, 8).toUpperCase();
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('fr-FR', {
+    return new Date(iso).toLocaleDateString(this.i18n.localeId(), {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -325,7 +357,7 @@ export class DecisionDetailComponent {
   }
 
   formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString('fr-FR', {
+    return new Date(iso).toLocaleTimeString(this.i18n.localeId(), {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -365,14 +397,16 @@ export class DecisionDetailComponent {
   }
 
   shapImpactTooltip(impact: string): string {
-    if (impact === 'POSITIVE') return 'Impact positif sur le risque/signal';
-    if (impact === 'NEGATIVE') return 'Impact négatif sur le risque/signal';
+    this.i18n.currentLang();
+    if (impact === 'POSITIVE') return this.i18n.t('decisions.detail.impactPositiveRisk');
+    if (impact === 'NEGATIVE') return this.i18n.t('decisions.detail.impactNegativeRisk');
     return impact;
   }
 
   shapImpactLabel(factor: { impactLabel?: string; impact: string }): string {
-    if (factor.impact === 'POSITIVE') return 'Impact positif';
-    if (factor.impact === 'NEGATIVE') return 'Impact négatif';
+    this.i18n.currentLang();
+    if (factor.impact === 'POSITIVE') return this.i18n.t('decisions.detail.impactPositive');
+    if (factor.impact === 'NEGATIVE') return this.i18n.t('decisions.detail.impactNegative');
     return factor.impactLabel || factor.impact;
   }
 
@@ -384,8 +418,8 @@ export class DecisionDetailComponent {
     }
     const raw = this.validationForm.getRawValue();
     this.confirmAndSubmit(
-      'Confirmer la validation',
-      `Enregistrer la décision humaine « ${raw.decisionHumaine} » ?`,
+      this.i18n.t('decisions.detail.confirmTitle'),
+      this.i18n.t('decisions.detail.confirmBody', { decision: raw.decisionHumaine }),
       () => {
         this.submitValidation(() =>
           this.decisionService.validateDomain(id, {
@@ -478,8 +512,8 @@ export class DecisionDetailComponent {
       header,
       message,
       icon: 'pi pi-exclamation-circle',
-      acceptLabel: 'Confirmer',
-      rejectLabel: 'Annuler',
+      acceptLabel: this.i18n.t('common.confirm'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonStyleClass: 'p-button-primary',
       rejectButtonStyleClass: 'p-button-text',
       accept: onAccept,
@@ -502,10 +536,10 @@ export class DecisionDetailComponent {
       next: (response) => {
         this.decision.set(response);
         this.retryLoading.set(false);
-        this.validationSuccess.set('Agents IA relancés avec succès.');
+        this.validationSuccess.set(this.i18n.t('decisions.detail.retrySuccess'));
       },
       error: (err) => {
-        this.retryError.set(resolveHttpErrorMessage(err, 'Impossible de relancer les agents.'));
+        this.retryError.set(resolveHttpErrorMessage(err, this.i18n.t('decisions.detail.retryError')));
         this.retryLoading.set(false);
       },
     });

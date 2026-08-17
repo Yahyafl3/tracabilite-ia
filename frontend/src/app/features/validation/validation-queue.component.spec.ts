@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { ValidationQueueComponent } from './validation-queue.component';
 import { DecisionService } from '../../core/services/decision.service';
 import { StatutDecisionEnum } from '../../core/models/decision.models';
+import { provideI18nTesting } from '../../core/i18n/provide-i18n';
 
 describe('ValidationQueueComponent', () => {
   let fixture: ComponentFixture<ValidationQueueComponent>;
@@ -44,6 +45,7 @@ describe('ValidationQueueComponent', () => {
       imports: [ValidationQueueComponent],
       providers: [
         provideRouter([]),
+        ...provideI18nTesting(),
         {
           provide: DecisionService,
           useValue: {
@@ -60,8 +62,8 @@ describe('ValidationQueueComponent', () => {
 
   it('affiche les badges de domaine', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('CREDIT');
-    expect(compiled.textContent).toContain('MEDICAL');
+    expect(compiled.textContent).toContain('Crédit');
+    expect(compiled.textContent).toContain('Médical');
   });
 
   it('propose les décisions finales crédit', () => {

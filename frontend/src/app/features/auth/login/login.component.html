@@ -3,22 +3,19 @@
     <!-- Left side - Branding & Info -->
     <aside class="login-side">
       <div class="login-side__content">
-        <a routerLink="/" class="login-side__brand" aria-label="Traçabilité IA — accueil">
+        <a routerLink="/" class="login-side__brand" [attr.aria-label]="('app.name' | translate) + ' — ' + ('landing.nav.home' | translate)">
           <div class="brand-icon">
             <i class="pi pi-shield"></i>
           </div>
           <div class="brand-text">
-            <strong>Traçabilité IA</strong>
-            <small>Décisions assistées et auditables</small>
+            <strong>{{ 'app.name' | translate }}</strong>
+            <small>{{ 'app.tagline' | translate }}</small>
           </div>
         </a>
 
         <div class="login-side__hero">
-          <h2>Plateforme de traçabilité IA de confiance</h2>
-          <p>
-            Auditez, tracez et validez chaque décision d'intelligence artificielle.
-            Conformité RGPD et AI Act européen.
-          </p>
+          <h2>{{ 'login.heroTitle' | translate }}</h2>
+          <p>{{ 'login.heroText' | translate }}</p>
         </div>
 
         <div class="login-side__features">
@@ -27,8 +24,8 @@
               <i class="pi pi-check-circle"></i>
             </div>
             <div class="feature-content">
-              <h3>Traçabilité complète</h3>
-              <p>Audit trail immuable de chaque décision IA</p>
+              <h3>{{ 'login.featureTraceTitle' | translate }}</h3>
+              <p>{{ 'login.featureTraceText' | translate }}</p>
             </div>
           </div>
           <div class="feature-item">
@@ -36,8 +33,8 @@
               <i class="pi pi-shield"></i>
             </div>
             <div class="feature-content">
-              <h3>Conformité garantie</h3>
-              <p>RGPD, AI Act et standards de sécurité</p>
+              <h3>{{ 'login.featureComplianceTitle' | translate }}</h3>
+              <p>{{ 'login.featureComplianceText' | translate }}</p>
             </div>
           </div>
           <div class="feature-item">
@@ -45,14 +42,14 @@
               <i class="pi pi-users"></i>
             </div>
             <div class="feature-content">
-              <h3>Validation humaine</h3>
-              <p>Workflow de revue et d'approbation</p>
+              <h3>{{ 'login.featureHumanTitle' | translate }}</h3>
+              <p>{{ 'login.featureHumanText' | translate }}</p>
             </div>
           </div>
         </div>
 
         <div class="login-side__footer">
-          <p>© 2026 Traçabilité IA. Tous droits réservés.</p>
+          <p>{{ 'login.copyright' | translate }}</p>
         </div>
       </div>
 
@@ -65,15 +62,18 @@
 
     <!-- Right side - Login Form -->
     <main class="login-main">
+      <div class="login-main__lang">
+        <app-language-switcher />
+      </div>
       <div class="login-main__content">
         <a routerLink="/" class="login-back">
           <i class="pi pi-arrow-left" aria-hidden="true"></i>
-          Retour au site
+          {{ 'login.back' | translate }}
         </a>
 
         <div class="login-header">
-          <h1>Connexion</h1>
-          <p>Accédez à votre espace sécurisé</p>
+          <h1>{{ 'login.title' | translate }}</h1>
+          <p>{{ 'login.subtitle' | translate }}</p>
         </div>
 
         @if (errorMessage()) {
@@ -95,7 +95,7 @@
           </div>
 
           <div class="form-field" [class.form-field--error]="hasError('email')">
-            <label for="login-email">Adresse email</label>
+            <label for="login-email">{{ 'login.email' | translate }}</label>
             <div class="input-wrapper">
               <i class="pi pi-envelope input-icon"></i>
               <input
@@ -105,7 +105,7 @@
                 type="email"
                 formControlName="email"
                 class="input-with-icon"
-                placeholder="vous@entreprise.com"
+                [placeholder]="'login.emailPlaceholder' | translate"
                 autocomplete="off"
                 [attr.readonly]="emailReadonly() ? true : null"
                 (focus)="unlockEmailField()"
@@ -119,7 +119,7 @@
           </div>
 
           <div class="form-field" [class.form-field--error]="hasError('password')">
-            <label for="login-password">Mot de passe</label>
+            <label for="login-password">{{ 'login.password' | translate }}</label>
             <div class="input-wrapper">
               <i class="pi pi-lock input-icon"></i>
               <p-password
@@ -141,29 +141,29 @@
           </div>
 
           <div class="form-extras form-extras--end">
-            <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+            <a routerLink="/auth/forgot-password" class="forgot-link">{{ 'login.forgot' | translate }}</a>
           </div>
 
           <p-button
             type="submit"
-            label="Se connecter"
+            [label]="'login.submit' | translate"
             icon="pi pi-sign-in"
             styleClass="login-submit"
             [disabled]="isLoading()"
             [loading]="isLoading()"
-            ariaLabel="Se connecter"
+            [ariaLabel]="'login.submit' | translate"
           />
 
           @if (isLoading()) {
             <div class="login-loading" aria-live="polite">
               <p-progressSpinner strokeWidth="4" [style]="{ width: '2rem', height: '2rem' }" />
-              <span>Connexion en cours…</span>
+              <span>{{ 'login.loading' | translate }}</span>
             </div>
           }
         </form>
 
         <p class="login-help">
-          Besoin d'aide ? <a routerLink="/support">Contactez le support</a>
+          {{ 'login.help' | translate }} <a routerLink="/support">{{ 'login.contactSupport' | translate }}</a>
         </p>
       </div>
     </main>
