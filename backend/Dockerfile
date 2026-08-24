@@ -45,7 +45,9 @@ USER app
 ENV PORT=8080
 EXPOSE 8080
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=10 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=300s --retries=15 \
   CMD curl -fsS "http://127.0.0.1:${PORT}/actuator/health" || exit 1
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Free-tier Render: limit heap, faster JIT warmup, bind via server.port=${PORT}
+ENV JAVA_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx384m -Xms256m -XX:MaxMetaspaceSize=160m"
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
