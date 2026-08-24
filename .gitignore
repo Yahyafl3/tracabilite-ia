@@ -20,6 +20,10 @@ ml-service/.pytest_cache/
 *.bak
 *.tmp
 *~
+compile_output.txt
+**/compile_output.txt
+GANTTPROJECT*.txt
+README_CORRECTION.txt
 
 # Local dumps / backups
 backend/scripts/backups/
