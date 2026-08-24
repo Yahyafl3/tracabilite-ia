@@ -510,12 +510,6 @@ Le déploiement **Docker Compose local** (`docker compose up -d --build`) reste 
 
 ---
 
-## Documentation
-
-- [Diagrammes UML](docs/uml/README.md) — cas d'utilisation, séquences, classes
-
----
-
 ## Structure du dépôt
 
 ```text
@@ -524,7 +518,6 @@ tracabilite-ia/
 ├── backend/           # Spring Boot 3.4
 ├── ml-service/        # Flask + Scikit-learn + SHAP
 ├── datasets/          # Jeux de données synthétiques
-├── docs/uml/          # Diagrammes UML (PlantUML)
 ├── docker/            # Init PostgreSQL
 ├── docker-compose.yml
 ├── .env.example
