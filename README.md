@@ -512,13 +512,7 @@ Le déploiement **Docker Compose local** (`docker compose up -d --build`) reste 
 
 ## Documentation
 
-- [Résumé applicatif](docs/presentation/resume-application.md)
-- [Diagrammes UML — README](docs/uml/README.md)
-- [Cas d’utilisation](docs/uml/use-case.puml)
-- [Séquence — création de décision](docs/uml/sequence-creation-decision.puml)
-- [Séquence — validation humaine](docs/uml/sequence-validation-humaine.puml)
-- [Diagramme de classes](docs/uml/class-diagram.puml)
-- [Migration historique Ollama → OpenRouter](docs/MIGRATION_OLLAMA_OPENROUTER.md) (contexte historique)
+- [Diagrammes UML](docs/uml/README.md) — cas d'utilisation, séquences, classes
 
 ---
 
@@ -529,7 +523,11 @@ tracabilite-ia/
 ├── frontend/          # Angular 21 + PrimeNG
 ├── backend/           # Spring Boot 3.4
 ├── ml-service/        # Flask + Scikit-learn + SHAP
-├── docs/              # Présentation et UML
+├── datasets/          # Jeux de données synthétiques
+├── docs/uml/          # Diagrammes UML (PlantUML)
+├── ops/               # Scripts backup PostgreSQL
+├── performance/       # Tests de charge k6
+├── docker/            # Init PostgreSQL
 ├── docker-compose.yml
 ├── .env.example
 └── README.md

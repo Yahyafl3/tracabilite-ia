@@ -35,3 +35,25 @@ Thumbs.db
 *.iml
 *.swp
 *.swo
+
+# Rapport PFA / documents académiques (hors dépôt)
+Rapport_*.docx
+Rapport_*.pdf
+~$*.docx
+template rapport de stage*.docx
+*.gan
+*_GanttProject*.csv
+GANTTPROJECT*.txt
+GUIDE_CORRECTION*.md
+INSTRUCTIONS_CORRECTION*.md
+README_CORRECTION*.txt
+EXECUTER-CORRECTION.bat
+Corriger-Rapport-PFA.ps1
+corriger_rapport.py
+
+# Scripts et médias temporaires (rapport / QA locale)
+scripts/_*
+scripts/_media/
+scripts/_banners/
+captures-application/
+REPARTITION.*
