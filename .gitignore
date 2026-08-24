@@ -40,6 +40,8 @@ Thumbs.db
 *.swp
 *.swo
 .kiro/
+DOCKER_BUILD_FIX.md
+IMPLEMENTATION_REPORT_DASHBOARDS.md
 
 # Rapport PFA / documents académiques (hors dépôt)
 Rapport_*.docx
