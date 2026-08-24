@@ -50,25 +50,14 @@ ml-service/
 
 ## Démarrage
 
-### Windows (recommandé)
-
-```powershell
-cd c:\Users\yahya\Downloads\tracabilite-ia\ml-service
-.\setup.ps1
-python app.py
-```
-
-> **Python 3.14** : utilisez `--only-binary=:all:` (inclus dans `setup.ps1`).
-> Ne pas lancer `cd ml-service` si vous êtes déjà dans ce dossier.
-
-### Manuel
-
 ```bash
 cd ml-service
 python -m pip install --only-binary=:all: -r requirements.txt
 python train_model.py   # génère artifacts/model.joblib + metadata.json
 python app.py           # http://localhost:5000
 ```
+
+> **Python 3.14** : utilisez `--only-binary=:all:` pour éviter la compilation de dépendances natives.
 
 > Si un ancien container Docker tourne encore (`tracabilite-ml-service`), arrêtez-le :
 > `docker stop tracabilite-ml-service`
