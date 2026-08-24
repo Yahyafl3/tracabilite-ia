@@ -48,10 +48,7 @@ export interface User {
   derniereConnexion?: Date;
 }
 
-/**
- * Rôles des comptes internes. UTILISATEUR/VALIDATEUR ont été migrés vers AGENT_CREDIT et
- * RESPONSABLE_CREDIT ; ils ne donnent plus accès à aucune route.
- */
+/** Rôles des comptes internes. UTILISATEUR est LEGACY (compatibilité uniquement). */
 export enum UserRole {
   ADMINISTRATEUR = 'ADMINISTRATEUR',
   AUDITEUR = 'AUDITEUR',

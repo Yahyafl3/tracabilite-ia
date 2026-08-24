@@ -1,0 +1,194 @@
+/**
+ * AdminDashboardComponent Styles
+ * 
+ * Responsive layout with breakpoints:
+ * - Desktop (>= 1024px): 4-column KPI grid
+ * - Tablet (768px - 1023px): 2-column KPI grid
+ * - Mobile (< 768px): 1-column KPI grid
+ * 
+ * Requirements: 18.1-18.10, 19.1-19.8
+ */
+
+.dashboard-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .header-content {
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .header-subtitle {
+      margin: 0.25rem 0 0 0;
+      font-size: 0.95rem;
+      color: var(--text-color-secondary);
+    }
+  }
+
+  button {
+    min-height: 44px; // Touch target requirement 18.9
+    min-width: 44px;
+  }
+}
+
+/* KPI Cards Grid - Responsive */
+.kpi-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  
+  /* Desktop: 4 columns (Requirement 18.1) */
+  grid-template-columns: repeat(4, 1fr);
+
+  /* Tablet: 2 columns (Requirement 18.3) */
+  @media (max-width: 1023px) and (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Mobile: 1 column (Requirement 18.5) */
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Skeleton Loaders */
+.skeleton-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+
+  @media (max-width: 1023px) and (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Error Card */
+.error-card {
+  margin-bottom: 2rem;
+
+  .error-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 2rem;
+
+    .error-icon {
+      font-size: 3rem;
+      color: var(--red-500);
+    }
+
+    .error-message {
+      font-size: 1.125rem;
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    button {
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+/* Charts Section */
+.charts-row {
+  margin-bottom: 2rem;
+  
+  // Responsive grid for charts
+  display: grid;
+  gap: 1.5rem;
+  
+  /* Desktop: 2 columns (Requirement 18.2) */
+  grid-template-columns: repeat(2, 1fr);
+
+  /* Tablet & Mobile: 1 column (Requirements 18.4, 18.6) */
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Timeline Section */
+.timeline-section {
+  margin-bottom: 2rem;
+}
+
+/* Decisions Section */
+.decisions-section {
+  margin-bottom: 2rem;
+
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--surface-hover) !important;
+    }
+  }
+
+  // Responsive table scrolling for mobile (Requirement 16.7)
+  @media (max-width: 767px) {
+    ::ng-deep .p-datatable-wrapper {
+      overflow-x: auto;
+    }
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+  }
+
+  .empty-message {
+    font-size: 1.125rem;
+    color: var(--text-color-secondary);
+    margin: 0;
+  }
+}
+
+/* Dark Mode Compatibility (Requirements 19.1-19.8) */
+// All colors use CSS variables from PrimeNG theme
+// var(--text-color), var(--text-color-secondary), var(--surface-hover), etc.
+// These automatically adapt to dark mode when theme changes
+
+/* Mobile Font Size Readability (Requirement 18.8) */
+@media (max-width: 767px) {
+  .dashboard-header {
+    .header-content h1 {
+      font-size: 1.5rem;
+    }
+    
+    .header-subtitle {
+      font-size: 0.875rem;
+    }
+  }
+}

@@ -59,7 +59,7 @@ public final class RoleAuthorityMapper {
             // migration des rôles expirent ; la portée réelle vient du rôle relu en base.
             case "USER", "UTILISATEUR",
                  "AGENT_CREDIT", "AGENT_SANTE", "AGENT_PEDAGOGIQUE" -> "ROLE_USER";
-            case "VALIDATOR", "VALIDATEUR",
+            case "VALIDATOR",  // Keep for potential JWT claims compatibility
                  "RESPONSABLE_CREDIT", "PROFESSIONNEL_SANTE", "RESPONSABLE_PEDAGOGIQUE"
                     -> "ROLE_VALIDATOR";
             case "AUDITOR", "AUDITEUR" -> "ROLE_AUDITOR";

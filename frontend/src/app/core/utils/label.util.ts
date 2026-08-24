@@ -105,8 +105,8 @@ export function roleLabel(role: UserRole | string): string {
     [UserRole.RESPONSABLE_CREDIT]: 'Responsable Crédit',
     [UserRole.PROFESSIONNEL_SANTE]: 'Professionnel de Santé',
     [UserRole.RESPONSABLE_PEDAGOGIQUE]: 'Responsable Pédagogique',
+    [UserRole.UTILISATEUR]: 'Agent de crédit (legacy)',
     [UserRole.VALIDATEUR]: 'Responsable Crédit',
-    [UserRole.UTILISATEUR]: 'Agent Crédit',
   };
   return tr(`roles.${mapped}`, map[String(role)] ?? String(role));
 }
@@ -119,7 +119,6 @@ export function roleChipClass(role: UserRole | string): string {
     case UserRole.RESPONSABLE_CREDIT:
     case UserRole.PROFESSIONNEL_SANTE:
     case UserRole.RESPONSABLE_PEDAGOGIQUE:
-    case UserRole.VALIDATEUR:
       return 'chip--approved';
     case UserRole.AGENT_CREDIT:
     case UserRole.AGENT_SANTE:

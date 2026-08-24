@@ -32,7 +32,9 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             RoleEnum.PROFESSIONNEL_SANTE,
             RoleEnum.RESPONSABLE_PEDAGOGIQUE,
             RoleEnum.AUDITEUR,
-            RoleEnum.ADMINISTRATEUR
+            RoleEnum.ADMINISTRATEUR,
+            // Legacy — kept for existing accounts; backend still accepts them on update
+            RoleEnum.UTILISATEUR
     );
 
     private final UtilisateurRepository utilisateurRepository;

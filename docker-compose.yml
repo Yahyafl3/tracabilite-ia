@@ -40,7 +40,7 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tracabilite_ia
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/tracabilite_ia}
       SPRING_DATASOURCE_USERNAME: tracabilite
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-tracabilite123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}

@@ -1000,6 +1000,72 @@ canvas.p-chart,
   }
 }
 
+/**
+ * Empty State Styles
+ * Requirements: 14.5, 14.6, 14.7, 14.8
+ * PrimeNG Sakai-compatible empty state patterns for dashboard components
+ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6, 32px);
+  text-align: center;
+  min-height: 200px;
+
+  .empty-icon {
+    font-size: 3rem;
+    color: var(--text-muted, #64748b);
+    margin-bottom: var(--space-4, 16px);
+    opacity: 0.5;
+  }
+
+  .empty-message {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-secondary, #1e293b);
+    margin-bottom: var(--space-2, 8px);
+    margin-top: 0;
+  }
+
+  .empty-hint {
+    font-size: 0.875rem;
+    color: var(--text-muted, #64748b);
+    margin-bottom: var(--space-4, 16px);
+    margin-top: 0;
+  }
+
+  // Action button within empty state
+  .p-button {
+    margin-top: var(--space-3, 12px);
+  }
+
+  // Touch target minimum size for mobile
+  @media (max-width: 767px) {
+    .p-button {
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+}
+
+// Dark mode compatibility
+[data-theme="dark"] .empty-state,
+.p-dark .empty-state {
+  .empty-icon {
+    color: var(--surface-400, #94a3b8);
+  }
+
+  .empty-message {
+    color: var(--surface-0, #ffffff);
+  }
+
+  .empty-hint {
+    color: var(--surface-400, #94a3b8);
+  }
+}
+
 html[dir="rtl"] {
   font-family: var(--font-arabic);
 

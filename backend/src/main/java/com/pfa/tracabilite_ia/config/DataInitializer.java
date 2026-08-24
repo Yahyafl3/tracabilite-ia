@@ -40,6 +40,7 @@ public class DataInitializer {
             if (userCount == 0) {
                 // First bootstrap only — do not recreate accounts after an admin deletes them.
                 seedAdmin(utilisateurRepository, passwordEncoder);
+                seedUser(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
                 seedDomainAgents(utilisateurRepository, passwordEncoder);
@@ -47,6 +48,7 @@ public class DataInitializer {
             } else {
                 ensureAtLeastOneAdmin(utilisateurRepository, passwordEncoder);
                 // Comptes démo manquants (bases Docker déjà peuplées avec d'autres emails).
+                seedUser(utilisateurRepository, passwordEncoder);
                 seedAuditeur(utilisateurRepository, passwordEncoder);
                 seedDomainValidators(utilisateurRepository, passwordEncoder);
                 seedDomainAgents(utilisateurRepository, passwordEncoder);
@@ -104,6 +106,65 @@ public class DataInitializer {
     }
 
     private void updateRoleCheckConstraint(JdbcTemplate jdbcTemplate) {
+        // CRITICAL: Delete any remaining VALIDATEUR accounts before applying the new constraint
+        // This ensures the constraint can be applied without violating existing data
+        
+        log.info(">>> Cleaning up VALIDATEUR role references before constraint update");
+        
+        // Step 1: Delete all related records for VALIDATEUR users (cascade cleanup)
+        // These tables have foreign key references to utilisateur.id
+        
+        try {
+            // 1.1: password_reset_token (FK: utilisateur_id)
+            int passwordTokens = jdbcTemplate.update("""
+                    DELETE FROM password_reset_token 
+                    WHERE utilisateur_id IN (SELECT id FROM utilisateur WHERE role = 'VALIDATEUR')
+                    """);
+            log.info(">>> Deleted {} password_reset_token records for VALIDATEUR users", passwordTokens);
+            
+            // 1.2: validation_action (FK: validateur_id)
+            int validationActions = jdbcTemplate.update("""
+                    DELETE FROM validation_action 
+                    WHERE validateur_id IN (SELECT id FROM utilisateur WHERE role = 'VALIDATEUR')
+                    """);
+            log.info(">>> Deleted {} validation_action records for VALIDATEUR users", validationActions);
+            
+            // 1.3: appel_ia (FK: utilisateur_id)
+            int appelIa = jdbcTemplate.update("""
+                    DELETE FROM appel_ia 
+                    WHERE utilisateur_id IN (SELECT id FROM utilisateur WHERE role = 'VALIDATEUR')
+                    """);
+            log.info(">>> Deleted {} appel_ia records for VALIDATEUR users", appelIa);
+            
+            // 1.4: support_message (FK: processed_by_id) - set to NULL instead of delete
+            int supportMessages = jdbcTemplate.update("""
+                    UPDATE support_message 
+                    SET processed_by_id = NULL 
+                    WHERE processed_by_id IN (SELECT id FROM utilisateur WHERE role = 'VALIDATEUR')
+                    """);
+            log.info(">>> Updated {} support_message records to remove VALIDATEUR references", supportMessages);
+            
+            // Note: audit_log has no FK constraint, but clear references for data consistency
+            int auditLogs = jdbcTemplate.update("""
+                    UPDATE audit_log 
+                    SET user_id = NULL 
+                    WHERE user_id IN (SELECT id FROM utilisateur WHERE role = 'VALIDATEUR')
+                    """);
+            log.info(">>> Updated {} audit_log records to remove VALIDATEUR references", auditLogs);
+            
+            // Step 2: Delete VALIDATEUR users
+            int deletedUsers = jdbcTemplate.update("""
+                    DELETE FROM utilisateur WHERE role = 'VALIDATEUR'
+                    """);
+            log.info(">>> Deleted {} VALIDATEUR users", deletedUsers);
+            
+        } catch (Exception e) {
+            log.error(">>> Error cleaning up VALIDATEUR references: {}", e.getMessage(), e);
+            // Don't throw - allow the constraint update to proceed even if cleanup fails
+            // This handles the case where VALIDATEUR doesn't exist in the DB yet
+        }
+        
+        // Step 3: Update role check constraint
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur DROP CONSTRAINT IF EXISTS utilisateur_role_check
                 """);
@@ -111,11 +172,12 @@ public class DataInitializer {
         jdbcTemplate.execute("""
                 ALTER TABLE utilisateur ADD CONSTRAINT utilisateur_role_check
                 CHECK (role IN (
-                    'ADMINISTRATEUR', 'AUDITEUR',
-                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE',
-                    'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE'
+                    'ADMINISTRATEUR', 'AUDITEUR', 'UTILISATEUR',
+                    'AGENT_CREDIT', 'AGENT_SANTE', 'AGENT_PEDAGOGIQUE',
+                    'RESPONSABLE_CREDIT', 'PROFESSIONNEL_SANTE', 'RESPONSABLE_PEDAGOGIQUE'
                 ))
                 """);
+        log.info(">>> Updated utilisateur role check constraint to exclude VALIDATEUR");
     }
 
     /**
@@ -159,6 +221,19 @@ public class DataInitializer {
             admin.setRole(RoleEnum.ADMINISTRATEUR);
             utilisateurRepository.save(admin);
             log.info(">>> Utilisateur admin cree (mot de passe demo conservé)");
+        }
+    }
+
+    private void seedUser(UtilisateurRepository utilisateurRepository, PasswordEncoder passwordEncoder) {
+        String email = "user@tracabilite.ia";
+        if (!utilisateurRepository.existsByEmailIgnoreCase(email)) {
+            Utilisateur user = new Utilisateur();
+            user.setNom("Agent de crédit");
+            user.setEmail(email);
+            user.setMotDePasseHash(passwordEncoder.encode("user123"));
+            user.setRole(RoleEnum.UTILISATEUR);
+            utilisateurRepository.save(user);
+            log.info(">>> Agent de credit (UTILISATEUR) cree : {} / user123", email);
         }
     }
 

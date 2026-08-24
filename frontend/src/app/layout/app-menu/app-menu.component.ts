@@ -26,7 +26,8 @@ export class AppMenuComponent {
     const isAgent =
       role === UserRole.AGENT_CREDIT ||
       role === UserRole.AGENT_SANTE ||
-      role === UserRole.AGENT_PEDAGOGIQUE;
+      role === UserRole.AGENT_PEDAGOGIQUE ||
+      role === UserRole.UTILISATEUR;
     const canValidate = isDomainValidator || isAdmin;
     const canCreate = isAdmin || isAgent;
 

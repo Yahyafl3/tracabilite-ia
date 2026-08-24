@@ -81,7 +81,40 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        const target = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        const role = response.user?.role;
+        let dashboardUrl = '/dashboard/admin';
+
+        switch (role) {
+          case UserRole.ADMINISTRATEUR:
+            dashboardUrl = '/dashboard/admin';
+            break;
+          case UserRole.AGENT_CREDIT:
+            dashboardUrl = '/dashboard/agent-credit';
+            break;
+          case UserRole.AGENT_SANTE:
+            dashboardUrl = '/dashboard/agent-sante';
+            break;
+          case UserRole.AGENT_PEDAGOGIQUE:
+            dashboardUrl = '/dashboard/agent-pedagogique';
+            break;
+          case UserRole.RESPONSABLE_CREDIT:
+            dashboardUrl = '/dashboard/responsable-credit';
+            break;
+          case UserRole.PROFESSIONNEL_SANTE:
+            dashboardUrl = '/dashboard/professionnel-sante';
+            break;
+          case UserRole.RESPONSABLE_PEDAGOGIQUE:
+            dashboardUrl = '/dashboard/responsable-pedagogique';
+            break;
+          case UserRole.AUDITEUR:
+            dashboardUrl = '/dashboard/auditeur';
+            break;
+          default:
+            dashboardUrl = '/decisions';
+            break;
+        }
+
+        const target = this.route.snapshot.queryParams['returnUrl'] || dashboardUrl;
         void this.router.navigate([target]);
       },
       error: (error: Error & { status?: number }) => {
