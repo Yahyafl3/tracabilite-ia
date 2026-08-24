@@ -4,6 +4,7 @@ import com.pfa.tracabilite_ia.dto.response.DashboardStatsDTO;
 import com.pfa.tracabilite_ia.dto.response.ErrorResponse;
 import com.pfa.tracabilite_ia.entities.Utilisateur;
 import com.pfa.tracabilite_ia.service.AuthService;
+import com.pfa.tracabilite_ia.service.DashboardService;
 import com.pfa.tracabilite_ia.service.RoleDashboardService;
 import jakarta.persistence.QueryTimeoutException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class DashboardController {
 
     private final RoleDashboardService roleDashboardService;
+    private final DashboardService dashboardService;
     private final AuthService authService;
 
     /**
@@ -129,21 +131,25 @@ public class DashboardController {
     }
 
     @GetMapping("/stats/timeline")
+    @PreAuthorize("isAuthenticated()")
     public java.util.List<com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TimelineData> getTimelineStats() {
         return dashboardService.getTimelineStats();
     }
 
     @GetMapping("/stats/by-type")
+    @PreAuthorize("isAuthenticated()")
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.TypeStats getTypeStats() {
         return dashboardService.getTypeStats();
     }
 
     @GetMapping("/stats/daily")
+    @PreAuthorize("isAuthenticated()")
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.DailyStats getDailyStats() {
         return dashboardService.getDailyStats();
     }
 
     @GetMapping("/stats/kpi")
+    @PreAuthorize("isAuthenticated()")
     public com.pfa.tracabilite_ia.dto.response.DashboardChartResponse.KpiData getKpiStats() {
         return dashboardService.getKpiStats();
     }
