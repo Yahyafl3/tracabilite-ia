@@ -39,6 +39,7 @@ Thumbs.db
 *.iml
 *.swp
 *.swo
+.kiro/
 
 # Rapport PFA / documents académiques (hors dépôt)
 Rapport_*.docx

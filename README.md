@@ -525,8 +525,6 @@ tracabilite-ia/
 ├── ml-service/        # Flask + Scikit-learn + SHAP
 ├── datasets/          # Jeux de données synthétiques
 ├── docs/uml/          # Diagrammes UML (PlantUML)
-├── ops/               # Scripts backup PostgreSQL
-├── performance/       # Tests de charge k6
 ├── docker/            # Init PostgreSQL
 ├── docker-compose.yml
 ├── .env.example
