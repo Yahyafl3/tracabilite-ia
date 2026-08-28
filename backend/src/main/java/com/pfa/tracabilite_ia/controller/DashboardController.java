@@ -1,5 +1,6 @@
 package com.pfa.tracabilite_ia.controller;
 
+import com.pfa.tracabilite_ia.dto.response.DashboardResponse;
 import com.pfa.tracabilite_ia.dto.response.DashboardStatsDTO;
 import com.pfa.tracabilite_ia.dto.response.ErrorResponse;
 import com.pfa.tracabilite_ia.entities.Utilisateur;
@@ -29,6 +30,15 @@ public class DashboardController {
     private final RoleDashboardService roleDashboardService;
     private final DashboardService dashboardService;
     private final AuthService authService;
+
+    /**
+     * Legacy CRM dashboard summary (used by the rich dashboard UI).
+     */
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DashboardResponse> getLegacyDashboardStats() {
+        return ResponseEntity.ok(dashboardService.obtenirStatistiques());
+    }
 
     /**
      * Get dashboard statistics for the authenticated user.

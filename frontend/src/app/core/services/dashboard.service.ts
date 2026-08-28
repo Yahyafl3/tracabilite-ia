@@ -136,13 +136,12 @@ export class DashboardService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/dashboard`;
 
-  /**
-   * Legacy method for existing dashboard functionality
-   * @deprecated Use getDashboardStats() for new professional role dashboards
-   * This method is disabled to prevent calls to the non-existent /api/dashboard endpoint
-   */
+  /** Summary stats for the CRM dashboard (GET /api/dashboard). */
   getStats(): Observable<DashboardResponse> {
-    throw new Error('getStats() is deprecated. Use getDashboardStats() instead. The /api/dashboard endpoint does not exist.');
+    return this.http.get<DashboardResponse>(this.baseUrl).pipe(
+      timeout(10000),
+      catchError(this.handleError)
+    );
   }
 
   /**

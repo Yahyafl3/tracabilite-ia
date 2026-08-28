@@ -57,56 +57,47 @@ export const routes: Routes = [
         path: 'dashboard',
         canActivate: [authGuard],
         loadComponent: () =>
-          import('./features/dashboard/dashboard-router.component').then((m) => m.DashboardRouterComponent),
+          import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'dashboard/admin',
-        canActivate: [roleGuard([UserRole.ADMINISTRATEUR])],
-        loadComponent: () =>
-          import('./features/dashboard/admin-dashboard/admin-dashboard.component').then((m) => m.AdminDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/agent-credit',
-        canActivate: [roleGuard([UserRole.AGENT_CREDIT])],
-        loadComponent: () =>
-          import('./features/dashboard/agent-credit-dashboard/agent-credit-dashboard.component').then((m) => m.AgentCreditDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/agent-sante',
-        canActivate: [roleGuard([UserRole.AGENT_SANTE])],
-        loadComponent: () =>
-          import('./features/dashboard/agent-sante-dashboard/agent-sante-dashboard.component').then((m) => m.AgentSanteDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/agent-pedagogique',
-        canActivate: [roleGuard([UserRole.AGENT_PEDAGOGIQUE])],
-        loadComponent: () =>
-          import('./features/dashboard/agent-pedagogique-dashboard/agent-pedagogique-dashboard.component').then((m) => m.AgentPedagogiqueDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
-
       {
         path: 'dashboard/responsable-credit',
-        canActivate: [roleGuard([UserRole.RESPONSABLE_CREDIT])],
-        loadComponent: () =>
-          import('./features/dashboard/responsable-credit-dashboard/responsable-credit-dashboard.component').then((m) => m.ResponsableCreditDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/professionnel-sante',
-        canActivate: [roleGuard([UserRole.PROFESSIONNEL_SANTE])],
-        loadComponent: () =>
-          import('./features/dashboard/professionnel-sante-dashboard/professionnel-sante-dashboard.component').then((m) => m.ProfessionnelSanteDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/responsable-pedagogique',
-        canActivate: [roleGuard([UserRole.RESPONSABLE_PEDAGOGIQUE])],
-        loadComponent: () =>
-          import('./features/dashboard/responsable-pedagogique-dashboard/responsable-pedagogique-dashboard.component').then((m) => m.ResponsablePedagogiqueDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'dashboard/auditeur',
-        canActivate: [roleGuard([UserRole.AUDITEUR])],
-        loadComponent: () =>
-          import('./features/dashboard/auditeur-dashboard/auditeur-dashboard.component').then((m) => m.AuditeurDashboardComponent),
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'decisions',
